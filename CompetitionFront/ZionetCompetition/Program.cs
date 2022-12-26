@@ -1,3 +1,4 @@
+using Auth0.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using ZionetCompetition.Data;
@@ -8,6 +9,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
+
+builder.Services
+    .AddAuth0WebAppAuthentication(options => {
+        options.Domain = builder.Configuration["Auth0:Domain"];
+        options.ClientId = builder.Configuration["Auth0:ClientId"];
+    });
 
 var app = builder.Build();
 
@@ -24,6 +31,9 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
