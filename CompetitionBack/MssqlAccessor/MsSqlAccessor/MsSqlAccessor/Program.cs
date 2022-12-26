@@ -1,14 +1,23 @@
+using MsSqlAccessor.Data;
+using Microsoft.EntityFrameworkCore;
+
 namespace MsSqlAccessor
 {
 	public class Program
 	{
 		public static void Main(string[] args)
 		{
+			
+
 			var builder = WebApplication.CreateBuilder(args);
 
 			// Add services to the container.
 
 			builder.Services.AddControllers();
+			builder.Services.AddDbContext<DataContext>(options =>
+			{
+				options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+			});
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();
