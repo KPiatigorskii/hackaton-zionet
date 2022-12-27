@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿/*using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using MsSqlAccessor.Models;
 
@@ -8,7 +8,9 @@ namespace MsSqlAccessor.Data
 	{
 		public DataContext(DbContextOptions<DataContext> options): base(options) { }
 
+		//public DbSet<User> user { get; set; }
 		public DbSet<User> user { get; set; }
 
 	}
 }
+*/

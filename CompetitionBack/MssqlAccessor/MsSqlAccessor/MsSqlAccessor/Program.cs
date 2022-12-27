@@ -1,5 +1,6 @@
-using MsSqlAccessor.Data;
+
 using Microsoft.EntityFrameworkCore;
+using MsSqlAccessor.Models;
 
 namespace MsSqlAccessor
 {
@@ -14,10 +15,7 @@ namespace MsSqlAccessor
 			// Add services to the container.
 
 			builder.Services.AddControllers();
-			builder.Services.AddDbContext<DataContext>(options =>
-			{
-				options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-			});
+			builder.Services.AddDbContext<CompetitionBdTestContext>();
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MsSqlAccessor.Models;
 
 namespace MsSqlAccessor.Controllers
@@ -8,26 +9,26 @@ namespace MsSqlAccessor.Controllers
 	[ApiController]
 	public class UserController : ControllerBase
 	{
-		private static List<User> users = new List<User>
-			{
-				new User { id = 1,
-					first_name = "qwer",
-					last_name = "asdf",
-					create_date = "132412341234",
-					update_date = "12312312312"
-					},
-				new User { id = 2,
-					first_name = "qwer",
-					last_name = "asdf",
-					create_date = "132412341234",
-					update_date = "12312312312"
-					}
-				};
+
+
+		private readonly CompetitionBdTestContext _context;
+		public UserController(CompetitionBdTestContext context)
+		{ 
+			_context = context;
+		}
+
 
 		[HttpGet("{id}")]
-		public async Task<ActionResult<User>> Get(int id) 
+		public async Task<ActionResult<User>> Get(int id)
 		{
-			var user = users.Find(h => h.id == id);
+			var user = await _context.Users.Where(e => e.Id == id).Select(e => new {
+				e.Id,
+				e.FirstName,
+				e.LastName,
+				e.Email,
+				e.Github,
+				e.RoleId
+			}).FirstOrDefaultAsync(); ;
 			if (user == null)
 				return BadRequest("user not found");
 			return Ok(user);
@@ -36,17 +37,24 @@ namespace MsSqlAccessor.Controllers
 		[HttpGet]
 		public async Task<ActionResult<List<User>>> Get()
 		{
-			return Ok(users);
+			return Ok(await _context.Users.Select(e => new {
+				e.Id,
+				e.FirstName,
+				e.LastName,
+				e.Email,
+				e.Github,
+				e.RoleId
+			}).ToArrayAsync());
 		}
 
-
+/*
 		[HttpPost]
 		public async Task<ActionResult<List<User>>> AddUser(User my_user)
 		{
 			users.Add(my_user);
 			return Ok(users);
 		}
-
+*//*
 		[HttpPut]
 		public async Task<ActionResult<List<User>>> UpdateUser(User request)
 		{
@@ -60,9 +68,9 @@ namespace MsSqlAccessor.Controllers
 			user.create_date= request.create_date;
 			users.Add(user);
 			return Ok(users);
-		}
+		}*/
 
-		[HttpDelete]
+/*		[HttpDelete]
 		public async Task<ActionResult<User>> Delete(int id)
 		{
 			var user = users.Find(h => h.id == id);
@@ -70,6 +78,6 @@ namespace MsSqlAccessor.Controllers
 				return BadRequest("user not found");
 			users.Remove(user);
 			return Ok(users);
-		}
+		}*/
 	}
 }
