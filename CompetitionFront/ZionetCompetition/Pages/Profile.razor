@@ -1,53 +1,59 @@
 ﻿@page "/profile"
 @inject AuthenticationStateProvider AuthState
+@using ZionetCompetition.Data
 @attribute [Authorize]
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@inject IHttpClientFactory ClientFactory
 
-<PageTitle>Profile</PageTitle>
+<h1>Call web API from a Blazor Server Razor component</h1>
 
-<h1>Welcome, @Username!</h1>
-<p>First name: @FirstName</p>
-<p>Last name: @LastName</p>
-<p>Nickname: @NickName</p>
-You can only see this content if you're authenticated.
-<br />
-<img src="@Picture">
+@if (getBranchesError)
+{
+    <p>Unable to get branches from GitHub. Please try again later.</p>
+}
+else
+{
+    <ul>
+        @foreach (var user in users)
+        {
+            <li>@user.FirstName @user.LastName @user.Github @user.Email @user.Login</li>
+        }
+    </ul>
+}
 
 @code {
-    private string Username = "Anonymous User";
-    private string[] _arrName;
-    private string FirstName = "";
-    private string LastName = "";
-    private string NickName = "";
-    private string Picture = "";
+    private IEnumerable<User> users = Array.Empty<User>();
+    private bool getBranchesError;
+    private bool shouldRender;
 
+    protected override bool ShouldRender() => shouldRender;
 
     protected override async Task OnInitializedAsync()
     {
-        var state = await AuthState.GetAuthenticationStateAsync();
+        var request = new HttpRequestMessage(HttpMethod.Get,
+            "https://localhost:7277/api/User");
 
-        Username = state.User.Identity.Name ?? string.Empty;
-        _arrName = Username.Split(" ");
-        //FirstName = _arrName[0];
-        //LastName = _arrName[1];
+        var client = ClientFactory.CreateClient();
+        JsonSerializerOptions jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
 
-        FirstName = state.User.Claims
-                    .Where(c => c.Type.Contains("givenname"))
-                    .Select(c => c.Value)
-                    .FirstOrDefault() ?? string.Empty;
-        LastName = state.User.Claims
-                    .Where(c => c.Type.Contains("surname"))
-                    .Select(c => c.Value)
-                    .FirstOrDefault() ?? string.Empty;
-        NickName = state.User.Claims
-                    .Where(c => c.Type.Contains("nickname"))
-                    .Select(c => c.Value)
-                    .FirstOrDefault() ?? string.Empty;
+        var response = await client.SendAsync(request);
 
-        Picture = state.User.Claims
-                    .Where(c => c.Type.Equals("picture"))
-                    .Select(c => c.Value)
-                    .FirstOrDefault() ?? string.Empty;
+        if (response.IsSuccessStatusCode)
+        {
+            using var responseStream = await response.Content.ReadAsStreamAsync();
 
-        await base.OnInitializedAsync();
+            users = await JsonSerializer.DeserializeAsync
+                <IEnumerable<User>>(responseStream, jsonOptions);
+        }
+        else
+        {
+            getBranchesError = true;
+        }
+
+        shouldRender = true;
     }
 }
