@@ -5,19 +5,37 @@
 <PageTitle>Profile</PageTitle>
 
 <h1>Welcome, @Username!</h1>
+<p>First name: @FirstName</p>
+<p>Last name: @LastName</p>
 You can only see this content if you're authenticated.
 <br />
 <img src="@Picture">
 
-@code { 
+@code {
     private string Username = "Anonymous User";
+    private string[] _arrName;
+    private string FirstName = "";
+    private string LastName = "";
     private string Picture = "";
+
 
     protected override async Task OnInitializedAsync()
     {
         var state = await AuthState.GetAuthenticationStateAsync();
 
         Username = state.User.Identity.Name ?? string.Empty;
+        _arrName = Username.Split(" ");
+        //FirstName = _arrName[0];
+        //LastName = _arrName[1];
+
+        FirstName = state.User.Claims
+                    .Where(c => c.Type.Contains("givenname"))
+                    .Select(c => c.Value)
+                    .FirstOrDefault() ?? string.Empty;
+        LastName = state.User.Claims
+                    .Where(c => c.Type.Contains("surname"))
+                    .Select(c => c.Value)
+                    .FirstOrDefault() ?? string.Empty;
 
         Picture = state.User.Claims
                     .Where(c => c.Type.Equals("picture"))
