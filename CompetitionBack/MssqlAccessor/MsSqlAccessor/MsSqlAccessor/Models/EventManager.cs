@@ -11,9 +11,9 @@ public partial class EventManager
 
     public int UserId { get; set; }
 
-    public virtual Event Event { get; set; } = null!;
+/*    public virtual Event Event { get; set; } = null!;
 
     public virtual ICollection<EventTaskEvaluateUser> EventTaskEvaluateUsers { get; } = new List<EventTaskEvaluateUser>();
 
-    public virtual User User { get; set; } = null!;
+    public virtual User User { get; set; } = null!;*/
 }

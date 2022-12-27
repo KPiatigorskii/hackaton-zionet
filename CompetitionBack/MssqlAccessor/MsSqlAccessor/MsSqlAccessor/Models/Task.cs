@@ -37,7 +37,7 @@ public partial class Task
 
     public int StatusId { get; set; }
 
-    public virtual TaskCategory Category { get; set; } = null!;
+/*    public virtual TaskCategory Category { get; set; } = null!;
 
     public virtual User CreateUser { get; set; } = null!;
 
@@ -47,5 +47,5 @@ public partial class Task
 
     public virtual ICollection<TeamTask> TeamTasks { get; } = new List<TeamTask>();
 
-    public virtual User UpdateUser { get; set; } = null!;
+    public virtual User UpdateUser { get; set; } = null!;*/
 }

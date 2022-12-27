@@ -21,7 +21,7 @@ public partial class Team
 
     public int StatusId { get; set; }
 
-    public virtual User CreateUser { get; set; } = null!;
+/*    public virtual User CreateUser { get; set; } = null!;
 
     public virtual Event Event { get; set; } = null!;
 
@@ -31,5 +31,5 @@ public partial class Team
 
     public virtual ICollection<TeamTask> TeamTasks { get; } = new List<TeamTask>();
 
-    public virtual User UpdateUser { get; set; } = null!;
+    public virtual User UpdateUser { get; set; } = null!;*/
 }

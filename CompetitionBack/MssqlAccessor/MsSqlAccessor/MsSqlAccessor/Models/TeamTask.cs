@@ -17,11 +17,11 @@ public partial class TeamTask
 
     public int StatusId { get; set; }
 
-    public virtual Status Status { get; set; } = null!;
+/*    public virtual Status Status { get; set; } = null!;
 
     public virtual Task Task { get; set; } = null!;
 
     public virtual TaskParticipant? TaskParticipant { get; set; }
 
-    public virtual Team Team { get; set; } = null!;
+    public virtual Team Team { get; set; } = null!;*/
 }

@@ -29,7 +29,7 @@ public partial class Event
 
     public int StatusId { get; set; }
 
-    public virtual User CreateUser { get; set; } = null!;
+   /* public virtual User CreateUser { get; set; } = null!;
 
     public virtual ICollection<EventManager> EventManagers { get; } = new List<EventManager>();
 
@@ -39,5 +39,5 @@ public partial class Event
 
     public virtual ICollection<Team> Teams { get; } = new List<Team>();
 
-    public virtual User UpdateUser { get; set; } = null!;
+    public virtual User UpdateUser { get; set; } = null!;*/
 }

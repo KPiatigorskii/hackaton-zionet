@@ -11,7 +11,7 @@ public partial class Status
 
     public int StatusId { get; set; }
 
-    public virtual ICollection<Event> Events { get; } = new List<Event>();
+    /*public virtual ICollection<Event> Events { get; } = new List<Event>();
 
     public virtual ICollection<Role> Roles { get; } = new List<Role>();
 
@@ -25,5 +25,5 @@ public partial class Status
 
     public virtual ICollection<Team> Teams { get; } = new List<Team>();
 
-    public virtual ICollection<User> Users { get; } = new List<User>();
+    public virtual ICollection<User> Users { get; } = new List<User>();*/
 }

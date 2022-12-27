@@ -24,12 +24,12 @@ public partial class Role
     public int UpdateUserId { get; set; }
 
     public int StatusId { get; set; }
-
+/*
     public virtual User CreateUser { get; set; } = null!;
 
     public virtual Status Status { get; set; } = null!;
 
     public virtual User UpdateUser { get; set; } = null!;
 
-    public virtual ICollection<User> Users { get; } = new List<User>();
+    public virtual ICollection<User> Users { get; } = new List<User>();*/
 }
