@@ -7,6 +7,7 @@
 <h1>Welcome, @Username!</h1>
 <p>First name: @FirstName</p>
 <p>Last name: @LastName</p>
+<p>Nickname: @NickName</p>
 You can only see this content if you're authenticated.
 <br />
 <img src="@Picture">
@@ -16,6 +17,7 @@ You can only see this content if you're authenticated.
     private string[] _arrName;
     private string FirstName = "";
     private string LastName = "";
+    private string NickName = "";
     private string Picture = "";
 
 
@@ -34,6 +36,10 @@ You can only see this content if you're authenticated.
                     .FirstOrDefault() ?? string.Empty;
         LastName = state.User.Claims
                     .Where(c => c.Type.Contains("surname"))
+                    .Select(c => c.Value)
+                    .FirstOrDefault() ?? string.Empty;
+        NickName = state.User.Claims
+                    .Where(c => c.Type.Contains("nickname"))
                     .Select(c => c.Value)
                     .FirstOrDefault() ?? string.Empty;
 
