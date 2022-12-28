@@ -1,6 +1,8 @@
 
 using Microsoft.EntityFrameworkCore;
 using MsSqlAccessor.Models;
+using Microsoft.AspNet.SignalR;
+using Microsoft.Extensions.Hosting;
 
 namespace MsSqlAccessor
 {
@@ -8,14 +10,16 @@ namespace MsSqlAccessor
 	{
 		public static void Main(string[] args)
 		{
-			
+            var builder = WebApplication.CreateBuilder(args);
 
-			var builder = WebApplication.CreateBuilder(args);
+            // Add services to the container.
 
-			// Add services to the container.
+            builder.Services.AddControllers().AddJsonOptions(options => {
+				options.JsonSerializerOptions.PropertyNamingPolicy = null;
+			});
+            builder.Services.AddSignalR();
 
-			builder.Services.AddControllers();
-			builder.Services.AddDbContext<CompetitionBdTestContext>();
+            builder.Services.AddDbContext<CompetitionBdTestContext>();
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();
@@ -31,10 +35,20 @@ namespace MsSqlAccessor
 
 			app.UseHttpsRedirection();
 
-			app.UseAuthorization();
 
+			app.UseRouting();
+            app.UseAuthorization();
+			app.UseEndpoints(endpoints =>
+			{
+				endpoints.MapControllerRoute(
+					name: default,
+					pattern: "{controller=Home}/{action=Index}/{id?}");
+				endpoints.MapHub<MssqlHub<User>>("/users");
+			});
 
-			app.MapControllers();
+			//app.MapHub<MssqlHub<User>>("/users");
+
+            app.MapControllers();
 
 			app.Run();
 		}

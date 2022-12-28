@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MsSqlAccessor.Models;
@@ -6,40 +7,37 @@ using MsSqlAccessor.Models;
 namespace MsSqlAccessor.Controllers
 {
 
-	public class UserWithoutRelatioon {
-
-		public int Id { get; set; }
-
-		public string Email { get; set; } = null!;
-
-		public string? Github { get; set; }
-
-		public string FirstName { get; set; } = null!;
-
-		public string LastName { get; set; } = null!;
-
-		public string Login { get; set; } = null!;
-
-		public string Password { get; set; } = null!;
-
-		public int RoleId { get; set; }
-	}
-
 	[Route("api/[controller]")]
 	[ApiController]
 	public class UserController : ControllerBase
 	{
 
 
-		private readonly CompetitionBdTestContext _context;
-		public UserController(CompetitionBdTestContext context)
-		{ 
+        private readonly IHubContext<MssqlHub<User>> _hubContext;
+        private readonly CompetitionBdTestContext _context;
+
+        public UserController(IHubContext<MssqlHub<User>> hubContext, CompetitionBdTestContext context)
+        { 
 			_context = context;
-		}
+			_hubContext = hubContext;
+
+        }
+
+		[HttpGet]
+		public async Task<ActionResult<List<User>>> GetAll() {
+            var items = await _context.Set<User>().ToListAsync();
+
+            // Send items to hub
+            await _hubContext.Clients.All.SendAsync("getAll", items);
+
+            // Return items to client
+            return Ok(items);
+        }
 
 
-		[HttpGet("{id}")]
-		public async Task<ActionResult<User>> Get(int id)
+
+/*
+        public async Task<ActionResult<User>> Get(int id)
 		{
 			var user = await _context.Users.Where(e => e.Id == id).FirstOrDefaultAsync(); ;
 			if (user == null)
@@ -47,14 +45,12 @@ namespace MsSqlAccessor.Controllers
 			return Ok(user);
 		}
 
-		[HttpGet]
 		public async Task<ActionResult<List<User>>> Get()
 		{
 			return Ok(await _context.Users.ToArrayAsync());
 		}
 
 
-		[HttpPost]
 		public async Task<ActionResult<List<User>>> AddUser([FromBody]User user)
 		{
 			user.CreateDate= DateTime.Now;
@@ -96,6 +92,6 @@ namespace MsSqlAccessor.Controllers
 			await _context.SaveChangesAsync();
 
 			return Ok(await _context.Users.ToArrayAsync());
-		}
+		}*/
 	}
 }
