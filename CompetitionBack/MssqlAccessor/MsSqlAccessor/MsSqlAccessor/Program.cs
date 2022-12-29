@@ -44,9 +44,10 @@ namespace MsSqlAccessor
 				endpoints.MapControllerRoute(
 					name: default,
 					pattern: "{controller=Home}/{action=Index}/{id?}");
-				//endpoints.MapHub<TestHub>("/users");
+				//endpoints.MapHub<UserHub>("/users");
 			});
-            app.MapHub<TestHub>("/users");
+            app.MapHub<UserHub>("/users");
+            app.MapHub<EventHub>("/events");
             //app.MapHub<MssqlHub<User>>("/users");
 
             app.MapControllers();
