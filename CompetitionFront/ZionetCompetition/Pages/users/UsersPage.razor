@@ -1,0 +1,142 @@
+﻿@page "/users"
+
+@using System;
+@using System.Globalization;
+@using System.Reflection;
+@using Microsoft.AspNetCore.SignalR.Client
+@using ZionetCompetition.Models
+@inject NavigationManager Navigation
+@implements IAsyncDisposable
+
+<PageTitle>Users</PageTitle>
+
+
+<Grid TItem="User" class="table table-hover table-bordered table-striped" DataProvider="UsersDataProvider" AllowPaging="true" PageSize="5" AllowFiltering="true" Responsive="true">
+    <GridColumn TItem="User" HeaderText="Id" PropertyName="Id">
+        <a href="/users/@context.Id">@context.Id</a>
+    </GridColumn>
+    <GridColumn TItem="User" HeaderText="FirstName" PropertyName="FirstName">
+        @context.FirstName
+    </GridColumn>
+    <GridColumn TItem="User" HeaderText="LastName" PropertyName="LastName">
+        @context.LastName
+    </GridColumn>
+    <GridColumn TItem="User" HeaderText="Email" PropertyName="Email">
+        @context.Email
+    </GridColumn>
+    <GridColumn TItem="User" HeaderText="Github" PropertyName="Github">
+        @context.Github
+    </GridColumn>
+</Grid>
+
+
+@code {
+    private HubConnection? hubConnection;
+    private User UserFields;
+    private IEnumerable<User> messages;
+    private string? userInput;
+    private int? userId;
+    private string? messageInput;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl("https://localhost:7277/users")
+            .Build();
+
+        hubConnection.On<List<User>>("ReceiveUsers", (users) =>
+            {
+                messages = users;
+                InvokeAsync(StateHasChanged);
+            });
+
+        hubConnection.On<User>("ReceiveUser", (user) =>
+            {
+                messages = new List<User> { user };
+                InvokeAsync(StateHasChanged);
+            });
+
+        hubConnection.On<User>("CreateUser", (user) =>
+            {
+                messages = new List<User> { user };
+                InvokeAsync(StateHasChanged);
+            });
+
+        hubConnection.On<User>("DeleteUser", (user) =>
+            {
+            messages = new List<User> { user };
+            InvokeAsync(StateHasChanged);
+            });
+
+        hubConnection.On<User>("UpdateUser", (user) =>
+            {
+            messages = new List<User> { user };
+            InvokeAsync(StateHasChanged);
+            });
+
+        await hubConnection.StartAsync();
+
+    }
+
+    private async Task GetOne()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.SendAsync("GetOne", userId);
+        }
+    }
+
+    private async Task GetAll()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.SendAsync("GetAll", userInput, messageInput);
+        }
+    }
+
+    private async Task Create()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.SendAsync("Create", UserFields);
+        }
+    }
+
+    private async Task Delete()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.SendAsync("Delete", userId);
+        }
+    }
+
+    private async Task Update()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.SendAsync("Update", userId, UserFields);
+        }
+    }
+
+    public bool IsConnected =>
+        hubConnection?.State == HubConnectionState.Connected;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+
+    private async Task<GridDataProviderResult<User>> UsersDataProvider(GridDataProviderRequest<User> request)
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.SendAsync("GetAll", userInput, messageInput);
+        }
+        return await Task.FromResult(request.ApplyTo(messages));
+    }
+}

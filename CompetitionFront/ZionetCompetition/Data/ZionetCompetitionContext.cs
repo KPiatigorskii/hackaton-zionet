@@ -14,6 +14,6 @@ namespace ZionetCompetition.Data
         {
         }
 
-        public DbSet<ZionetCompetition.Models.Users> Users { get; set; } = default!;
+        public DbSet<ZionetCompetition.Models.User> Users { get; set; } = default!;
     }
 }

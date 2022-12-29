@@ -1,0 +1,74 @@
+﻿@page "/Users/{id:int}"
+@using Microsoft.AspNetCore.SignalR.Client
+@using ZionetCompetition.Models
+
+<h3>UserDetails</h3>
+
+
+@id
+<Card DataProvider="UserDataProvider">
+  <CardBody>
+    <CardTitle>FirstName</CardTitle>
+    <CardSubtitle>lastName</CardSubtitle>
+    <CardText>.GitHub</CardText>
+  </CardBody>
+</Card>
+
+
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+
+    private HubConnection? hubConnection;
+    private User UserFields;
+    private IEnumerable<User> messages;
+    private string? userInput;
+    private int? userId;
+    private string? messageInput;
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl("https://localhost:7277/users")
+            .Build();
+
+        hubConnection.On<User>("ReceiveUser", (user) =>
+            {
+                messages = new List<User> { user };
+                InvokeAsync(StateHasChanged);
+            });
+
+        hubConnection.On<User>("CreateUser", (user) =>
+            {
+                messages = new List<User> { user };
+                InvokeAsync(StateHasChanged);
+            });
+
+        hubConnection.On<User>("DeleteUser", (user) =>
+            {
+                messages = new List<User> { user };
+                InvokeAsync(StateHasChanged);
+            });
+
+        hubConnection.On<User>("UpdateUser", (user) =>
+            {
+                messages = new List<User> { user };
+                InvokeAsync(StateHasChanged);
+            });
+
+        await hubConnection.StartAsync();
+        await hubConnection.SendAsync("GetOne", id);
+
+    }
+
+    private async Task<User> UserDataProvider(int id)
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.SendAsync("GetOne", userInput, messageInput);
+        }
+        return await Task.FromResult(messages.First());
+    }
+}
