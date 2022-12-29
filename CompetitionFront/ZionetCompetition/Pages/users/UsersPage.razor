@@ -9,17 +9,11 @@
 @inject NavigationManager Navigation
 @implements IAsyncDisposable
 
-    @*@Initial();*@
-    @{
-        Init();
-    }
-
-
 
 @if (!loaded)
 {
     @*<H1 style="text-align:center">Loading...</H1>*@
-    PreloadService.Show(SpinnerColor.Success);
+    PreloadService.Show();
 }
 else
 {
@@ -49,51 +43,27 @@ else
 
 <Preload />
 
-
 @code {
     private HubConnection? hubConnection;
     private User UserFields;
     private IEnumerable<User> messages = new List<User> { };
     private int? userId;
     private bool loaded;
-
     [Inject] protected PreloadService PreloadService { get; set; }
-    private async void Init()
-    {
-        try
-        {     
-            Initial();
-        }
-        catch
-        {
-            // TODO: handle exception
-        }
-    }
-
-    private async Task Initial()
-    {
-        while (!messages.Any())
-        {
-            if (hubConnection is not null)
-            {
-                await hubConnection.SendAsync("GetAll");
-            }
-            await Task.Delay(500);
-        }
-        loaded = true;
-    }
 
     protected override async Task OnInitializedAsync()
     {
+        //await Task.Delay(1000);
         hubConnection = new HubConnectionBuilder()
             .WithUrl("https://localhost:7277/users")
             .Build();
 
         hubConnection.On<List<User>>("ReceiveUsers", (users) =>
             {
+                
                 messages = users;
                 InvokeAsync(StateHasChanged);
-
+                loaded = true;
             });
 
         hubConnection.On<User>("ReceiveUser", (user) =>
@@ -102,34 +72,11 @@ else
                 InvokeAsync(StateHasChanged);
             });
 
-        hubConnection.On<User>("CreateUser", (user) =>
-            {
-                messages = new List<User> { user };
-                InvokeAsync(StateHasChanged);
-            });
-
-        hubConnection.On<User>("DeleteUser", (user) =>
-            {
-                messages = new List<User> { user };
-                InvokeAsync(StateHasChanged);
-            });
-
-        hubConnection.On<User>("UpdateUser", (user) =>
-            {
-                messages = new List<User> { user };
-                InvokeAsync(StateHasChanged);
-            });
-
         await hubConnection.StartAsync();
 
-    }
-
-    private async Task GetOne()
-    {
-        if (hubConnection is not null)
-        {
-            await hubConnection.SendAsync("GetOne", userId);
-        }
+        await hubConnection.SendAsync("GetAll");
+        while (!loaded) { PreloadService.Show(); }
+        PreloadService.Hide();
     }
 
     private async Task GetAll()
@@ -137,30 +84,6 @@ else
         if (hubConnection is not null)
         {
             await hubConnection.SendAsync("GetAll");
-        }
-    }
-
-    private async Task Create()
-    {
-        if (hubConnection is not null)
-        {
-            await hubConnection.SendAsync("Create", UserFields);
-        }
-    }
-
-    private async Task Delete()
-    {
-        if (hubConnection is not null)
-        {
-            await hubConnection.SendAsync("Delete", userId);
-        }
-    }
-
-    private async Task Update()
-    {
-        if (hubConnection is not null)
-        {
-            await hubConnection.SendAsync("Update", userId, UserFields);
         }
     }
 
@@ -177,12 +100,6 @@ else
 
     private async Task<GridDataProviderResult<User>> UsersDataProvider(GridDataProviderRequest<User> request)
     {
-        GridDataProviderResult<User> result;
-        if (hubConnection is not null)
-        {
-            await hubConnection.SendAsync("GetAll");
-        }
-        result = await Task.FromResult(request.ApplyTo(messages));
-        return result;
+        return await Task.FromResult(request.ApplyTo(messages));
     }
 }
