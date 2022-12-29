@@ -8,37 +8,58 @@
 @inject NavigationManager Navigation
 @implements IAsyncDisposable
 
-<PageTitle>Users</PageTitle>
+@Initial();
+
+@if (!loaded)
+{
+    <H1 style="text-align:center">Loading...</H1>
+}
+else
+{
+    <PageTitle>Users</PageTitle>
 
 
-<Grid TItem="User" class="table table-hover table-bordered table-striped" DataProvider="UsersDataProvider" AllowPaging="true" PageSize="5" AllowFiltering="true" Responsive="true">
-    <GridColumn TItem="User" HeaderText="Id" PropertyName="Id">
-        <a href="/users/@context.Id">@context.Id</a>
-    </GridColumn>
-    <GridColumn TItem="User" HeaderText="FirstName" PropertyName="FirstName">
-        @context.FirstName
-    </GridColumn>
-    <GridColumn TItem="User" HeaderText="LastName" PropertyName="LastName">
-        @context.LastName
-    </GridColumn>
-    <GridColumn TItem="User" HeaderText="Email" PropertyName="Email">
-        @context.Email
-    </GridColumn>
-    <GridColumn TItem="User" HeaderText="Github" PropertyName="Github">
-        @context.Github
-    </GridColumn>
-</Grid>
+    <Grid TItem="User" class="table table-hover table-bordered table-striped" DataProvider="UsersDataProvider" AllowPaging="true" PageSize="5" AllowFiltering="true" Responsive="true">
+        <GridColumn TItem="User" HeaderText="Id" PropertyName="Id">
+            <a href="/users/@context.Id">@context.Id</a>
+        </GridColumn>
+        <GridColumn TItem="User" HeaderText="FirstName" PropertyName="FirstName">
+            @context.FirstName
+        </GridColumn>
+        <GridColumn TItem="User" HeaderText="LastName" PropertyName="LastName">
+            @context.LastName
+        </GridColumn>
+        <GridColumn TItem="User" HeaderText="Email" PropertyName="Email">
+            @context.Email
+        </GridColumn>
+        <GridColumn TItem="User" HeaderText="Github" PropertyName="Github">
+            @context.Github
+        </GridColumn>
+    </Grid>
+}
+
+
 
 
 @code {
     private HubConnection? hubConnection;
     private User UserFields;
-    private IEnumerable<User> messages;
-    private string? userInput;
+    private IEnumerable<User> messages = new List<User> { };
     private int? userId;
-    private string? messageInput;
+    private bool loaded;
 
 
+    private async Task Initial()
+    {
+        while (!messages.Any())
+        {
+            if (hubConnection is not null)
+            {
+                await hubConnection.SendAsync("GetAll");
+            }
+        }
+        loaded = true;
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -50,6 +71,7 @@
             {
                 messages = users;
                 InvokeAsync(StateHasChanged);
+
             });
 
         hubConnection.On<User>("ReceiveUser", (user) =>
@@ -66,14 +88,14 @@
 
         hubConnection.On<User>("DeleteUser", (user) =>
             {
-            messages = new List<User> { user };
-            InvokeAsync(StateHasChanged);
+                messages = new List<User> { user };
+                InvokeAsync(StateHasChanged);
             });
 
         hubConnection.On<User>("UpdateUser", (user) =>
             {
-            messages = new List<User> { user };
-            InvokeAsync(StateHasChanged);
+                messages = new List<User> { user };
+                InvokeAsync(StateHasChanged);
             });
 
         await hubConnection.StartAsync();
@@ -92,7 +114,7 @@
     {
         if (hubConnection is not null)
         {
-            await hubConnection.SendAsync("GetAll", userInput, messageInput);
+            await hubConnection.SendAsync("GetAll");
         }
     }
 
@@ -133,10 +155,12 @@
 
     private async Task<GridDataProviderResult<User>> UsersDataProvider(GridDataProviderRequest<User> request)
     {
+        GridDataProviderResult<User> result;
         if (hubConnection is not null)
         {
-            await hubConnection.SendAsync("GetAll", userInput, messageInput);
+            await hubConnection.SendAsync("GetAll");
         }
-        return await Task.FromResult(request.ApplyTo(messages));
+        result = await Task.FromResult(request.ApplyTo(messages));
+        return result;
     }
 }
