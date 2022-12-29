@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MsSqlAccessor.Models;
 using Microsoft.AspNet.SignalR;
 using Microsoft.Extensions.Hosting;
+using MsSqlAccessor.Hubs;
 
 namespace MsSqlAccessor
 {
@@ -43,10 +44,10 @@ namespace MsSqlAccessor
 				endpoints.MapControllerRoute(
 					name: default,
 					pattern: "{controller=Home}/{action=Index}/{id?}");
-				endpoints.MapHub<MssqlHub<User>>("/users");
+				//endpoints.MapHub<TestHub>("/users");
 			});
-
-			//app.MapHub<MssqlHub<User>>("/users");
+            app.MapHub<TestHub>("/users");
+            //app.MapHub<MssqlHub<User>>("/users");
 
             app.MapControllers();
 

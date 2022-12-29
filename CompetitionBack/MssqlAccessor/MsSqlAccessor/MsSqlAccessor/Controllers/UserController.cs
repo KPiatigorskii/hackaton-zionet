@@ -23,7 +23,7 @@ namespace MsSqlAccessor.Controllers
 
         }
 
-		[HttpGet]
+        [HttpGet]
 		public async Task<ActionResult<List<User>>> GetAll() {
             var items = await _context.Set<User>().ToListAsync();
 

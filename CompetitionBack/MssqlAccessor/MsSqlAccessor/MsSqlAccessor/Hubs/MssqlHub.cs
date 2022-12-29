@@ -7,6 +7,11 @@ using System.Threading.Tasks;
 public class MssqlHub<T> : Hub where T : class
 {
 
+    //public async Task<T> SendMessage(string user, string message)
+    //{
+    //    await Clients.Others.SendAsync("ReceiveMessage", user, message);
+    //}
+
     [HubMethodName("getAll")]
     public async Task<List<T>> GetAll()
     {
