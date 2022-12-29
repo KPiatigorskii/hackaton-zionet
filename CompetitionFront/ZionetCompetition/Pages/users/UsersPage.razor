@@ -8,7 +8,6 @@
 @inject NavigationManager Navigation
 @implements IAsyncDisposable
 
-@Initial();
 
 @if (!loaded)
 {
@@ -39,8 +38,6 @@ else
 }
 
 
-
-
 @code {
     private HubConnection? hubConnection;
     private User UserFields;
@@ -48,18 +45,6 @@ else
     private int? userId;
     private bool loaded;
 
-
-    private async Task Initial()
-    {
-        while (!messages.Any())
-        {
-            if (hubConnection is not null)
-            {
-                await hubConnection.SendAsync("GetAll");
-            }
-        }
-        loaded = true;
-    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -71,7 +56,7 @@ else
             {
                 messages = users;
                 InvokeAsync(StateHasChanged);
-
+                loaded = true;
             });
 
         hubConnection.On<User>("ReceiveUser", (user) =>
@@ -80,34 +65,11 @@ else
                 InvokeAsync(StateHasChanged);
             });
 
-        hubConnection.On<User>("CreateUser", (user) =>
-            {
-                messages = new List<User> { user };
-                InvokeAsync(StateHasChanged);
-            });
-
-        hubConnection.On<User>("DeleteUser", (user) =>
-            {
-                messages = new List<User> { user };
-                InvokeAsync(StateHasChanged);
-            });
-
-        hubConnection.On<User>("UpdateUser", (user) =>
-            {
-                messages = new List<User> { user };
-                InvokeAsync(StateHasChanged);
-            });
-
         await hubConnection.StartAsync();
 
-    }
+        await hubConnection.SendAsync("GetAll");
+        while (!loaded) { }
 
-    private async Task GetOne()
-    {
-        if (hubConnection is not null)
-        {
-            await hubConnection.SendAsync("GetOne", userId);
-        }
     }
 
     private async Task GetAll()
@@ -115,30 +77,6 @@ else
         if (hubConnection is not null)
         {
             await hubConnection.SendAsync("GetAll");
-        }
-    }
-
-    private async Task Create()
-    {
-        if (hubConnection is not null)
-        {
-            await hubConnection.SendAsync("Create", UserFields);
-        }
-    }
-
-    private async Task Delete()
-    {
-        if (hubConnection is not null)
-        {
-            await hubConnection.SendAsync("Delete", userId);
-        }
-    }
-
-    private async Task Update()
-    {
-        if (hubConnection is not null)
-        {
-            await hubConnection.SendAsync("Update", userId, UserFields);
         }
     }
 
@@ -155,12 +93,6 @@ else
 
     private async Task<GridDataProviderResult<User>> UsersDataProvider(GridDataProviderRequest<User> request)
     {
-        GridDataProviderResult<User> result;
-        if (hubConnection is not null)
-        {
-            await hubConnection.SendAsync("GetAll");
-        }
-        result = await Task.FromResult(request.ApplyTo(messages));
-        return result;
+        return await Task.FromResult(request.ApplyTo(messages));
     }
 }
