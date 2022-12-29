@@ -67,7 +67,7 @@
     {
         if (hubConnection is not null)
         {
-            await hubConnection.SendAsync("GetOne", userInput, messageInput);
+            await hubConnection.SendAsync("GetOne", id);
         }
         return await Task.FromResult(messages.First());
     }

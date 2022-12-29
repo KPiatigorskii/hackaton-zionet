@@ -5,17 +5,26 @@
 @using System.Reflection;
 @using Microsoft.AspNetCore.SignalR.Client
 @using ZionetCompetition.Models
+@using BlazorBootstrap
 @inject NavigationManager Navigation
 @implements IAsyncDisposable
 
-@Initial();
+    @*@Initial();*@
+    @{
+        Init();
+    }
+
+
 
 @if (!loaded)
 {
-    <H1 style="text-align:center">Loading...</H1>
+    @*<H1 style="text-align:center">Loading...</H1>*@
+    PreloadService.Show(SpinnerColor.Success);
 }
 else
 {
+    PreloadService.Hide();
+
     <PageTitle>Users</PageTitle>
 
 
@@ -38,7 +47,7 @@ else
     </Grid>
 }
 
-
+<Preload />
 
 
 @code {
@@ -48,6 +57,18 @@ else
     private int? userId;
     private bool loaded;
 
+    [Inject] protected PreloadService PreloadService { get; set; }
+    private async void Init()
+    {
+        try
+        {     
+            Initial();
+        }
+        catch
+        {
+            // TODO: handle exception
+        }
+    }
 
     private async Task Initial()
     {
@@ -57,6 +78,7 @@ else
             {
                 await hubConnection.SendAsync("GetAll");
             }
+            await Task.Delay(500);
         }
         loaded = true;
     }

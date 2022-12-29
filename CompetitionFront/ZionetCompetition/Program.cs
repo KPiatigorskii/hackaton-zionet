@@ -10,11 +10,12 @@ using BlazorBootstrap;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddBlazorBootstrap();
 builder.Services.AddRazorPages();//.AddRazorRuntimeCompilation();
 builder.Services.AddDbContext<ZionetCompetitionContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ZionetCompetitionContext") ?? throw new InvalidOperationException("Connection string 'ZionetCompetitionContext' not found.")));
 builder.Services.AddServerSideBlazor();
+builder.Services.AddBlazorBootstrap();
+//builder.Services.AddBootstrapCSS();
 //builder.Services.AddSingleton<WeatherForecastService>();
 
 builder.Services
