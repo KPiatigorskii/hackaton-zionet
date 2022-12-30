@@ -45,9 +45,7 @@ else
 
 @code {
     private HubConnection? hubConnection;
-    private User UserFields;
     private IEnumerable<User> messages = new List<User> { };
-    private int? userId;
     private bool loaded;
     [Inject] protected PreloadService PreloadService { get; set; }
 
