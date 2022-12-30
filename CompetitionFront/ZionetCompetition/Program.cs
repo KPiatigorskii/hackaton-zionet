@@ -24,6 +24,10 @@ builder.Services
         options.ClientId = builder.Configuration["Auth0:ClientId"];
     });
 
+builder.Services.AddHttpClient();
+
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
