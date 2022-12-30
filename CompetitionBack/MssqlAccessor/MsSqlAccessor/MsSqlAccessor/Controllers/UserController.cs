@@ -20,15 +20,14 @@ namespace MsSqlAccessor.Controllers
         { 
 			_context = context;
 			_hubContext = hubContext;
-
         }
 
         [HttpGet]
-		public async Task<ActionResult<List<User>>> GetAll() {
+		public async Task<ActionResult<List<User>>> GetAllUsers() {
             var items = await _context.Set<User>().ToListAsync();
 
             // Send items to hub
-            await _hubContext.Clients.All.SendAsync("getAll", items);
+            //await _hubContext.Clients.All.SendAsync("getAll", items);
 
             // Return items to client
             return Ok(items);
