@@ -1,0 +1,103 @@
+﻿@page "/users"
+
+@using System;
+@using System.Globalization;
+@using System.Reflection;
+@using Microsoft.AspNetCore.SignalR.Client
+@using ZionetCompetition.Models
+@using BlazorBootstrap
+@inject NavigationManager Navigation
+@implements IAsyncDisposable
+
+
+@if (!loaded)
+{
+    @*<H1 style="text-align:center">Loading...</H1>*@
+    PreloadService.Show();
+}
+else
+{
+    PreloadService.Hide();
+
+    <PageTitle>Users</PageTitle>
+
+
+    <Grid TItem="User" class="table table-hover table-bordered table-striped" DataProvider="UsersDataProvider" AllowPaging="true" PageSize="5" AllowFiltering="true" Responsive="true">
+        <GridColumn TItem="User" HeaderText="Id" PropertyName="Id">
+            <a href="/users/@context.Id">@context.Id</a>
+        </GridColumn>
+        <GridColumn TItem="User" HeaderText="FirstName" PropertyName="FirstName">
+            @context.FirstName
+        </GridColumn>
+        <GridColumn TItem="User" HeaderText="LastName" PropertyName="LastName">
+            @context.LastName
+        </GridColumn>
+        <GridColumn TItem="User" HeaderText="Email" PropertyName="Email">
+            @context.Email
+        </GridColumn>
+        <GridColumn TItem="User" HeaderText="Github" PropertyName="Github">
+            @context.Github
+        </GridColumn>
+    </Grid>
+}
+
+<Preload />
+
+@code {
+    private HubConnection? hubConnection;
+    private IEnumerable<User> messages = new List<User> { };
+    private bool loaded;
+    [Inject] protected PreloadService PreloadService { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        //await Task.Delay(1000);
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl("https://localhost:7277/users")
+            .Build();
+
+        hubConnection.On<List<User>>("ReceiveUsers", (users) =>
+            {
+                
+                messages = users;
+                InvokeAsync(StateHasChanged);
+                loaded = true;
+            });
+
+        hubConnection.On<User>("ReceiveUser", (user) =>
+            {
+                messages = new List<User> { user };
+                InvokeAsync(StateHasChanged);
+            });
+
+        await hubConnection.StartAsync();
+
+        await hubConnection.SendAsync("GetAll");
+        while (!loaded) { PreloadService.Show(); }
+        PreloadService.Hide();
+    }
+
+    private async Task GetAll()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.SendAsync("GetAll");
+        }
+    }
+
+    public bool IsConnected =>
+        hubConnection?.State == HubConnectionState.Connected;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+
+    private async Task<GridDataProviderResult<User>> UsersDataProvider(GridDataProviderRequest<User> request)
+    {
+        return await Task.FromResult(request.ApplyTo(messages));
+    }
+}

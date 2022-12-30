@@ -1,0 +1,100 @@
+﻿@page "/Users/{id:int}/edit"
+@using Microsoft.AspNetCore.SignalR.Client
+@using BlazorBootstrap
+@using ZionetCompetition.Models
+
+@if (!loaded)
+{
+    <H1 style="text-align:center">Loading...</H1>
+}
+else
+{
+    <EditForm Model="@message" OnValidSubmit="@Save" OnInvalidSubmit=@InvalidFormSubmitted>
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div>
+            <label>FirstName
+                <InputText @bind-Value="@message.FirstName" />
+            </label>
+        </div>
+        <div>
+            <label>
+                LastName
+                <InputText @bind-Value="@message.LastName" />
+            </label>
+        </div>
+        <div>
+            <label>
+                Email
+                <InputText @bind-Value="@message.Email" />
+            </label>
+        </div>
+         <div>
+            <label>
+                Github
+                <InputText @bind-Value="@message.Github" />
+            </label>
+        </div>
+        <div>
+            <label>
+                RoleId
+                <InputNumber @bind-Value="@message.RoleId" />
+            </label>
+        </div>
+
+        <Button Type="ButtonType.Submit" Color="ButtonColor.Primary"> Save </Button>
+    </EditForm>
+
+}
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+
+    private HubConnection? hubConnection;
+    private User UserFields;
+    private User message, user;
+    private string? userInput;
+    private int? userId;
+    private string? messageInput;
+    private bool loaded = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl("https://localhost:7277/users")
+            .Build();
+
+        hubConnection.On<User>("ReceiveUser", (user) =>
+            {
+                message = user;
+                InvokeAsync(StateHasChanged);
+                loaded = true;
+            });
+
+        hubConnection.On<User>("UpdateUser", (user) =>
+            {
+                message = user;
+                InvokeAsync(StateHasChanged);
+            });
+
+        await hubConnection.StartAsync();
+        await hubConnection.SendAsync("GetOne", id);
+        while (!loaded) { }
+
+
+    }
+
+    public bool IsConnected =>
+        hubConnection?.State == HubConnectionState.Connected;
+
+    private async void Save(EditContext editContext)
+    {
+        await hubConnection.SendAsync("UpdateOne",id, message);
+    }
+
+    private void InvalidFormSubmitted(){}
+
+
+}

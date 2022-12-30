@@ -1,0 +1,107 @@
+﻿@page "/Users/{id:int}"
+@inject NavigationManager UriHelper
+@using Microsoft.AspNetCore.SignalR.Client
+@using ZionetCompetition.Models
+
+<h3>User Details</h3>
+@if (!loaded)
+{
+    <H1 style="text-align:center">Loading...</H1>
+}
+else
+{
+    <div><span>FirstName:</span><span>  @message.FirstName</span></div>
+    <div><span>LastName:</span><span>@message.LastName</span></div>
+    <div><span>Email:</span><span>@message.Email</span></div>
+    <div><span>Github:</span><span>@message.Github</span></div>
+    <div><span>RoleId:</span><span>@message.RoleId</span></div>
+
+
+<div style="margin-top: 20px">
+
+    <Button Color="ButtonColor.Primary" @onclick="Edit" disabled="@(!IsConnected)">Edit</Button>
+    <Button Color="ButtonColor.Primary" @onclick="Delete" disabled="@(!IsConnected)">Delete</Button>
+   
+
+</div>
+}
+
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+
+    private HubConnection? hubConnection;
+    private User message;
+    private string? userInput;
+    private int? userId;
+    private string? messageInput;
+    private bool loaded = false;
+
+    void Navigate()
+    {
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl("https://localhost:7277/users")
+            .Build();
+
+        hubConnection.On<User>("ReceiveUser", (user) =>
+            {
+                message = user;
+                InvokeAsync(StateHasChanged);
+                loaded = true;
+            });
+
+        hubConnection.On<User>("CreateUser", (user) =>
+            {
+                message = user;
+                InvokeAsync(StateHasChanged);
+            });
+
+        hubConnection.On<User>("DeleteUser", (user) =>
+            {
+                message = user;
+                InvokeAsync(StateHasChanged);
+            });
+
+        hubConnection.On<User>("UpdateUser", (user) =>
+            {
+                message = user;
+                InvokeAsync(StateHasChanged);
+            });
+
+        await hubConnection.StartAsync();
+        await hubConnection.SendAsync("GetOne", id);
+        while (!loaded) { }
+
+    }
+
+    public bool IsConnected =>
+        hubConnection?.State == HubConnectionState.Connected;
+
+    private async Task Create()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.SendAsync("Create");
+        }
+    }
+
+    private void Edit()
+    {
+        UriHelper.NavigateTo("/Users/" + id + "/Edit");
+    }
+
+    private async Task Delete()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.SendAsync("ForceDeleteOne", id);
+            UriHelper.NavigateTo("/Users/");
+        }
+    }
+}
