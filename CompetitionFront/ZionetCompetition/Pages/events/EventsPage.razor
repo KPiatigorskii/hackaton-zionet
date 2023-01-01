@@ -53,7 +53,6 @@
     private HubConnection? hubConnection;
     public Event selectedEvent;
     private IEnumerable<Event> messages = new List<Event> { };
-    private bool loaded;
     public DataGrid<Event> EventDataGrid { get; set; }
 
 
@@ -69,7 +68,6 @@
             {
                 messages = events;
                 InvokeAsync(StateHasChanged);
-                loaded = true;
             });
 
         hubConnection.On<Event>("ReceiveEvent", (eventResponce) =>

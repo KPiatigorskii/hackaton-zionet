@@ -56,11 +56,10 @@
     private HubConnection? hubConnection;
     private User selectedUser;
     private IEnumerable<User> messages = new List<User> { };
-    private bool loaded;
 
     protected override async Task OnInitializedAsync()
     {
-        //await Task.Delay(1000);
+
         hubConnection = new HubConnectionBuilder()
             .WithUrl("https://localhost:7277/users")
             .Build();
@@ -69,7 +68,6 @@
             {
                 messages = users;
                 InvokeAsync(StateHasChanged);
-                loaded = true;
             });
 
         hubConnection.On<User>("ReceiveUser", (user) =>

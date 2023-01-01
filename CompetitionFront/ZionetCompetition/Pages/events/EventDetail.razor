@@ -3,25 +3,48 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @using ZionetCompetition.Models
 @using Blazorise
+@using Blazorise.DataGrid
 
-<h3>User Details</h3>
+<h3>Event Details</h3>
 @if (!loaded)
 {
     <H1 style="text-align:center">Loading...</H1>
 }
 else
 {
-    <div><span>FirstName:</span><span>  @message.Title</span></div>
-    <div><span>LastName:</span><span>@message.Address</span></div>
-    <div><span>Email:</span><span>@message.StartTime</span></div>
-    <div><span>Github:</span><span>@message.Hashcode</span></div>
-    <div><span>RoleId:</span><span>@message.CreateDate</span></div>
+    <Tabs SelectedTab="@selectedTab" SelectedTabChanged="@OnSelectedTabChanged">
+        <Items>
+            <Tab Name="Teams">Teams</Tab>
+            <Tab Name="Tasks">Tasks</Tab>
+            <Tab Name="Managers">Managers</Tab>
+            <Tab Name="Info">Info</Tab>
+        </Items>
+        <Content>
+            <TabPanel Name="Teams">
+                <Button Color="Color.Primary" @onclick="CreateUser" disabled="@(!IsConnected)">Create User</Button>
+                <Button Color="Color.Primary" @onclick="CreateTeam" disabled="@(!IsConnected)">Create Team</Button>
+            </TabPanel>
+            <TabPanel Name="Tasks">
+                Content for profile.
+            </TabPanel>
+            <TabPanel Name="Managers">
+                Content for messages.
+            </TabPanel>
+            <TabPanel Name="Info">
+                <div><span>FirstName:</span><span>  @message.Title</span></div>
+                <div><span>LastName:</span><span>@message.Address</span></div>
+                <div><span>Email:</span><span>@message.StartTime</span></div>
+                <div><span>Github:</span><span>@message.Hashcode</span></div>
+                <div><span>RoleId:</span><span>@message.CreateDate</span></div>
+            </TabPanel>
+        </Content>
+    </Tabs>
+
 
 
 <div style="margin-top: 20px">
 
-    <Button Color="Color.Primary" @onclick="Edit" disabled="@(!IsConnected)">Edit</Button>
-    <Button Color="Color.Primary" @onclick="Delete" disabled="@(!IsConnected)">Delete</Button>
+
    
 
 
@@ -32,17 +55,22 @@ else
 @code {
     [Parameter]
     public int id { get; set; }
-
+    string selectedTab = "profile";
 
     private HubConnection? hubConnection;
     private Event message;
+    private List<User> teamList;
+    private User teamMember;
     private string? userInput;
     private int? userId;
     private string? messageInput;
     private bool loaded = false;
 
-    void Navigate()
+    private Task OnSelectedTabChanged(string name)
     {
+        selectedTab = name;
+
+        return Task.CompletedTask;
     }
 
     protected override async Task OnInitializedAsync()
@@ -105,5 +133,15 @@ else
             await hubConnection.SendAsync("ForceDeleteOne", id);
             UriHelper.NavigateTo("/events/");
         }
+    }
+
+    private async Task CreateUser()
+    {
+
+    }
+
+    private async Task CreateTeam()
+    {
+
     }
 }
