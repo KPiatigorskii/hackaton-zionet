@@ -1,0 +1,100 @@
+﻿@page "/events"
+@inject NavigationManager UriHelper
+
+@using System;
+@using System.Globalization;
+@using System.Reflection;
+@using Microsoft.AspNetCore.SignalR.Client
+@using ZionetCompetition.Models
+@using BlazorBootstrap
+@using Blazorise.DataGrid
+@inject NavigationManager Navigation
+
+<h3>Events</h3>
+
+<DataGrid TItem="Event"
+          Data="@messages"
+          Filterable="true"
+          FilterMethod="DataGridFilterMethod.Contains"
+          ShowPager="true"
+          ShowPageSizes="true"
+          Editable="false"
+          Striped="true"
+          Hoverable="true"
+          SelectionMode="DataGridSelectionMode.Single"
+          Responsive="true"
+          @bind-SelectedRow=selectedEvent>
+    <ChildContent>
+        <DataGridCommandColumn TItem="Event"></DataGridCommandColumn>
+        <DataGridColumn TItem="Event" Field="Title" Caption="Title" Sortable="false" Displayable="true">
+            <DisplayTemplate>
+                <NavLink href="@($"/Events/{context.Id}")">@context.Title</NavLink>
+            </DisplayTemplate>
+        </DataGridColumn>
+        <DataGridColumn TItem="Event" Field="Address" Caption="Address" Sortable="false" Displayable="true" />
+        <DataGridDateColumn TItem="Event" Field="StartTime" Caption="StartTime" Sortable="false" Displayable="true" />
+        <DataGridColumn TItem="Event" Field="NumberParticipantsInTeam" Caption="NumberParticipantsInTeam" Sortable="false" Displayable="true" />
+        <DataGridColumn TItem="Event" Field="Hashcode" Caption="Hashcode" Sortable="true" Displayable="true" />
+        <DataGridColumn TItem="Event" Field="CreateDate" Caption="CreateDate" Sortable="false" Displayable="true" />
+    </ChildContent>
+    <EmptyTemplate>
+        <div class="box">
+            No records were found.
+        </div>
+    </EmptyTemplate>
+    <LoadingTemplate>
+        <a></a><div class="box">
+            <progress class="progress is-small is-primary" max="100" />
+        </div>
+    </LoadingTemplate>
+</DataGrid>
+
+@code {
+    private HubConnection? hubConnection;
+    public Event selectedEvent;
+    private IEnumerable<Event> messages = new List<Event> { };
+    private bool loaded;
+    public DataGrid<Event> EventDataGrid { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        base.OnInitialized();
+
+        hubConnection = new HubConnectionBuilder()
+     .WithUrl("https://localhost:7277/events")
+     .Build();
+
+        hubConnection.On<List<Event>>("ReceiveEvents", (events) =>
+            {
+                messages = events;
+                InvokeAsync(StateHasChanged);
+                loaded = true;
+            });
+
+        hubConnection.On<Event>("ReceiveEvent", (eventResponce) =>
+            {
+                messages = new List<Event> { eventResponce };
+                InvokeAsync(StateHasChanged);
+            });
+
+        await hubConnection.StartAsync();
+
+        await hubConnection.SendAsync("GetAll");
+
+        // Assign the OnClickMethod method as the event callback for the click event
+    }
+
+    public bool IsConnected =>
+    hubConnection?.State == HubConnectionState.Connected;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+
+
+}

@@ -1,4 +1,4 @@
-﻿@page "/users/{id:int}"
+﻿@page "/events/{id:int}"
 @inject NavigationManager UriHelper
 @using Microsoft.AspNetCore.SignalR.Client
 @using ZionetCompetition.Models
@@ -11,11 +11,11 @@
 }
 else
 {
-    <div><span>FirstName:</span><span>  @message.FirstName</span></div>
-    <div><span>LastName:</span><span>@message.LastName</span></div>
-    <div><span>Email:</span><span>@message.Email</span></div>
-    <div><span>Github:</span><span>@message.Github</span></div>
-    <div><span>RoleId:</span><span>@message.RoleId</span></div>
+    <div><span>FirstName:</span><span>  @message.Title</span></div>
+    <div><span>LastName:</span><span>@message.Address</span></div>
+    <div><span>Email:</span><span>@message.StartTime</span></div>
+    <div><span>Github:</span><span>@message.Hashcode</span></div>
+    <div><span>RoleId:</span><span>@message.CreateDate</span></div>
 
 
 <div style="margin-top: 20px">
@@ -23,6 +23,7 @@ else
     <Button Color="Color.Primary" @onclick="Edit" disabled="@(!IsConnected)">Edit</Button>
     <Button Color="Color.Primary" @onclick="Delete" disabled="@(!IsConnected)">Delete</Button>
    
+
 
 </div>
 }
@@ -34,7 +35,7 @@ else
 
 
     private HubConnection? hubConnection;
-    private User message;
+    private Event message;
     private string? userInput;
     private int? userId;
     private string? messageInput;
@@ -47,31 +48,31 @@ else
     protected override async Task OnInitializedAsync()
     {
         hubConnection = new HubConnectionBuilder()
-            .WithUrl("https://localhost:7277/users")
+            .WithUrl("https://localhost:7277/events")
             .Build();
 
-        hubConnection.On<User>("ReceiveUser", (user) =>
+        hubConnection.On<Event>("ReceiveEvent", (eventResponce) =>
             {
-                message = user;
+                message = eventResponce;
                 InvokeAsync(StateHasChanged);
                 loaded = true;
             });
 
-        hubConnection.On<User>("CreateUser", (user) =>
+        hubConnection.On<Event>("CreateEvent", (eventResponce) =>
             {
-                message = user;
+                message = eventResponce;
                 InvokeAsync(StateHasChanged);
             });
 
-        hubConnection.On<User>("DeleteUser", (user) =>
+        hubConnection.On<Event>("DeleteEvent", (eventResponce) =>
             {
-                message = user;
+                message = eventResponce;
                 InvokeAsync(StateHasChanged);
             });
 
-        hubConnection.On<User>("UpdateUser", (user) =>
+        hubConnection.On<Event>("UpdateEvent", (eventResponce) =>
             {
-                message = user;
+                message = eventResponce;
                 InvokeAsync(StateHasChanged);
             });
 
@@ -94,7 +95,7 @@ else
 
     private void Edit()
     {
-        UriHelper.NavigateTo("/Users/" + id + "/Edit");
+        UriHelper.NavigateTo("/events/" + id + "/Edit");
     }
 
     private async Task Delete()
@@ -102,7 +103,7 @@ else
         if (hubConnection is not null)
         {
             await hubConnection.SendAsync("ForceDeleteOne", id);
-            UriHelper.NavigateTo("/Users/");
+            UriHelper.NavigateTo("/events/");
         }
     }
 }

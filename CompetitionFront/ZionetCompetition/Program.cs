@@ -2,21 +2,30 @@ using Auth0.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using ZionetCompetition.Data;
-using BlazorStrap;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using BlazorBootstrap;
+using Blazorise;
+using Blazorise.Bootstrap;
+using Blazorise.Icons.FontAwesome;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddRazorPages();//.AddRazorRuntimeCompilation();
+builder.Services.AddRazorPages();
+
+builder.Services
+    .AddBlazorise(options =>
+    {
+        options.Immediate = true;
+    })
+    .AddBootstrapProviders()
+    .AddFontAwesomeIcons();
+
 builder.Services.AddDbContext<ZionetCompetitionContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ZionetCompetitionContext") ?? throw new InvalidOperationException("Connection string 'ZionetCompetitionContext' not found.")));
 builder.Services.AddServerSideBlazor();
-builder.Services.AddBlazorBootstrap();
-//builder.Services.AddBootstrapCSS();
-//builder.Services.AddSingleton<WeatherForecastService>();
+
 
 builder.Services
     .AddAuth0WebAppAuthentication(options => {
