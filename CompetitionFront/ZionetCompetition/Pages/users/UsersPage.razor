@@ -8,7 +8,9 @@
 @using BlazorBootstrap
 @using Blazorise.DataGrid
 
+@inject ZionetCompetition.Controllers.UserController UserController
 @inject NavigationManager Navigation
+
 @implements IAsyncDisposable
 
 
@@ -56,34 +58,14 @@
     private HubConnection? hubConnection;
     private User selectedUser;
     private IEnumerable<User> messages = new List<User> { };
-
     protected override async Task OnInitializedAsync()
     {
-
-        hubConnection = new HubConnectionBuilder()
-            .WithUrl("https://localhost:7277/users")
-            .Build();
-
-        hubConnection.On<List<User>>("ReceiveUsers", (users) =>
-            {
-                messages = users;
-                InvokeAsync(StateHasChanged);
-            });
-
-        hubConnection.On<User>("ReceiveUser", (user) =>
-            {
-                messages = new List<User> { user };
-                InvokeAsync(StateHasChanged);
-            });
-
-        await hubConnection.StartAsync();
-
-        await hubConnection.SendAsync("GetAll");
+        await UserController.ConfigureHub();
+        await UserController.StartConnection();
+        UserController.GetAll();
+        messages = UserController.messages;
+        StateHasChanged();
     }
-
-
-    public bool IsConnected =>
-        hubConnection?.State == HubConnectionState.Connected;
 
     public async ValueTask DisposeAsync()
     {

@@ -1,17 +1,17 @@
 ﻿@page "/events/{id:int}"
-@inject NavigationManager UriHelper
+
 @using Microsoft.AspNetCore.SignalR.Client
 @using ZionetCompetition.Models
 @using Blazorise
 @using Blazorise.DataGrid
 
+@inject NavigationManager UriHelper
+@inject ZionetCompetition.Controllers.EventController EventController
+
+@implements IAsyncDisposable
+
 <h3>Event Details</h3>
-@if (!loaded)
-{
-    <H1 style="text-align:center">Loading...</H1>
-}
-else
-{
+
     <Tabs SelectedTab="@selectedTab" SelectedTabChanged="@OnSelectedTabChanged">
         <Items>
             <Tab Name="Teams">Teams</Tab>
@@ -21,8 +21,8 @@ else
         </Items>
         <Content>
             <TabPanel Name="Teams">
-                <Button Color="Color.Primary" @onclick="CreateUser" disabled="@(!IsConnected)">Create User</Button>
-                <Button Color="Color.Primary" @onclick="CreateTeam" disabled="@(!IsConnected)">Create Team</Button>
+                <Button Color="Color.Primary" @onclick="CreateUser">Create User</Button>
+                <Button Color="Color.Primary" @onclick="CreateTeam">Create Team</Button>
             </TabPanel>
             <TabPanel Name="Tasks">
                 Content for profile.
@@ -49,7 +49,6 @@ else
 
 
 </div>
-}
 
 
 @code {
@@ -58,7 +57,7 @@ else
     string selectedTab = "profile";
 
     private HubConnection? hubConnection;
-    private Event message;
+    private Event message = new Event { };
     private List<User> teamList;
     private User teamMember;
     private string? userInput;
@@ -75,38 +74,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        hubConnection = new HubConnectionBuilder()
-            .WithUrl("https://localhost:7277/events")
-            .Build();
-
-        hubConnection.On<Event>("ReceiveEvent", (eventResponce) =>
-            {
-                message = eventResponce;
-                InvokeAsync(StateHasChanged);
-                loaded = true;
-            });
-
-        hubConnection.On<Event>("CreateEvent", (eventResponce) =>
-            {
-                message = eventResponce;
-                InvokeAsync(StateHasChanged);
-            });
-
-        hubConnection.On<Event>("DeleteEvent", (eventResponce) =>
-            {
-                message = eventResponce;
-                InvokeAsync(StateHasChanged);
-            });
-
-        hubConnection.On<Event>("UpdateEvent", (eventResponce) =>
-            {
-                message = eventResponce;
-                InvokeAsync(StateHasChanged);
-            });
-
-        await hubConnection.StartAsync();
-        await hubConnection.SendAsync("GetOne", id);
-        while (!loaded) { }
+        await EventController.ConfigureHub();
+        await EventController.StartConnection();
+        await EventController.Get(id);
+        message = EventController.message;
+        StateHasChanged();
 
     }
 
@@ -143,5 +115,13 @@ else
     private async Task CreateTeam()
     {
 
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
     }
 }
