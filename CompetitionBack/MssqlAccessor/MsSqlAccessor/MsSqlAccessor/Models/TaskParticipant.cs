@@ -11,9 +11,9 @@ public partial class TaskParticipant
 
     public int StatusId { get; set; }
 
-/*    public virtual TeamParticipant ParticipantUser { get; set; } = null!;
+    public virtual TeamParticipant ParticipantUser { get; set; } = null!;
 
     public virtual Status Status { get; set; } = null!;
 
-    public virtual TeamTask TeamTask { get; set; } = null!;*/
+    public virtual TeamTask TeamTask { get; set; } = null!;
 }

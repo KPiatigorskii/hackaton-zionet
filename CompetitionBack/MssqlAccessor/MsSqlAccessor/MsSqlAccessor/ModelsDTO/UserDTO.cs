@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace MsSqlAccessor.Models;
 
-public partial class User
+public partial class UserDTO
 {
     public int Id { get; set; }
 

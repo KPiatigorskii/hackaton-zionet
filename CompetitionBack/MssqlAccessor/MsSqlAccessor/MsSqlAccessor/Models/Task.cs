@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace MsSqlAccessor.Models;
 
@@ -37,15 +38,18 @@ public partial class Task
 
     public int StatusId { get; set; }
 
-/*    public virtual TaskCategory Category { get; set; } = null!;
+    public virtual TaskCategory Category { get; set; } = null!;
 
     public virtual User CreateUser { get; set; } = null!;
 
-    public virtual ICollection<EventTask> EventTasks { get; } = new List<EventTask>();
-
     public virtual Status Status { get; set; } = null!;
 
-    public virtual ICollection<TeamTask> TeamTasks { get; } = new List<TeamTask>();
+    public virtual User UpdateUser { get; set; } = null!;
 
-    public virtual User UpdateUser { get; set; } = null!;*/
+    [JsonIgnore]
+    public virtual ICollection<EventTask> EventTasks { get; } = new List<EventTask>();
+
+    [JsonIgnore]
+    public virtual ICollection<TeamTask> TeamTasks { get; } = new List<TeamTask>();
+    
 }

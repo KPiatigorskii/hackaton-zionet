@@ -43,14 +43,14 @@ public class MssqlHub<T> : Hub where T : class
         }
     }
 
-/*    [HubMethodName("delete")]
-    public async Task<T> Delete(int id)
-    {
-        using (var context = new CompetitionBdTestContext())
+    /*    [HubMethodName("delete")]
+        public async Task<T> Delete(int id)
         {
-            var item = await context.Set<T>().FindAsync(id);
-            context.Set<T>().Remove(item);
-            await context.SaveChangesAsync();
-        }
-    }*/
+            using (var context = new CompetitionBdTestContext())
+            {
+                var item = await context.Set<T>().FindAsync(id);
+                context.Set<T>().Remove(item);
+                await context.SaveChangesAsync();
+            }
+        }*/
 }

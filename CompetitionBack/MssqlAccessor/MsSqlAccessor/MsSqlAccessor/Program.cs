@@ -4,6 +4,7 @@ using MsSqlAccessor.Models;
 using Microsoft.AspNet.SignalR;
 using Microsoft.Extensions.Hosting;
 using MsSqlAccessor.Hubs;
+using MsSqlAccessor.DbControllers;
 
 namespace MsSqlAccessor
 {
@@ -24,8 +25,10 @@ namespace MsSqlAccessor
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();
+            //builder.Services.AddTransient<IUserRole, MockUserRole>();
+            builder.Services.AddTransient<EventsDbController>();
 
-			var app = builder.Build();
+            var app = builder.Build();
 
 			// Configure the HTTP request pipeline.
 			if (app.Environment.IsDevelopment())
@@ -48,7 +51,7 @@ namespace MsSqlAccessor
 			});
             app.MapHub<UserHub>("/users");
             app.MapHub<EventHub>("/events");
-            //app.MapHub<MssqlHub<User>>("/users");
+            app.MapHub<MssqlHub<User>>("/users");
 
             app.MapControllers();
 

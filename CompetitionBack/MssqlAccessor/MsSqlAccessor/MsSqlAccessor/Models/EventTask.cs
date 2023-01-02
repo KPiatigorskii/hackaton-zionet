@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace MsSqlAccessor.Models;
 
@@ -13,9 +14,10 @@ public partial class EventTask
 
     public int StatusId { get; set; }
 
-/*    public virtual Event Event { get; set; } = null!;
+    public virtual Event Event { get; set; } = null!;
 
-    public virtual EventTaskEvaluateUser? EventTaskEvaluateUser { get; set; }
+    public virtual Task Task { get; set; } = null!;
 
-    public virtual Task Task { get; set; } = null!;*/
+    [JsonIgnore]
+    public virtual ICollection<EventTaskEvaluateUser> EventTaskEvaluateUsers { get; } = new List<EventTaskEvaluateUser>();
 }

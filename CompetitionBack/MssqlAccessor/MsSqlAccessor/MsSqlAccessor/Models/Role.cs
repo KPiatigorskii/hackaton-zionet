@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace MsSqlAccessor.Models;
 
@@ -24,12 +26,14 @@ public partial class Role
     public int UpdateUserId { get; set; }
 
     public int StatusId { get; set; }
-/*
+
+    [JsonIgnore]
     public virtual User CreateUser { get; set; } = null!;
 
     public virtual Status Status { get; set; } = null!;
-
+    [JsonIgnore]
     public virtual User UpdateUser { get; set; } = null!;
 
-    public virtual ICollection<User> Users { get; } = new List<User>();*/
+    [JsonIgnore]
+    public virtual ICollection<User> Users { get; } = new List<User>();
 }
