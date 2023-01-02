@@ -19,6 +19,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddControllers();
 
 builder.Services.AddTransient<UserController>();
+builder.Services.AddTransient<EventController>();
 builder.Services
     .AddBlazorise(options =>
     {

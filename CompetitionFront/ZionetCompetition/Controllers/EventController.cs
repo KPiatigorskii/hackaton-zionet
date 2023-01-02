@@ -11,18 +11,20 @@ using Microsoft.JSInterop;
 
 namespace ZionetCompetition.Controllers
 {
-    public class UserController : Controller
+    public class EventController : Controller
     {
+
         private readonly IJSRuntime _jsRuntime;
-        public IEnumerable<User> messages = new List<User> { };
-        public User message;
+        public IEnumerable<Event> messages = new List<Event> { };
+        public Event message;
         private HubConnection hubConnection;
         private bool isLoaded = false;
 
-        public UserController(IJSRuntime jsRuntime) {
+        public EventController(IJSRuntime jsRuntime)
+        {
             _jsRuntime = jsRuntime;
             hubConnection = new HubConnectionBuilder()
-                .WithUrl("https://localhost:7277/users")
+                .WithUrl("https://localhost:7277/events")
                 .Build();
         }
 
@@ -37,59 +39,59 @@ namespace ZionetCompetition.Controllers
         }
         public async Task ConfigureHub()
         {
-            hubConnection.On<List<User>>("ReceiveUsers", async (users) =>
+            hubConnection.On<List<Event>>("ReceiveEvents", async (events) =>
             {
-                messages = users;
+                messages = events;
                 isLoaded = true;
             });
 
-            hubConnection.On<User>("ReceiveUser", async (user) =>
+            hubConnection.On<Event>("ReceiveEvent", async (@event) =>
             {
-                message = user;
+                message = @event;
                 isLoaded = true;
             });
 
-            hubConnection.On<User>("CreateUser", (user) =>
+            hubConnection.On<Event>("CreateEvent", (@event) =>
             {
-                message = user;
+                message = @event;
                 isLoaded = true;
             });
 
-            hubConnection.On<User>("DeleteUser", (user) =>
+            hubConnection.On<Event>("DeleteEvent", (@event) =>
             {
-                message = user;
+                message = @event;
                 isLoaded = true;
             });
 
-            hubConnection.On<User>("UpdateUser", (user) =>
+            hubConnection.On<Event>("UpdateEvent", (@event) =>
             {
-                message = user;
+                message = @event;
                 isLoaded = true;
             });
         }
 
-        public async void GetAll() 
+        public async Task GetAll()
         {
             await hubConnection.SendAsync("GetAll");
             while (!isLoaded) { }
-            isLoaded= false;
+            isLoaded = false;
         }
 
-        public async void Get(int id)
+        public async Task Get(int id)
         {
             await hubConnection.SendAsync("GetOne", id);
             while (!isLoaded) { }
             isLoaded = false;
         }
 
-        public async void Update(int id, User user)
+        public async Task Update(int id, Event @event)
         {
-            await hubConnection.SendAsync("UpdateOne", id, user);
+            await hubConnection.SendAsync("UpdateOne", id, @event);
             while (!isLoaded) { }
             isLoaded = false;
         }
 
-        public async void Delete(int id)
+        public async Task Delete(int id)
         {
             await hubConnection.SendAsync("ForceDeleteOne", id);
             while (!isLoaded) { }

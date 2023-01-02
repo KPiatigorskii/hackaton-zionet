@@ -1,5 +1,4 @@
 ﻿@page "/events"
-@inject NavigationManager UriHelper
 
 @using System;
 @using System.Globalization;
@@ -8,7 +7,11 @@
 @using ZionetCompetition.Models
 @using BlazorBootstrap
 @using Blazorise.DataGrid
+
+@inject ZionetCompetition.Controllers.EventController EventController
 @inject NavigationManager Navigation
+
+@implements IAsyncDisposable
 
 <h3>Events</h3>
 
@@ -58,29 +61,11 @@
 
     protected override async Task OnInitializedAsync()
     {
-        base.OnInitialized();
-
-        hubConnection = new HubConnectionBuilder()
-     .WithUrl("https://localhost:7277/events")
-     .Build();
-
-        hubConnection.On<List<Event>>("ReceiveEvents", (events) =>
-            {
-                messages = events;
-                InvokeAsync(StateHasChanged);
-            });
-
-        hubConnection.On<Event>("ReceiveEvent", (eventResponce) =>
-            {
-                messages = new List<Event> { eventResponce };
-                InvokeAsync(StateHasChanged);
-            });
-
-        await hubConnection.StartAsync();
-
-        await hubConnection.SendAsync("GetAll");
-
-        // Assign the OnClickMethod method as the event callback for the click event
+        await EventController.ConfigureHub();
+        await EventController.StartConnection();
+        await EventController.GetAll();
+        messages = EventController.messages;
+        StateHasChanged();
     }
 
     public bool IsConnected =>
