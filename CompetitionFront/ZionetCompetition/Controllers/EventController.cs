@@ -7,6 +7,7 @@ using ZionetCompetition.Models;
 using BlazorBootstrap;
 using Blazorise.DataGrid;
 using Microsoft.JSInterop;
+using ZionetCompetition.Data;
 
 
 namespace ZionetCompetition.Controllers
@@ -15,8 +16,8 @@ namespace ZionetCompetition.Controllers
     {
 
         private readonly IJSRuntime _jsRuntime;
-        public IEnumerable<Event> messages = new List<Event> { };
-        public Event message;
+        public IEnumerable<EventModel> messages;
+        public EventModel message;
         private HubConnection hubConnection;
         private bool isLoaded = false;
 
@@ -39,31 +40,31 @@ namespace ZionetCompetition.Controllers
         }
         public async Task ConfigureHub()
         {
-            hubConnection.On<List<Event>>("ReceiveEvents", async (events) =>
+            hubConnection.On<List<EventModel>>("ReceiveEvents", async (events) =>
             {
                 messages = events;
                 isLoaded = true;
             });
 
-            hubConnection.On<Event>("ReceiveEvent", async (@event) =>
+            hubConnection.On<EventModel>("ReceiveEvent", async (@event) =>
             {
                 message = @event;
                 isLoaded = true;
             });
 
-            hubConnection.On<Event>("CreateEvent", (@event) =>
+            hubConnection.On<EventModel>("CreateEvent", (@event) =>
             {
                 message = @event;
                 isLoaded = true;
             });
 
-            hubConnection.On<Event>("DeleteEvent", (@event) =>
+            hubConnection.On<EventModel>("DeleteEvent", (@event) =>
             {
                 message = @event;
                 isLoaded = true;
             });
 
-            hubConnection.On<Event>("UpdateEvent", (@event) =>
+            hubConnection.On<EventModel>("UpdateEvent", (@event) =>
             {
                 message = @event;
                 isLoaded = true;
@@ -84,9 +85,9 @@ namespace ZionetCompetition.Controllers
             isLoaded = false;
         }
 
-        public async Task Update(int id, Event @event)
+        public async Task Update(int id, EventModel @event, int userId)
         {
-            await hubConnection.SendAsync("UpdateOne", id, @event);
+            await hubConnection.SendAsync("UpdateOne", id, message, userId);
             while (!isLoaded) { }
             isLoaded = false;
         }

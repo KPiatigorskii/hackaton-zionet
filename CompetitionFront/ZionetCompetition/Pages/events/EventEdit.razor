@@ -4,12 +4,9 @@
 @using Blazorise
 @using ZionetCompetition.Models
 
-@if (!loaded)
-{
-    <H1 style="text-align:center">Loading...</H1>
-}
-else
-{
+@inject ZionetCompetition.Controllers.EventController EventController
+
+
     <EditForm Model="@message" OnValidSubmit="@Save" OnInvalidSubmit=@InvalidFormSubmitted>
         <DataAnnotationsValidator />
         <div>
@@ -21,7 +18,13 @@ else
         <div>
             <label>
                 StartTime
-                <InputText @bind-Value="@message.StartTime" />
+                <InputDate @bind-Value="@message.StartTime" />
+            </label>
+        </div>
+        <div>
+            <label>
+                EndTime
+                <InputDate @bind-Value="@message.EndTime" />
             </label>
         </div>
         <div>
@@ -30,23 +33,29 @@ else
                 <InputNumber @bind-Value="@message.NumberParticipantsInTeam" />
             </label>
         </div>
+        <div>
+            
+            <label>
+            NumberConcurrentTasks
+            <InputNumber @bind-Value="@message.NumberConcurrentTasks" />
+            </label>
+        </div>
+@*         <div>
+            <label>
+                Status Title
+                <InputText @bind-Value="@message.Status?.Title" />
+            </label>
+        </div>*@
          <div>
             <label>
                 Hashcode
                 <InputText @bind-Value="@message.Hashcode" />
             </label>
         </div>
-        <div>
-            <label>
-                CreateDate
-                <InputDate @bind-Value="@message.CreateDate" />
-            </label>
-        </div>
 
         <Blazorise.Bootstrap.Button Color="Color.Primary" Type="Blazorise.ButtonType.Submit">Save</Blazorise.Bootstrap.Button>
     </EditForm>
 
-}
 
 @code {
     [Parameter]
@@ -54,37 +63,21 @@ else
 
 
     private HubConnection? hubConnection;
-    private Event EventFields;
-    private Event message, Event;
+    private EventModel EventFields;
+    private EventModel message = new EventModel();
     private string? EventInput;
     private int? EventId;
+    private int userId = 1;
     private string? messageInput;
     private bool loaded = false;
 
     protected override async Task OnInitializedAsync()
     {
-        hubConnection = new HubConnectionBuilder()
-            .WithUrl("https://localhost:7277/events")
-            .Build();
-
-        hubConnection.On<Event>("ReceiveEvent", (eventResponse) =>
-            {
-                message = eventResponse;
-                InvokeAsync(StateHasChanged);
-                loaded = true;
-            });
-
-        hubConnection.On<Event>("UpdateEvent", (eventResponse) =>
-            {
-                message = eventResponse;
-                InvokeAsync(StateHasChanged);
-            });
-
-        await hubConnection.StartAsync();
-        await hubConnection.SendAsync("GetOne", id);
-        while (!loaded) { }
-
-
+        await EventController.ConfigureHub();
+        await EventController.StartConnection();
+        await EventController.Get(id);
+        message = EventController.message;
+        StateHasChanged();
     }
 
     public bool IsConnected =>
@@ -92,7 +85,7 @@ else
 
     private async void Save(EditContext editContext)
     {
-        await hubConnection.SendAsync("UpdateOne",id, message);
+        await EventController.Update(id, message, userId);
     }
 
     private void InvalidFormSubmitted(){}
