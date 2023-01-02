@@ -4,16 +4,21 @@ using Microsoft.AspNetCore.Components.Web;
 using ZionetCompetition.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using ZionetCompetition.Controllers;
 using Blazorise;
 using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
-
+using Microsoft.JSInterop;
+using Microsoft.DotNet.Scaffolding.Shared.ProjectModel;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 
+builder.Services.AddControllers();
+
+builder.Services.AddTransient<UserController>();
 builder.Services
     .AddBlazorise(options =>
     {

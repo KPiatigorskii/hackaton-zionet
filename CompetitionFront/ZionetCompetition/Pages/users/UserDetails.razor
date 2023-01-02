@@ -1,16 +1,14 @@
 ﻿@page "/users/{id:int}"
+
+@inject ZionetCompetition.Controllers.UserController UserController
 @inject NavigationManager UriHelper
+@inject IJSRuntime JSRuntime
 @using Microsoft.AspNetCore.SignalR.Client
 @using ZionetCompetition.Models
 @using Blazorise
 
 <h3>User Details</h3>
-@if (!loaded)
-{
-    <H1 style="text-align:center">Loading...</H1>
-}
-else
-{
+
     <div><span>FirstName:</span><span>  @message.FirstName</span></div>
     <div><span>LastName:</span><span>@message.LastName</span></div>
     <div><span>Email:</span><span>@message.Email</span></div>
@@ -20,12 +18,12 @@ else
 
 <div style="margin-top: 20px">
 
-    <Button Color="Color.Primary" @onclick="Edit" disabled="@(!IsConnected)">Edit</Button>
-    <Button Color="Color.Primary" @onclick="Delete" disabled="@(!IsConnected)">Delete</Button>
+    <Button Color="Color.Primary" @onclick="Edit" >Edit</Button>
+    <Button Color="Color.Primary" @onclick="Delete" >Delete</Button>
    
 
 </div>
-}
+
 
 
 @code {
@@ -34,50 +32,18 @@ else
 
 
     private HubConnection? hubConnection;
-    private User message;
+    private User message = new User { };
     private string? userInput;
     private int? userId;
     private string? messageInput;
-    private bool loaded = false;
-
-    void Navigate()
-    {
-    }
 
     protected override async Task OnInitializedAsync()
     {
-        hubConnection = new HubConnectionBuilder()
-            .WithUrl("https://localhost:7277/users")
-            .Build();
-
-        hubConnection.On<User>("ReceiveUser", (user) =>
-            {
-                message = user;
-                InvokeAsync(StateHasChanged);
-                loaded = true;
-            });
-
-        hubConnection.On<User>("CreateUser", (user) =>
-            {
-                message = user;
-                InvokeAsync(StateHasChanged);
-            });
-
-        hubConnection.On<User>("DeleteUser", (user) =>
-            {
-                message = user;
-                InvokeAsync(StateHasChanged);
-            });
-
-        hubConnection.On<User>("UpdateUser", (user) =>
-            {
-                message = user;
-                InvokeAsync(StateHasChanged);
-            });
-
-        await hubConnection.StartAsync();
-        await hubConnection.SendAsync("GetOne", id);
-        while (!loaded) { }
+        await UserController.ConfigureHub();
+        await UserController.StartConnection();
+        UserController.Get(id);
+        message = UserController.message;
+        StateHasChanged();
 
     }
 
@@ -99,10 +65,6 @@ else
 
     private async Task Delete()
     {
-        if (hubConnection is not null)
-        {
-            await hubConnection.SendAsync("ForceDeleteOne", id);
-            UriHelper.NavigateTo("/Users/");
-        }
+        UserController.Delete(id);
     }
 }
