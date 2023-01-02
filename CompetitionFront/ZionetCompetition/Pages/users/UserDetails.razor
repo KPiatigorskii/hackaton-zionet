@@ -1,7 +1,8 @@
-﻿@page "/Users/{id:int}"
+﻿@page "/users/{id:int}"
 @inject NavigationManager UriHelper
 @using Microsoft.AspNetCore.SignalR.Client
 @using ZionetCompetition.Models
+@using Blazorise
 
 <h3>User Details</h3>
 @if (!loaded)
@@ -19,8 +20,8 @@ else
 
 <div style="margin-top: 20px">
 
-    <Button Color="ButtonColor.Primary" @onclick="Edit" disabled="@(!IsConnected)">Edit</Button>
-    <Button Color="ButtonColor.Primary" @onclick="Delete" disabled="@(!IsConnected)">Delete</Button>
+    <Button Color="Color.Primary" @onclick="Edit" disabled="@(!IsConnected)">Edit</Button>
+    <Button Color="Color.Primary" @onclick="Delete" disabled="@(!IsConnected)">Delete</Button>
    
 
 </div>

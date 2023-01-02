@@ -1,0 +1,147 @@
+﻿@page "/events/{id:int}"
+@inject NavigationManager UriHelper
+@using Microsoft.AspNetCore.SignalR.Client
+@using ZionetCompetition.Models
+@using Blazorise
+@using Blazorise.DataGrid
+
+<h3>Event Details</h3>
+@if (!loaded)
+{
+    <H1 style="text-align:center">Loading...</H1>
+}
+else
+{
+    <Tabs SelectedTab="@selectedTab" SelectedTabChanged="@OnSelectedTabChanged">
+        <Items>
+            <Tab Name="Teams">Teams</Tab>
+            <Tab Name="Tasks">Tasks</Tab>
+            <Tab Name="Managers">Managers</Tab>
+            <Tab Name="Info">Info</Tab>
+        </Items>
+        <Content>
+            <TabPanel Name="Teams">
+                <Button Color="Color.Primary" @onclick="CreateUser" disabled="@(!IsConnected)">Create User</Button>
+                <Button Color="Color.Primary" @onclick="CreateTeam" disabled="@(!IsConnected)">Create Team</Button>
+            </TabPanel>
+            <TabPanel Name="Tasks">
+                Content for profile.
+            </TabPanel>
+            <TabPanel Name="Managers">
+                Content for messages.
+            </TabPanel>
+            <TabPanel Name="Info">
+                <div><span>FirstName:</span><span>  @message.Title</span></div>
+                <div><span>LastName:</span><span>@message.Address</span></div>
+                <div><span>Email:</span><span>@message.StartTime</span></div>
+                <div><span>Github:</span><span>@message.Hashcode</span></div>
+                <div><span>RoleId:</span><span>@message.CreateDate</span></div>
+            </TabPanel>
+        </Content>
+    </Tabs>
+
+
+
+<div style="margin-top: 20px">
+
+
+   
+
+
+</div>
+}
+
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+    string selectedTab = "profile";
+
+    private HubConnection? hubConnection;
+    private Event message;
+    private List<User> teamList;
+    private User teamMember;
+    private string? userInput;
+    private int? userId;
+    private string? messageInput;
+    private bool loaded = false;
+
+    private Task OnSelectedTabChanged(string name)
+    {
+        selectedTab = name;
+
+        return Task.CompletedTask;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl("https://localhost:7277/events")
+            .Build();
+
+        hubConnection.On<Event>("ReceiveEvent", (eventResponce) =>
+            {
+                message = eventResponce;
+                InvokeAsync(StateHasChanged);
+                loaded = true;
+            });
+
+        hubConnection.On<Event>("CreateEvent", (eventResponce) =>
+            {
+                message = eventResponce;
+                InvokeAsync(StateHasChanged);
+            });
+
+        hubConnection.On<Event>("DeleteEvent", (eventResponce) =>
+            {
+                message = eventResponce;
+                InvokeAsync(StateHasChanged);
+            });
+
+        hubConnection.On<Event>("UpdateEvent", (eventResponce) =>
+            {
+                message = eventResponce;
+                InvokeAsync(StateHasChanged);
+            });
+
+        await hubConnection.StartAsync();
+        await hubConnection.SendAsync("GetOne", id);
+        while (!loaded) { }
+
+    }
+
+    public bool IsConnected =>
+        hubConnection?.State == HubConnectionState.Connected;
+
+    private async Task Create()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.SendAsync("Create");
+        }
+    }
+
+    private void Edit()
+    {
+        UriHelper.NavigateTo("/events/" + id + "/Edit");
+    }
+
+    private async Task Delete()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.SendAsync("ForceDeleteOne", id);
+            UriHelper.NavigateTo("/events/");
+        }
+    }
+
+    private async Task CreateUser()
+    {
+
+    }
+
+    private async Task CreateTeam()
+    {
+
+    }
+}

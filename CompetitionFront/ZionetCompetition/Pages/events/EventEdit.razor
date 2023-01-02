@@ -1,4 +1,4 @@
-﻿@page "/Users/{id:int}/edit"
+@page "/Events/{id:int}/edit"
 @using Microsoft.AspNetCore.SignalR.Client
 @using BlazorBootstrap
 @using Blazorise
@@ -13,32 +13,33 @@ else
     <EditForm Model="@message" OnValidSubmit="@Save" OnInvalidSubmit=@InvalidFormSubmitted>
         <DataAnnotationsValidator />
         <div>
-            <label>FirstName
-                <InputText @bind-Value="@message.FirstName" />
+            <label>
+                Title
+                <InputText @bind-Value="@message.Title" />
             </label>
         </div>
         <div>
             <label>
-                LastName
-                <InputText @bind-Value="@message.LastName" />
+                StartTime
+                <InputText @bind-Value="@message.StartTime" />
             </label>
         </div>
         <div>
             <label>
-                Email
-                <InputText @bind-Value="@message.Email" />
+                NumberParticipantsInTeam
+                <InputNumber @bind-Value="@message.NumberParticipantsInTeam" />
             </label>
         </div>
          <div>
             <label>
-                Github
-                <InputText @bind-Value="@message.Github" />
+                Hashcode
+                <InputText @bind-Value="@message.Hashcode" />
             </label>
         </div>
         <div>
             <label>
-                RoleId
-                <InputNumber @bind-Value="@message.RoleId" />
+                CreateDate
+                <InputDate @bind-Value="@message.CreateDate" />
             </label>
         </div>
 
@@ -53,29 +54,29 @@ else
 
 
     private HubConnection? hubConnection;
-    private User UserFields;
-    private User message, user;
-    private string? userInput;
-    private int? userId;
+    private Event EventFields;
+    private Event message, Event;
+    private string? EventInput;
+    private int? EventId;
     private string? messageInput;
     private bool loaded = false;
 
     protected override async Task OnInitializedAsync()
     {
         hubConnection = new HubConnectionBuilder()
-            .WithUrl("https://localhost:7277/users")
+            .WithUrl("https://localhost:7277/events")
             .Build();
 
-        hubConnection.On<User>("ReceiveUser", (user) =>
+        hubConnection.On<Event>("ReceiveEvent", (eventResponse) =>
             {
-                message = user;
+                message = eventResponse;
                 InvokeAsync(StateHasChanged);
                 loaded = true;
             });
 
-        hubConnection.On<User>("UpdateUser", (user) =>
+        hubConnection.On<Event>("UpdateEvent", (eventResponse) =>
             {
-                message = user;
+                message = eventResponse;
                 InvokeAsync(StateHasChanged);
             });
 
