@@ -5,7 +5,6 @@
 @using System.Reflection;
 @using Microsoft.AspNetCore.SignalR.Client
 @using ZionetCompetition.Models
-@using BlazorBootstrap
 @using Blazorise.DataGrid
 
 @inject ZionetCompetition.Controllers.EventController EventController
@@ -52,6 +51,12 @@
             <progress class="progress is-small is-primary" max="100" />
         </div>
     </LoadingTemplate>
+
+    <ButtonRowTemplate>
+        <Button Color="Color.Success" >New</Button>
+        <Button Color="Color.Primary" Disabled="(selectedEvent is null)">Duplicate</Button>
+        <Button Color="Color.Danger" Disabled="(selectedEvent is null)">Delete</Button>
+    </ButtonRowTemplate>
 </DataGrid>
 
 @code {

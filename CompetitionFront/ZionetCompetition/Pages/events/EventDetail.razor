@@ -12,6 +12,7 @@
 
 @implements IAsyncDisposable
 
+
 <h3>Event Details</h3>
 
     <Tabs SelectedTab="@selectedTab" SelectedTabChanged="@OnSelectedTabChanged">
@@ -23,34 +24,35 @@
         </Items>
         <Content>
             <TabPanel Name="Teams">
-                @foreach(var team in teams)
-            {
-                <Card>
-                    @*<img src="@team.ImgPath">*@
-                    <p>Title: @team.Title</p>
-                    <p>Status Id:@team.StatusId</p>
-                    <p>Members:</p>
-                    @foreach(var teamMember in team.TeamParticipants)
-                    {
-                    <tbody>
-                        @foreach (var property in typeof(TeamParticipant).GetProperties())
+                <DropContainer TItem="User" Items="@teamUsers"
+                               ItemsFilter="@((item, dropZone) => item.Github == dropZone)" ItemDropped="@ItemDropped" Flex="Flex.Wrap.Grow.Is1">
+                    <ChildContent>
+                        @for (int i = 1; i < 4; i++)
                         {
-                            @if (property.IsDefined(typeof(CustomAttribute), false))
-                            {
-                                <tr>
-                                        <td>@property.Name &nbsp;&nbsp;</td>
-                                        <td>@teamMember.GetType().GetProperty(property.Name).GetValue(teamMember)</td>
-                                </tr>
-                            }
+                            var dropzone = "team" + i.ToString();
 
+                            <Card>
+                                <CardBody>
+                                    <ListGroup>
+                                        <Heading Size="HeadingSize.Is4" Margin="Margin.Is3.FromBottom">@dropzone</Heading>
+                                        <DropZone TItem="User" Name="@dropzone.ToString()" AllowReorder Padding="Padding.Is3" Margin="Margin.Is3" Flex="Flex.Grow.Is1" />
+                                    </ListGroup>
+                                </CardBody>
+                            <Button Color="Color.Primary">Add Participant to team @dropzone</Button>
+                            </Card>
                         }
-                    </tbody>
-                    }
-                </Card>
+                    </ChildContent>
+                    <ItemTemplate>
+                        <Card Shadow="Shadow.Default" Margin="Margin.Is3.OnY">
+                            <CardBody>
+                            <div>
+                                <p>@context.FirstName     @context.LastName   <a href="/"> <Icon Name="IconName.Ban" IconSize=IconSize.Small /></a></p>
 
-            }
-            @*                <Button Color="Color.Primary" @onclick="CreateUser">Create User</Button>
-                <Button Color="Color.Primary" @onclick="CreateTeam">Create Team</Button>*@
+                            </div>
+                            </CardBody>
+                        </Card>
+                    </ItemTemplate>
+                </DropContainer>
             </TabPanel>
             <TabPanel Name="Tasks">
                 Content for profile.
@@ -60,29 +62,28 @@
             </TabPanel>
             <TabPanel Name="Info">
 
-                <tbody>
-                    @foreach (var property in typeof(EventModel).GetProperties())
+            <tbody>
+                @foreach (var property in typeof(EventModel).GetProperties())
+                {
+                    @if (property.IsDefined(typeof(CustomAttribute), false))
                     {
-                        @if (property.IsDefined(typeof(CustomAttribute), false))
-                        {
-                            <tr>
-                                <td>@property.Name &nbsp;&nbsp;</td>
-                                <td>@message.GetType().GetProperty(property.Name).GetValue(message)</td>
-                            </tr>
-                        }
-
+                        <tr>
+                            <td>@property.Name &nbsp;&nbsp;</td>
+                            <td>@message.GetType().GetProperty(property.Name).GetValue(message)</td>
+                        </tr>
                     }
-                </tbody>
-            </TabPanel>
-        </Content>
-    </Tabs>
+                }
+            </tbody>
+        </TabPanel>
+    </Content>
+</Tabs>
 
 
 
 <div style="margin-top: 20px">
 
 
-   
+
 
 
 </div>
@@ -91,6 +92,25 @@
 @code {
     [Parameter]
     public int id { get; set; }
+    public List<User> teamUsers = new List<User>
+        {
+                new User { Id = 1, Email = "email1@example.com", Github = "team1", FirstName = "FirstName1", LastName = "LastName1", Login = "login1", Password = "password1", RoleId = 1, CreateDate = new DateTime(2020, 1, 1), UpdateDate = new DateTime(2020, 2, 1), CreateUserId = 1, UpdateUserId = 1, StatusId = 1 },
+                new User { Id = 2, Email = "email2@example.com", Github = "team1", FirstName = "FirstName2", LastName = "LastName2", Login = "login2", Password = "password2", RoleId = 2, CreateDate = new DateTime(2020, 1, 2), UpdateDate = new DateTime(2020, 2, 2), CreateUserId = 2, UpdateUserId = 2, StatusId = 1 },
+                new User { Id = 3, Email = "email3@example.com", Github = "team1", FirstName = "FirstName3", LastName = "LastName3", Login = "login3", Password = "password3", RoleId = 3, CreateDate = new DateTime(2020, 1, 3), UpdateDate = new DateTime(2020, 2, 3), CreateUserId = 3, UpdateUserId = 3, StatusId = 1 },
+                new User { Id = 4, Email = "email4@example.com", Github = "team1", FirstName = "FirstName4", LastName = "LastName4", Login = "login4", Password = "password4", RoleId = 4, CreateDate = new DateTime(2020, 1, 4), UpdateDate = new DateTime(2020, 2, 4), CreateUserId = 4, UpdateUserId = 4, StatusId = 1 },
+                new User { Id = 5, Email = "email5@example.com", Github = "team1", FirstName = "FirstName5", LastName = "LastName5", Login = "login5", Password = "password5", RoleId = 5, CreateDate = new DateTime(2020, 1, 5), UpdateDate = new DateTime(2020, 2, 5), CreateUserId = 5, UpdateUserId = 5, StatusId = 1 },
+
+                new User { Id = 6, Email = "email6@example.com", Github = "team2", FirstName = "FirstName6", LastName = "LastName6", Login = "login6", Password = "password6", RoleId = 6, CreateDate = new DateTime(2020, 1, 6), UpdateDate = new DateTime(2020, 2, 6), CreateUserId = 6, UpdateUserId = 6, StatusId = 2 },
+                new User { Id = 7, Email = "email7@example.com", Github = "team2", FirstName = "FirstName7", LastName = "LastName7", Login = "login7", Password = "password7", RoleId = 7, CreateDate = new DateTime(2020, 1, 7), UpdateDate= new DateTime(2020, 2, 7), CreateUserId = 7, UpdateUserId = 7, StatusId = 2 },
+                new User { Id = 8, Email = "email8@example.com", Github = "team2", FirstName = "FirstName8", LastName = "LastName8", Login = "login8", Password = "password8", RoleId = 8, CreateDate = new DateTime(2020, 1, 8), UpdateDate = new DateTime(2020, 2, 8), CreateUserId = 8, UpdateUserId = 8, StatusId = 2 },
+                new User { Id = 9, Email = "email9@example.com", Github = "team2", FirstName = "FirstName9", LastName = "LastName9", Login = "login9", Password = "password9", RoleId = 9, CreateDate = new DateTime(2020, 1, 9), UpdateDate = new DateTime(2020, 2, 9), CreateUserId = 9, UpdateUserId = 9, StatusId = 2 },
+
+                new User { Id = 11, Email = "email11@example.com", Github = "team3", FirstName = "FirstName11", LastName = "LastName11", Login = "login11", Password = "password11", RoleId = 11, CreateDate = new DateTime(2020, 1, 11), UpdateDate = new DateTime(2020, 2, 11), CreateUserId = 11, UpdateUserId = 11, StatusId = 3 },
+                new User { Id = 12, Email = "email12@example.com", Github = "team3", FirstName = "FirstName12", LastName = "LastName12", Login = "login12", Password = "password12", RoleId = 12, CreateDate = new DateTime(2020, 1, 12), UpdateDate = new DateTime(2020, 2, 12), CreateUserId = 12, UpdateUserId = 12, StatusId = 3 },
+                new User { Id = 13, Email = "email13@example.com", Github = "team3", FirstName = "FirstName13", LastName = "LastName13", Login = "login13", Password = "password13", RoleId = 13, CreateDate = new DateTime(2020, 1, 13), UpdateDate = new DateTime(2020, 2, 13), CreateUserId = 13, UpdateUserId = 13, StatusId = 3 },
+                new User { Id = 14, Email = "email14@example.com", Github = "team3", FirstName = "FirstName14", LastName = "LastName14", Login = "login14", Password = "password14", RoleId = 14, CreateDate = new DateTime(2020, 1, 14), UpdateDate = new DateTime(2020, 2, 14), CreateUserId = 14, UpdateUserId = 14, StatusId = 3 }
+
+        };
     string selectedTab = "profile";
 
     private List<Team> teams = new List<Team>
@@ -208,6 +228,12 @@
     private async Task DeleteEvent()
     {
 
+    }
+
+    private Task ItemDropped(DraggableDroppedEventArgs<User> dropItem)
+    {
+        dropItem.Item.Github = dropItem.DropZoneName; // send update requset to DB
+        return Task.CompletedTask;
     }
 
     public async ValueTask DisposeAsync()
