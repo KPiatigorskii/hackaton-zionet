@@ -24,7 +24,7 @@ namespace MsSqlAccessor.Hubs
         {
             var dbItems = await _dbController.GetEvents();
 
-            await Clients.All.SendAsync("ReceiveEvents", dbItems);
+            await Clients.All.SendAsync("ReceiveEvents", dbItems.Value);
         }
 
         public async System.Threading.Tasks.Task GetOne(int id)
@@ -33,7 +33,7 @@ namespace MsSqlAccessor.Hubs
             {
                 var dbItem = await _dbController.GetEvent(id);
 
-                await Clients.All.SendAsync("ReceiveEvent", dbItem);
+                await Clients.All.SendAsync("ReceiveEvent", dbItem.Value);
             }
             catch (ServerError ex)
             {
@@ -55,7 +55,7 @@ namespace MsSqlAccessor.Hubs
             try
             {
                 var dbItem = await _dbController.PutEvent(id, request, userId);
-                await Clients.All.SendAsync("UpdateEvent", dbItem);
+                await Clients.All.SendAsync("UpdateEvent", dbItem.Value);
             }
             catch (ServerError ex)
             {
@@ -81,7 +81,7 @@ namespace MsSqlAccessor.Hubs
             try
             {
                 var dbItem = await _dbController.PostEvent(request, userId);
-                await Clients.All.SendAsync("PostEvent", dbItem);
+                await Clients.All.SendAsync("PostEvent", dbItem.Value);
             }
             catch (ServerError ex)
             {
