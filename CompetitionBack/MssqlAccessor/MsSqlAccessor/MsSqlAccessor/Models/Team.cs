@@ -26,14 +26,13 @@ public partial class Team
 
     public virtual Event Event { get; set; } = null!;
 
-    public virtual Status Status { get; set; } = null!;
-
-    public virtual User UpdateUser { get; set; } = null!;
-
     [JsonIgnore]
-    public virtual ICollection<TeamParticipant> TeamParticipants { get; } = new List<TeamParticipant>();
+    public virtual ICollection<EventParticipantTeam> EventParticipantTeams { get; } = new List<EventParticipantTeam>();
+
+    public virtual Status Status { get; set; } = null!;
 
     [JsonIgnore]
     public virtual ICollection<TeamTask> TeamTasks { get; } = new List<TeamTask>();
 
+    public virtual User UpdateUser { get; set; } = null!;
 }

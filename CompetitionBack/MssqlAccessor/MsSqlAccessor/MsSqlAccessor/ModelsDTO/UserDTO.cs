@@ -44,6 +44,9 @@ public partial class UserDTO
     public virtual ICollection<EventManager> EventManagers { get; } = new List<EventManager>();
 
     [JsonIgnore]
+    public virtual ICollection<EventParticipantTeam> EventParticipantTeams { get; } = new List<EventParticipantTeam>();
+
+    [JsonIgnore]
     public virtual ICollection<Event> EventUpdateUsers { get; } = new List<Event>();
 
     [JsonIgnore]
@@ -66,9 +69,6 @@ public partial class UserDTO
 
     [JsonIgnore]
     public virtual ICollection<Team> TeamCreateUsers { get; } = new List<Team>();
-
-    [JsonIgnore]
-    public virtual ICollection<TeamParticipant> TeamParticipants { get; } = new List<TeamParticipant>();
 
     [JsonIgnore]
     public virtual ICollection<Team> TeamUpdateUsers { get; } = new List<Team>();

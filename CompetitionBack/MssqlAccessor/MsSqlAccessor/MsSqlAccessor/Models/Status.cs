@@ -9,7 +9,7 @@ public partial class Status
     public int Id { get; set; }
 
     public string Title { get; set; } = null!;
-    
+
     public int StatusId { get; set; }
 
     [JsonIgnore]
@@ -32,6 +32,7 @@ public partial class Status
 
     [JsonIgnore]
     public virtual ICollection<Team> Teams { get; } = new List<Team>();
+
     [JsonIgnore]
     public virtual ICollection<User> Users { get; } = new List<User>();
 }

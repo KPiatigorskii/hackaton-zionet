@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace MsSqlAccessor.Models;
@@ -33,10 +32,6 @@ public partial class User
 
     public int StatusId { get; set; }
 
-    public virtual Role Role { get; set; } = null!;
-
-    public virtual Status Status { get; set; } = null!;
-
     [JsonIgnore]
     public virtual ICollection<Event> EventCreateUsers { get; } = new List<Event>();
 
@@ -44,13 +39,22 @@ public partial class User
     public virtual ICollection<EventManager> EventManagers { get; } = new List<EventManager>();
 
     [JsonIgnore]
+    public virtual ICollection<EventParticipantTeam> EventParticipantTeams { get; } = new List<EventParticipantTeam>();
+
+    [JsonIgnore]
     public virtual ICollection<Event> EventUpdateUsers { get; } = new List<Event>();
+
+   
+    public virtual Role Role { get; set; } = null!;
 
     [JsonIgnore]
     public virtual ICollection<Role> RoleCreateUsers { get; } = new List<Role>();
 
     [JsonIgnore]
     public virtual ICollection<Role> RoleUpdateUsers { get; } = new List<Role>();
+
+    
+    public virtual Status Status { get; set; } = null!;
 
     [JsonIgnore]
     public virtual ICollection<TaskCategory> TaskCategoryCreateUsers { get; } = new List<TaskCategory>();
@@ -66,9 +70,6 @@ public partial class User
 
     [JsonIgnore]
     public virtual ICollection<Team> TeamCreateUsers { get; } = new List<Team>();
-
-    [JsonIgnore]
-    public virtual ICollection<TeamParticipant> TeamParticipants { get; } = new List<TeamParticipant>();
 
     [JsonIgnore]
     public virtual ICollection<Team> TeamUpdateUsers { get; } = new List<Team>();

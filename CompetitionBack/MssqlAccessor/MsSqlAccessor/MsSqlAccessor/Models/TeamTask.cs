@@ -22,9 +22,8 @@ public partial class TeamTask
 
     public virtual Task Task { get; set; } = null!;
 
-    public virtual Team Team { get; set; } = null!;
-
     [JsonIgnore]
     public virtual ICollection<TaskParticipant> TaskParticipants { get; } = new List<TaskParticipant>();
 
+    public virtual Team Team { get; set; } = null!;
 }
