@@ -32,11 +32,21 @@
             </TabPanel>
             <TabPanel Name="Info">
 
+                @*<div><span>ID:</span><span>  @message.Id</span></div>
                 <div><span>FirstName:</span><span>  @message.Title</span></div>
                 <div><span>LastName:</span><span>@message.Address</span></div>
                 <div><span>Email:</span><span>@message.StartTime</span></div>
                 <div><span>Github:</span><span>@message.Hashcode</span></div>
-                <div><span>RoleId:</span><span>@message.CreateDate</span></div>
+                <div><span>RoleId:</span><span>@message.CreateDate</span></div>*@
+                <tbody>
+                    @foreach (var property in typeof(EventModel).GetProperties())
+                    {   
+                        <tr>
+                        <td>@property.Name &nbsp;&nbsp;</td>
+                            <td>@message.GetType().GetProperty(property.Name).GetValue(message)</td>
+                        </tr>
+                    }
+                </tbody>
 
             <Button Color="Color.Primary" @onclick="EditEvent">Edit Event</Button>
             <Button Color="Color.Primary" @onclick="DeleteEvent">Delete Event</Button>
