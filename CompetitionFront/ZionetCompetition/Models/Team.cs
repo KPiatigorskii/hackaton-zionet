@@ -31,7 +31,7 @@ public partial class Team
     public virtual User UpdateUser { get; set; } = null!;
 
     [JsonIgnore]
-    public virtual ICollection<TeamParticipant> TeamParticipants { get; } = new List<TeamParticipant>();
+    public virtual ICollection<TeamParticipant> TeamParticipants { get; set; } = new List<TeamParticipant>();
 
     [JsonIgnore]
     public virtual ICollection<TeamTask> TeamTasks { get; } = new List<TeamTask>();

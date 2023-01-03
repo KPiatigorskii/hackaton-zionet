@@ -1,7 +1,9 @@
 ﻿@page "/events/{id:int}"
 
 @using Microsoft.AspNetCore.SignalR.Client
+@using System.Reflection;
 @using ZionetCompetition.Models
+@using ZionetCompetition.Data
 @using Blazorise
 @using Blazorise.DataGrid
 
@@ -21,7 +23,33 @@
         </Items>
         <Content>
             <TabPanel Name="Teams">
-@*                <Button Color="Color.Primary" @onclick="CreateUser">Create User</Button>
+                @foreach(var team in teams)
+            {
+                <Card>
+                    @*<img src="@team.ImgPath">*@
+                    <p>Title: @team.Title</p>
+                    <p>Status Id:@team.StatusId</p>
+                    <p>Members:</p>
+                    @foreach(var teamMember in team.TeamParticipants)
+                    {
+                    <tbody>
+                        @foreach (var property in typeof(TeamParticipant).GetProperties())
+                        {
+                            @if (property.IsDefined(typeof(CustomAttribute), false))
+                            {
+                                <tr>
+                                        <td>@property.Name &nbsp;&nbsp;</td>
+                                        <td>@teamMember.GetType().GetProperty(property.Name).GetValue(teamMember)</td>
+                                </tr>
+                            }
+
+                        }
+                    </tbody>
+                    }
+                </Card>
+
+            }
+            @*                <Button Color="Color.Primary" @onclick="CreateUser">Create User</Button>
                 <Button Color="Color.Primary" @onclick="CreateTeam">Create Team</Button>*@
             </TabPanel>
             <TabPanel Name="Tasks">
@@ -32,24 +60,19 @@
             </TabPanel>
             <TabPanel Name="Info">
 
-                @*<div><span>ID:</span><span>  @message.Id</span></div>
-                <div><span>FirstName:</span><span>  @message.Title</span></div>
-                <div><span>LastName:</span><span>@message.Address</span></div>
-                <div><span>Email:</span><span>@message.StartTime</span></div>
-                <div><span>Github:</span><span>@message.Hashcode</span></div>
-                <div><span>RoleId:</span><span>@message.CreateDate</span></div>*@
                 <tbody>
                     @foreach (var property in typeof(EventModel).GetProperties())
-                    {   
-                        <tr>
-                        <td>@property.Name &nbsp;&nbsp;</td>
-                            <td>@message.GetType().GetProperty(property.Name).GetValue(message)</td>
-                        </tr>
+                    {
+                        @if (property.IsDefined(typeof(CustomAttribute), false))
+                        {
+                            <tr>
+                                <td>@property.Name &nbsp;&nbsp;</td>
+                                <td>@message.GetType().GetProperty(property.Name).GetValue(message)</td>
+                            </tr>
+                        }
+
                     }
                 </tbody>
-
-            <Button Color="Color.Primary" @onclick="EditEvent">Edit Event</Button>
-            <Button Color="Color.Primary" @onclick="DeleteEvent">Delete Event</Button>
             </TabPanel>
         </Content>
     </Tabs>
@@ -70,10 +93,67 @@
     public int id { get; set; }
     string selectedTab = "profile";
 
+    private List<Team> teams = new List<Team>
+    {
+        new Team(){
+            Id = 1,
+            Title = "Team 1",
+            EventId = 1,
+            CreateDate = new DateTime(2020, 1, 1),
+            UpdateDate = new DateTime(2020, 1, 1),
+            CreateUserId = 1,
+            UpdateUserId = 1,
+            StatusId = 1,
+            TeamParticipants =
+            {
+                new TeamParticipant()
+                {
+                    Id = 1,
+                    TeamId = 1,
+                    ParticipantId = 1,
+                    IsLeader = true
+                },
+                new TeamParticipant()
+                {
+                    Id = 2,
+                    TeamId = 1,
+                    ParticipantId = 2,
+                    IsLeader = false
+                },
+                new TeamParticipant()
+                {
+                    Id = 3,
+                    TeamId = 2,
+                    ParticipantId = 3,
+                    IsLeader = true
+                }
+            }
+        },
+        new Team(){
+            Id = 2,
+            Title = "Team 2",
+            EventId = 1,
+            CreateDate = new DateTime(2020, 1, 2),
+            UpdateDate = new DateTime(2020, 1, 2),
+            CreateUserId = 2,
+            UpdateUserId = 2,
+            StatusId = 1
+        },
+        new Team(){
+            Id = 3,
+            Title = "Team 3",
+            EventId = 1,
+            CreateDate = new DateTime(2020, 1, 3),
+            UpdateDate = new DateTime(2020, 1, 3),
+            CreateUserId = 3,
+            UpdateUserId = 3,
+            StatusId = 1
+        }
+    };
+
     private HubConnection? hubConnection;
     private EventModel message = new EventModel { };
     private List<User> teamList;
-    private User teamMember;
     private string? userInput;
     private int? userId;
     private string? messageInput;
@@ -93,7 +173,6 @@
         EventController.Get(id);
         message = EventController.message;
         StateHasChanged();
-
     }
 
     public bool IsConnected =>
