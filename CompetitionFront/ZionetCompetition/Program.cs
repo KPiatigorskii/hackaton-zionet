@@ -13,10 +13,16 @@ using Microsoft.DotNet.Scaffolding.Shared.ProjectModel;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 // Add services to the container.
 builder.Services.AddRazorPages();
 
 builder.Services.AddControllers();
+
+builder.Services.AddHttpContextAccessor();
+
+//builder.Services.AddSingleton<IAccessTokenProvider, AccessTokenProvider>();
 
 builder.Services.AddTransient<UserController>();
 builder.Services.AddTransient<EventController>();
