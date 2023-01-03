@@ -21,8 +21,8 @@
         </Items>
         <Content>
             <TabPanel Name="Teams">
-                <Button Color="Color.Primary" @onclick="CreateUser">Create User</Button>
-                <Button Color="Color.Primary" @onclick="CreateTeam">Create Team</Button>
+@*                <Button Color="Color.Primary" @onclick="CreateUser">Create User</Button>
+                <Button Color="Color.Primary" @onclick="CreateTeam">Create Team</Button>*@
             </TabPanel>
             <TabPanel Name="Tasks">
                 Content for profile.
@@ -31,11 +31,25 @@
                 Content for messages.
             </TabPanel>
             <TabPanel Name="Info">
+
+                @*<div><span>ID:</span><span>  @message.Id</span></div>
                 <div><span>FirstName:</span><span>  @message.Title</span></div>
                 <div><span>LastName:</span><span>@message.Address</span></div>
                 <div><span>Email:</span><span>@message.StartTime</span></div>
                 <div><span>Github:</span><span>@message.Hashcode</span></div>
-                <div><span>RoleId:</span><span>@message.CreateDate</span></div>
+                <div><span>RoleId:</span><span>@message.CreateDate</span></div>*@
+                <tbody>
+                    @foreach (var property in typeof(EventModel).GetProperties())
+                    {   
+                        <tr>
+                        <td>@property.Name &nbsp;&nbsp;</td>
+                            <td>@message.GetType().GetProperty(property.Name).GetValue(message)</td>
+                        </tr>
+                    }
+                </tbody>
+
+            <Button Color="Color.Primary" @onclick="EditEvent">Edit Event</Button>
+            <Button Color="Color.Primary" @onclick="DeleteEvent">Delete Event</Button>
             </TabPanel>
         </Content>
     </Tabs>
@@ -57,7 +71,7 @@
     string selectedTab = "profile";
 
     private HubConnection? hubConnection;
-    private Event message = new Event { };
+    private EventModel message = new EventModel { };
     private List<User> teamList;
     private User teamMember;
     private string? userInput;
@@ -76,7 +90,7 @@
     {
         await EventController.ConfigureHub();
         await EventController.StartConnection();
-        await EventController.Get(id);
+        EventController.Get(id);
         message = EventController.message;
         StateHasChanged();
 
@@ -107,12 +121,12 @@
         }
     }
 
-    private async Task CreateUser()
+    private async Task EditEvent()
     {
-
+        UriHelper.NavigateTo("/events/" + id + "/edit");
     }
 
-    private async Task CreateTeam()
+    private async Task DeleteEvent()
     {
 
     }

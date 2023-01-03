@@ -15,7 +15,7 @@
 
 <h3>Events</h3>
 
-<DataGrid TItem="Event"
+<DataGrid TItem="EventModel"
           Data="@messages"
           Filterable="true"
           FilterMethod="DataGridFilterMethod.Contains"
@@ -28,17 +28,19 @@
           Responsive="true"
           @bind-SelectedRow=selectedEvent>
     <ChildContent>
-        <DataGridCommandColumn TItem="Event"></DataGridCommandColumn>
-        <DataGridColumn TItem="Event" Field="Title" Caption="Title" Sortable="false" Displayable="true">
+        <DataGridCommandColumn TItem="EventModel"></DataGridCommandColumn>
+        <DataGridColumn TItem="EventModel" Field="Title" Caption="Title" Sortable="false" Displayable="true">
             <DisplayTemplate>
                 <NavLink href="@($"/Events/{context.Id}")">@context.Title</NavLink>
             </DisplayTemplate>
         </DataGridColumn>
-        <DataGridColumn TItem="Event" Field="Address" Caption="Address" Sortable="false" Displayable="true" />
-        <DataGridDateColumn TItem="Event" Field="StartTime" Caption="StartTime" Sortable="false" Displayable="true" />
-        <DataGridColumn TItem="Event" Field="NumberParticipantsInTeam" Caption="NumberParticipantsInTeam" Sortable="false" Displayable="true" />
-        <DataGridColumn TItem="Event" Field="Hashcode" Caption="Hashcode" Sortable="true" Displayable="true" />
-        <DataGridColumn TItem="Event" Field="CreateDate" Caption="CreateDate" Sortable="false" Displayable="true" />
+        <DataGridColumn TItem="EventModel" Field="Address" Caption="Address" Sortable="false" Displayable="true" />
+        <DataGridDateColumn TItem="EventModel" Field="StartTime" Caption="StartTime" Sortable="true" Displayable="true" />
+        <DataGridDateColumn TItem="EventModel" Field="EndTime" Caption="EndTime" Sortable="false" Displayable="true" />
+        <DataGridColumn TItem="EventModel" Field="NumberParticipantsInTeam" Caption="TeamCapacity" Sortable="false" Displayable="true" />
+        <DataGridColumn TItem="EventModel" Field="Hashcode" Caption="Hashcode" Sortable="true" Displayable="true" />
+        <DataGridColumn TItem="EventModel" Field="Status.Title" Caption="Status" Sortable="true" Displayable="true" />
+        <DataGridColumn TItem="EventModel" Field="CreateDate" Caption="CreateDate" Sortable="false" Displayable="true" />
     </ChildContent>
     <EmptyTemplate>
         <div class="box">
@@ -54,9 +56,9 @@
 
 @code {
     private HubConnection? hubConnection;
-    public Event selectedEvent;
-    private IEnumerable<Event> messages = new List<Event> { };
-    public DataGrid<Event> EventDataGrid { get; set; }
+    public EventModel selectedEvent;
+    private IEnumerable<EventModel> messages = new List<EventModel> { };
+    public DataGrid<EventModel> EventDataGrid { get; set; }
 
 
     protected override async Task OnInitializedAsync()
