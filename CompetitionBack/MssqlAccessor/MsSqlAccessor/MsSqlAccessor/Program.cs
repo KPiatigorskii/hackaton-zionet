@@ -49,10 +49,10 @@ namespace MsSqlAccessor
 					pattern: "{controller=Home}/{action=Index}/{id?}");
 				//endpoints.MapHub<UserHub>("/users");
 			});
-            app.MapHub<UserHub>("/users");
+            //app.MapHub<UserHub>("/users");
             app.MapHub<EventHub>("/events");
             app.MapHub<EventParticipantTeamHub>("/eventparticipantteams");
-            app.MapHub<MssqlHub<User>>("/users");
+            app.MapHub<MsSQLHub<User, UserDTO>>("/users");
 
             app.MapControllers();
 

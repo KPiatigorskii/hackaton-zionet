@@ -6,7 +6,7 @@ namespace MsSqlAccessor.Models;
 
 public partial class EventDTO
 {
-    public int? Id { get; set; }
+    public int Id { get; set; }
 
     public string? Title { get; set; } = null!;
 

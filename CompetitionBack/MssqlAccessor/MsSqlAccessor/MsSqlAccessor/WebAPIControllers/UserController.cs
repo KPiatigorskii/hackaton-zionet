@@ -13,10 +13,10 @@ namespace MsSqlAccessor.Controllers
 	{
 
 
-		private readonly IHubContext<MssqlHub<User>> _hubContext;
+		private readonly IHubContext<MssqlHubOld<User>> _hubContext;
 		private readonly CompetitionBdTestContext _context;
 
-		public UserDbController(IHubContext<MssqlHub<User>> hubContext, CompetitionBdTestContext context)
+		public UserDbController(IHubContext<MssqlHubOld<User>> hubContext, CompetitionBdTestContext context)
 		{
 			_context = context;
 			_hubContext = hubContext;

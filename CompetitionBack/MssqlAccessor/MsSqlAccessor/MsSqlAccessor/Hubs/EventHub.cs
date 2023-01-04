@@ -17,7 +17,6 @@ namespace MsSqlAccessor.Hubs
         public EventHub(EventsDbController dbController)
         {
             _dbController = dbController;
-
         }
 
         public async System.Threading.Tasks.Task GetAll()
