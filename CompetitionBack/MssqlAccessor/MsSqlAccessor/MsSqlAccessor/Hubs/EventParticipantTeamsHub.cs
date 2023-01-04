@@ -30,7 +30,7 @@ namespace MsSqlAccessor.Hubs
                 .Select(e => e.ConvertToDto<EventParticipantTeam, EventParticipantTeamDTO>())
                 .ToListAsync();
 
-            await Clients.All.SendAsync("ReceiveGetEventParticipantTeams", dbItems);
+            await Clients.Caller.SendAsync("ReceiveGetEventParticipantTeams", dbItems);
         }
 
         public async System.Threading.Tasks.Task GetEventParticipantTeam(int id)
@@ -41,12 +41,12 @@ namespace MsSqlAccessor.Hubs
             
             if (eventParticipantTeam == null)
             {
-                await Clients.All.SendAsync("ReceiveGetEventParticipantTeam", new EventParticipantTeamDTO());
+                await Clients.Caller.SendAsync("ReceiveGetEventParticipantTeam", new EventParticipantTeamDTO());
                 return;
             }
             var eventParticipantTeamDb = eventParticipantTeam.ConvertToDto<EventParticipantTeam, EventParticipantTeamDTO>();
 
-            await Clients.All.SendAsync("ReceiveGetEventParticipantTeam", eventParticipantTeamDb);
+            await Clients.Caller.SendAsync("ReceiveGetEventParticipantTeam", eventParticipantTeamDb);
         }
 
         public async System.Threading.Tasks.Task PutEventParticipantTeam(int id, EventParticipantTeamDTO eventParticipantTeam)
@@ -54,7 +54,7 @@ namespace MsSqlAccessor.Hubs
             EventParticipantTeam eventParticipantTeamDb;
             if (id != eventParticipantTeam.ParticipantId)
             {
-                await Clients.All.SendAsync("ReceivePutParticipantTeam", "Bad Request");
+                await Clients.Caller.SendAsync("ReceivePutParticipantTeam", "Bad Request");
                 return;
             }
 
@@ -76,7 +76,7 @@ namespace MsSqlAccessor.Hubs
             {
                 if (!EventParticipantTeamExists(id))
                 {
-                    await Clients.All.SendAsync("ReceivePutParticipantTeam", new EventParticipantTeamDTO());
+                    await Clients.Caller.SendAsync("ReceivePutParticipantTeam", new EventParticipantTeamDTO());
                     return;
                 }
                 else
@@ -87,7 +87,7 @@ namespace MsSqlAccessor.Hubs
 
             var eventParticipantTeamResult = await _context.EventParticipantTeams.IncludeVirtualProperties(new EventParticipantTeam { }).FirstOrDefaultAsync(e => e.Id == id);
             EventParticipantTeamDTO eventParticipantTeamDTOResult = eventParticipantTeamResult.ConvertToDto<EventParticipantTeam, EventParticipantTeamDTO>();
-            await Clients.All.SendAsync("ReceivePutParticipantTeam", eventParticipantTeamDTOResult);
+            await Clients.Caller.SendAsync("ReceivePutParticipantTeam", eventParticipantTeamDTOResult);
         }
 
         public async System.Threading.Tasks.Task PostEventParticipantTeam(EventParticipantTeamDTO eventParticipantTeam)
@@ -103,7 +103,7 @@ namespace MsSqlAccessor.Hubs
             {
                 if (EventParticipantTeamExists(eventParticipantTeam.ParticipantId))
                 {
-                    await Clients.All.SendAsync("ReceivePostEventParticipantTeam", "Conflict");
+                    await Clients.Caller.SendAsync("ReceivePostEventParticipantTeam", "Conflict");
                     return;
                 }
                 else
@@ -114,7 +114,7 @@ namespace MsSqlAccessor.Hubs
 
             EventParticipantTeamDTO eventParticipantTeamResult = eventParticipantTeamDb.ConvertToDto<EventParticipantTeam, EventParticipantTeamDTO>();
 
-            await Clients.All.SendAsync("ReceivePostEventParticipantTeam", eventParticipantTeamResult);
+            await Clients.Caller.SendAsync("ReceivePostEventParticipantTeam", eventParticipantTeamResult);
         }
 
         public async System.Threading.Tasks.Task DeleteEventParticipantTeam(int id)
@@ -122,14 +122,14 @@ namespace MsSqlAccessor.Hubs
             var eventParticipantTeam = await _context.EventParticipantTeams.FindAsync(id);
             if (eventParticipantTeam == null)
             {
-                await Clients.All.SendAsync("ReceiveDeleteEventParticipantTeam", "not found");
+                await Clients.Caller.SendAsync("ReceiveDeleteEventParticipantTeam", "not found");
                 return;
             }
 
             _context.EventParticipantTeams.Remove(eventParticipantTeam);
             await _context.SaveChangesAsync();
 
-            await Clients.All.SendAsync("ReceiveDeleteEventParticipantTeam", new EventParticipantTeamDTO());
+            await Clients.Caller.SendAsync("ReceiveDeleteEventParticipantTeam", new EventParticipantTeamDTO());
             return;
         }
 

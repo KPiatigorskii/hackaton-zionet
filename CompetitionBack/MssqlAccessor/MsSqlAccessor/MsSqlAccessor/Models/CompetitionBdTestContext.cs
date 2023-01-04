@@ -122,18 +122,16 @@ public partial class CompetitionBdTestContext : DbContext
 
         modelBuilder.Entity<EventParticipantTeam>(entity =>
         {
-            entity.HasKey(e => new { e.ParticipantId, e.EventId });
+            entity.HasKey(e => e.Id).HasName("PK_event-participant-team_1");
 
             entity.ToTable("event-participant-team");
 
-            entity.HasIndex(e => e.Id, "IX_team-participant").IsUnique();
+            entity.HasIndex(e => new { e.ParticipantId, e.EventId }, "IX_event-participant-team").IsUnique();
 
-            entity.Property(e => e.ParticipantId).HasColumnName("participant_id");
+            entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.EventId).HasColumnName("event_id");
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("id");
             entity.Property(e => e.IsLeader).HasColumnName("is_leader");
+            entity.Property(e => e.ParticipantId).HasColumnName("participant_id");
             entity.Property(e => e.TeamId).HasColumnName("team_id");
 
             entity.HasOne(d => d.Event).WithMany(p => p.EventParticipantTeams)
@@ -208,43 +206,17 @@ public partial class CompetitionBdTestContext : DbContext
             entity.ToTable("role");
 
             entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.CreateDate)
-                .HasDefaultValueSql("(getdate())")
-                .HasComment("GETDATE()")
-                .HasColumnType("datetime")
-                .HasColumnName("create_date");
-            entity.Property(e => e.CreateUserId)
-                .HasDefaultValueSql("((1))")
-                .HasColumnName("create_user_id");
             entity.Property(e => e.StatusId)
                 .HasDefaultValueSql("((1))")
                 .HasColumnName("status_id");
             entity.Property(e => e.Title)
                 .HasMaxLength(50)
                 .HasColumnName("title");
-            entity.Property(e => e.UpdateDate)
-                .HasDefaultValueSql("(getdate())")
-                .HasComment("GETDATE()")
-                .HasColumnType("datetime")
-                .HasColumnName("update_date");
-            entity.Property(e => e.UpdateUserId)
-                .HasDefaultValueSql("((1))")
-                .HasColumnName("update_user_id");
-
-            entity.HasOne(d => d.CreateUser).WithMany(p => p.RoleCreateUsers)
-                .HasForeignKey(d => d.CreateUserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_role_user_create");
 
             entity.HasOne(d => d.Status).WithMany(p => p.Roles)
                 .HasForeignKey(d => d.StatusId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_role_status");
-
-            entity.HasOne(d => d.UpdateUser).WithMany(p => p.RoleUpdateUsers)
-                .HasForeignKey(d => d.UpdateUserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_role_user_update");
         });
 
         modelBuilder.Entity<Status>(entity =>
@@ -360,7 +332,6 @@ public partial class CompetitionBdTestContext : DbContext
             entity.Property(e => e.StatusId).HasColumnName("status_id");
 
             entity.HasOne(d => d.ParticipantUser).WithMany(p => p.TaskParticipants)
-                .HasPrincipalKey(p => p.Id)
                 .HasForeignKey(d => d.ParticipantUserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_task_participant_team-participant");

@@ -17,7 +17,7 @@ namespace MsSqlAccessor.Hubs
     public class MsSQLHub<Tmodel, TmodelDTO> : Hub where Tmodel : IdModel, new() where TmodelDTO : IdModel, new()
     {
         private readonly CompetitionBdTestContext _context;
-        const string _header = "User";
+        //const string _header = "User";
         //const string str = typeof(Tmodel).Name;
 
 
@@ -27,7 +27,7 @@ namespace MsSqlAccessor.Hubs
             //_header = typeof(Tmodel).Name;
         }
 
-        [HubMethodName("Get" + _header + "s")]
+        [HubMethodName("GetAll")]
         public async System.Threading.Tasks.Task GetAll()
         {
             var dtoItems = await _context.Set<Tmodel>()
@@ -35,10 +35,10 @@ namespace MsSqlAccessor.Hubs
                 .Select(e => e.ConvertToDto<Tmodel, TmodelDTO>())
                 .ToListAsync();
 
-            await Clients.All.SendAsync("ReceiveGetUsers", dtoItems);
+            await Clients.Caller.SendAsync("ReceiveGetAll", dtoItems);
         }
 
-        [HubMethodName("Get" + _header)]
+        [HubMethodName("GetOne")]
         public async System.Threading.Tasks.Task GetOne(int id)
         {
             var dbItem = await _context.Set<Tmodel>()
@@ -47,21 +47,21 @@ namespace MsSqlAccessor.Hubs
             
             if (dbItem == null)
             {
-                await Clients.All.SendAsync("ReceiveGet" + _header, new TmodelDTO());
+                await Clients.Caller.SendAsync("ReceiveGetOne", new TmodelDTO());
                 return;
             }
             var dtoItem = dbItem.ConvertToDto<Tmodel, TmodelDTO>();
 
-            await Clients.All.SendAsync("ReceiveGet" + _header, dtoItem);
+            await Clients.Caller.SendAsync("ReceiveGetOne", dtoItem);
         }
 
-        [HubMethodName("Put" + _header)]
-        public async System.Threading.Tasks.Task Create(int id, TmodelDTO dtoItem)
+        [HubMethodName("Update")]
+        public async System.Threading.Tasks.Task Update(int id, TmodelDTO dtoItem)
         {
             Tmodel dbItem;
             if (id != dtoItem.Id)
             {
-                await Clients.All.SendAsync("ReceivePut" + _header, "Bad Request");
+                await Clients.Caller.SendAsync("ReceiveUpdate", "Bad Request");
                 return;
             }
 
@@ -81,7 +81,7 @@ namespace MsSqlAccessor.Hubs
             {
                 if (!isItemExists(id))
                 {
-                    await Clients.All.SendAsync("ReceivePut" + _header, new TmodelDTO());
+                    await Clients.Caller.SendAsync("ReceiveUpdate", new TmodelDTO());
                     return;
                 }
                 else
@@ -92,11 +92,11 @@ namespace MsSqlAccessor.Hubs
 
             var dbItemResult = await _context.Set<Tmodel>().IncludeVirtualProperties(new Tmodel { }).FirstOrDefaultAsync(e => e.Id == id);
             TmodelDTO dtoItemResult = dbItemResult.ConvertToDto<Tmodel, TmodelDTO>();
-            await Clients.All.SendAsync("ReceivePut" + _header, dtoItemResult);
+            await Clients.Caller.SendAsync("ReceiveUpdate", dtoItemResult);
         }
 
-        [HubMethodName("Post" + _header)]
-        public async System.Threading.Tasks.Task Update(TmodelDTO dtoItem)
+        [HubMethodName("Create")]
+        public async System.Threading.Tasks.Task Create(TmodelDTO dtoItem)
         {
             Tmodel dbItem = dtoItem.ConvertFromDto<Tmodel, TmodelDTO>();
 
@@ -109,7 +109,7 @@ namespace MsSqlAccessor.Hubs
             {
                 if (isItemExists(dbItem.Id))
                 {
-                    await Clients.All.SendAsync("ReceivePost" + _header, "Conflict");
+                    await Clients.Caller.SendAsync("ReceiveCreate", "Conflict");
                     return;
                 }
                 else
@@ -120,23 +120,23 @@ namespace MsSqlAccessor.Hubs
 
             TmodelDTO dtoItemResult = dbItem.ConvertToDto<Tmodel, TmodelDTO>();
 
-            await Clients.All.SendAsync("ReceivePost" + _header, dtoItemResult);
+            await Clients.Caller.SendAsync("ReceiveCreate", dtoItemResult);
         }
 
-        [HubMethodName("Delete" + _header)]
+        [HubMethodName("Delete")]
         public async System.Threading.Tasks.Task Delete(int id)
         {
             var dbItem = await _context.Set<Tmodel>().FindAsync(id);
             if (dbItem == null)
             {
-                await Clients.All.SendAsync("ReceiveDelete" + _header, "not found");
+                await Clients.Caller.SendAsync("ReceiveDelete", "not found");
                 return;
             }
 
             _context.Set<Tmodel>().Remove(dbItem);
             await _context.SaveChangesAsync();
 
-            await Clients.All.SendAsync("ReceiveDelete" + _header, new TmodelDTO());
+            await Clients.Caller.SendAsync("ReceiveDelete", new TmodelDTO());
             return;
         }
 
