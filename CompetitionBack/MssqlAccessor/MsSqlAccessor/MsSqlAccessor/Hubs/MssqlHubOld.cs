@@ -12,7 +12,7 @@ public class MssqlHubOld<T> : Hub where T : class
     //    await Clients.Others.SendAsync("ReceiveMessage", user, message);
     //}
 
-    [HubMethodName("getAll")]
+    [HubMethodName("getUsers")]
     public async System.Threading.Tasks.Task GetAll()
     {
         List<T> dbItems;
@@ -22,7 +22,7 @@ public class MssqlHubOld<T> : Hub where T : class
             dbItems = await context.Set<T>().ToListAsync();
         }
 
-        await Clients.All.SendAsync("ReceiveUsers", dbItems);
+        await Clients.All.SendAsync("ReceiveGetUsers", dbItems);
     }
 
     [HubMethodName("create")]

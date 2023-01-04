@@ -26,10 +26,12 @@ public partial class Role
 
     public int StatusId { get; set; }
 
+    [JsonIgnore]
     public virtual User CreateUser { get; set; } = null!;
 
     public virtual Status Status { get; set; } = null!;
 
+    [JsonIgnore]
     public virtual User UpdateUser { get; set; } = null!;
 
     [JsonIgnore]

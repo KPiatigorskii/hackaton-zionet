@@ -53,6 +53,7 @@ namespace MsSqlAccessor
             app.MapHub<EventHub>("/events");
             app.MapHub<EventParticipantTeamHub>("/eventparticipantteams");
             app.MapHub<MsSQLHub<User, UserDTO>>("/users");
+            //app.MapHub<MssqlHubOld<User>>("/users");
 
             app.MapControllers();
 
