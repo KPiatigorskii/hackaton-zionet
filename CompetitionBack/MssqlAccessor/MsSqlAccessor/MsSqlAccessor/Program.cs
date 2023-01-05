@@ -5,6 +5,7 @@ using Microsoft.AspNet.SignalR;
 using Microsoft.Extensions.Hosting;
 using MsSqlAccessor.Hubs;
 using MsSqlAccessor.DbControllers;
+using Task = MsSqlAccessor.Models.Task;
 
 namespace MsSqlAccessor
 {
@@ -50,13 +51,23 @@ namespace MsSqlAccessor
 				//endpoints.MapHub<UserHub>("/users");
 			});
             //app.MapHub<UserHub>("/users");
-            app.MapHub<EventHub>("/events");
-            //app.MapHub<EventParticipantTeamHub>("/eventparticipantteams");
-            app.MapHub<MsSQLHub<EventParticipantTeam, EventParticipantTeamDTO>>("/eventparticipantteams");
-            app.MapHub<MsSQLHub<User, UserDTO>>("/users");
             //app.MapHub<MssqlHubOld<User>>("/users");
+            //app.MapHub<EventParticipantTeamHub>("/eventparticipantteams");
+            app.MapHub<EventHub>("/events");
+			app.MapHub<MsSQLHub<EventManager, EventManagerDTO>>("/EventManagers");
+			app.MapHub<MsSQLHub<EventParticipantTeam, EventParticipantTeamDTO>>("/eventparticipantteams");
+			app.MapHub<MsSQLHub<EventTask, EventTaskDTO>>("/EventTasks");
+			app.MapHub<MsSQLHub<EventTaskEvaluateUser, EventTaskEvaluateUserDTO>>("/EventTaskEvaluateUsers");
+			app.MapHub<MsSQLHub<Role, RoleDTO>>("/Roles");
+			app.MapHub<MsSQLHub<Status, StatusDTO>>("/Statuses");
+			app.MapHub<MsSQLHub<Task, TaskDTO>>("/Tasks");
+			app.MapHub<MsSQLHub<TaskCategory, TaskCategoryDTO>>("/TaskCategories");
+			app.MapHub<MsSQLHub<TaskParticipant, TaskParticipantDTO>>("/TaskParticipants");
+			app.MapHub<MsSQLHub<Team, TeamDTO>>("/Teams");
+			app.MapHub<MsSQLHub<TeamTask, TeamTaskDTO>>("/TeamTasks");
+			app.MapHub<MsSQLHub<User, UserDTO>>("/Users");
 
-            app.MapControllers();
+			app.MapControllers();
 
 			app.Run();
 		}

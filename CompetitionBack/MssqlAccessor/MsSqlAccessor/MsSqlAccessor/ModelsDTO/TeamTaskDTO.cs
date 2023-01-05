@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace MsSqlAccessor.Models;
 
-public partial class TeamTask : IdModel
+public partial class TeamTaskDTO : IdModel
 {
     public int Id { get; set; }
 
@@ -21,9 +21,6 @@ public partial class TeamTask : IdModel
     public virtual Status Status { get; set; } = null!;
 
     public virtual Task Task { get; set; } = null!;
-
-    [JsonIgnore]
-    public virtual ICollection<TaskParticipant> TaskParticipants { get; } = new List<TaskParticipant>();
 
     public virtual Team Team { get; set; } = null!;
 }

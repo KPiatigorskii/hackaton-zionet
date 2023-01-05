@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace MsSqlAccessor.Models;
 
-public partial class Event
+public partial class Event : IdModel
 {
     public int Id { get; set; }
 
@@ -33,14 +33,18 @@ public partial class Event
     public int StatusId { get; set; }
 
     public virtual User CreateUser { get; set; } = null!;
+
     [JsonIgnore]
     public virtual ICollection<EventManager> EventManagers { get; } = new List<EventManager>();
+
     [JsonIgnore]
     public virtual ICollection<EventParticipantTeam> EventParticipantTeams { get; } = new List<EventParticipantTeam>();
+
     [JsonIgnore]
     public virtual ICollection<EventTask> EventTasks { get; } = new List<EventTask>();
 
     public virtual Status Status { get; set; } = null!;
+
     [JsonIgnore]
     public virtual ICollection<Team> Teams { get; } = new List<Team>();
 

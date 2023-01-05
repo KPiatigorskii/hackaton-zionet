@@ -4,16 +4,11 @@ using System.Text.Json.Serialization;
 
 namespace MsSqlAccessor.Models;
 
-public partial class Role : IdModel
+public partial class StatusDTO : IdModel
 {
     public int Id { get; set; }
 
     public string Title { get; set; } = null!;
 
     public int StatusId { get; set; }
-
-    public virtual Status Status { get; set; } = null!;
-
-    [JsonIgnore]
-    public virtual ICollection<User> Users { get; } = new List<User>();
 }

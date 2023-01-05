@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MsSqlAccessor.Enums;
 using MsSqlAccessor.Helpers;
 using MsSqlAccessor.Models;
 using MsSqlAccessor.Services;
@@ -99,6 +100,8 @@ namespace MsSqlAccessor.Hubs
         public async System.Threading.Tasks.Task Create(TmodelDTO dtoItem)
         {
             Tmodel dbItem = dtoItem.ConvertFromDto<Tmodel, TmodelDTO>();
+
+            dbItem.StatusId = (int)StatusEnm.Active;
 
             _context.Set<Tmodel>().Add(dbItem);
             try

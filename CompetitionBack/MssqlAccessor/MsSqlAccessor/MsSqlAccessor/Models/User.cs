@@ -18,7 +18,7 @@ public partial class User : IdModel
 
     public string Login { get; set; } = null!;
 
-    public string Password { get; set; } = null!;
+    public string? Password { get; set; }
 
     public int RoleId { get; set; }
 
@@ -31,28 +31,38 @@ public partial class User : IdModel
     public int UpdateUserId { get; set; }
 
     public int StatusId { get; set; }
+
     [JsonIgnore]
     public virtual ICollection<Event> EventCreateUsers { get; } = new List<Event>();
+
     [JsonIgnore]
     public virtual ICollection<EventManager> EventManagers { get; } = new List<EventManager>();
+
     [JsonIgnore]
     public virtual ICollection<EventParticipantTeam> EventParticipantTeams { get; } = new List<EventParticipantTeam>();
+
     [JsonIgnore]
     public virtual ICollection<Event> EventUpdateUsers { get; } = new List<Event>();
 
     public virtual Role Role { get; set; } = null!;
 
     public virtual Status Status { get; set; } = null!;
+
     [JsonIgnore]
     public virtual ICollection<TaskCategory> TaskCategoryCreateUsers { get; } = new List<TaskCategory>();
+
     [JsonIgnore]
     public virtual ICollection<TaskCategory> TaskCategoryUpdateUsers { get; } = new List<TaskCategory>();
+
     [JsonIgnore]
     public virtual ICollection<Task> TaskCreateUsers { get; } = new List<Task>();
+
     [JsonIgnore]
     public virtual ICollection<Task> TaskUpdateUsers { get; } = new List<Task>();
+
     [JsonIgnore]
     public virtual ICollection<Team> TeamCreateUsers { get; } = new List<Team>();
+
     [JsonIgnore]
     public virtual ICollection<Team> TeamUpdateUsers { get; } = new List<Team>();
 }

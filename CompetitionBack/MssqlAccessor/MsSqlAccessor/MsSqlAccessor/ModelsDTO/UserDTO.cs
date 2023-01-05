@@ -19,7 +19,7 @@ public partial class UserDTO : IdModel
 
     public string Login { get; set; } = null!;
 
-    public string Password { get; set; } = null!;
+    //public string Password { get; set; } = null!;
 
     public int RoleId { get; set; }
 

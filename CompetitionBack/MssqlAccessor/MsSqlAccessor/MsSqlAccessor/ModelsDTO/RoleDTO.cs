@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace MsSqlAccessor.Models;
 
-public partial class Role : IdModel
+public partial class RoleDTO : IdModel
 {
     public int Id { get; set; }
 
@@ -13,7 +13,4 @@ public partial class Role : IdModel
     public int StatusId { get; set; }
 
     public virtual Status Status { get; set; } = null!;
-
-    [JsonIgnore]
-    public virtual ICollection<User> Users { get; } = new List<User>();
 }
