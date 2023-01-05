@@ -1,7 +1,9 @@
-﻿namespace MsSqlAccessor.Models
+﻿using System.Text.Json.Serialization;
+
+namespace MsSqlAccessor.Models
 {
-    public class IdModel
+    public interface IdModel
     {
-        public int Id { get; set; }
+        public abstract int Id { get; set; }
     }
 }

@@ -14,7 +14,7 @@ using NuGet.Configuration;
 
 namespace MsSqlAccessor.Hubs
 {
-    public class MsSQLHub<Tmodel, TmodelDTO> : Hub where Tmodel : IdModel, new() where TmodelDTO : IdModel, new()
+    public class MsSQLHub<Tmodel, TmodelDTO> : Hub where Tmodel : class, IdModel, new() where TmodelDTO : class, IdModel, new()
     {
         private readonly CompetitionBdTestContext _context;
         //const string _header = "User";

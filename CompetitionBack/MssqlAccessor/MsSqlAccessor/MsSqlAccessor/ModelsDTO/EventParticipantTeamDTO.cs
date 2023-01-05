@@ -4,9 +4,9 @@ using System.Text.Json.Serialization;
 
 namespace MsSqlAccessor.Models;
 
-public partial class EventParticipantTeamDTO
+public partial class EventParticipantTeamDTO : IdModel
 {
-    public int Id { get; set; }
+    public new int Id { get; set; }
 
     public int ParticipantId { get; set; }
 
