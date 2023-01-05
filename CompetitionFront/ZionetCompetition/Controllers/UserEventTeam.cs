@@ -39,31 +39,31 @@ namespace ZionetCompetition.Controllers
 		}
 		public async Task ConfigureHub()
 		{
-			hubConnection.On<List<EventParticipantTeam>>("ReceiveGetEventParticipantTeams", async (eventParticipantTeams) =>
+			hubConnection.On<List<EventParticipantTeam>>("ReceiveGetAll", async (eventParticipantTeams) =>
 			{
 				messages = eventParticipantTeams;
 				isLoaded = true;
 			});
 
-			hubConnection.On<EventParticipantTeam>("ReceiveGetEventParticipantTeam", async (eventParticipantTeam) =>
+			hubConnection.On<EventParticipantTeam>("ReceiveGetOne", async (eventParticipantTeam) =>
 			{
 				message = eventParticipantTeam;
 				isLoaded = true;
 			});
 
-			hubConnection.On<EventParticipantTeam>("ReceivePostEventParticipantTeam", (eventParticipantTeam) =>
+            hubConnection.On<EventParticipantTeam>("ReceiveUpdate", (eventParticipantTeam) =>
+            {
+                message = eventParticipantTeam;
+                isLoaded = true;
+            });
+
+            hubConnection.On<EventParticipantTeam>("ReceiveCreate", (eventParticipantTeam) =>
 			{
 				message = eventParticipantTeam;
 				isLoaded = true;
 			});
 
-			hubConnection.On<EventParticipantTeam>("ReceiveDeleteEventParticipantTeam", (eventParticipantTeam) =>
-			{
-				message = eventParticipantTeam;
-				isLoaded = true;
-			});
-
-			hubConnection.On<EventParticipantTeam>("ReceivePutParticipantTeam", (eventParticipantTeam) =>
+			hubConnection.On<EventParticipantTeam>("ReceiveDelete", (eventParticipantTeam) =>
 			{
 				message = eventParticipantTeam;
 				isLoaded = true;
@@ -72,35 +72,35 @@ namespace ZionetCompetition.Controllers
 
 		public async void GetAll()
 		{
-			await hubConnection.SendAsync("GetEventParticipantTeams");
+			await hubConnection.SendAsync("GetAll");
 			while (!isLoaded) { }
 			isLoaded = false;
 		}
 
 		public async void Get(int id)
 		{
-			await hubConnection.SendAsync("GetEventParticipantTeam", id);
+			await hubConnection.SendAsync("GetOne", id);
 			while (!isLoaded) { }
 			isLoaded = false;
 		}
 
 		public async void Update(int id, EventParticipantTeam eventParticipantTeam)
 		{
-			await hubConnection.SendAsync("PutEventParticipantTeam", id, eventParticipantTeam);
+			await hubConnection.SendAsync("Update", id, eventParticipantTeam);
 			while (!isLoaded) { }
 			isLoaded = false;
 		}
 
 		public async void Post(EventParticipantTeam eventParticipantTeam)
 		{
-			await hubConnection.SendAsync("DeleteEventParticipantTeam", eventParticipantTeam);
+			await hubConnection.SendAsync("Create", eventParticipantTeam);
 			while (!isLoaded) { }
 			isLoaded = false;
 		}
 
 		public async void Delete(int id)
 		{
-			await hubConnection.SendAsync("DeleteEventParticipantTeam", id);
+			await hubConnection.SendAsync("Delete", id);
 			while (!isLoaded) { }
 			isLoaded = false;
 		}
