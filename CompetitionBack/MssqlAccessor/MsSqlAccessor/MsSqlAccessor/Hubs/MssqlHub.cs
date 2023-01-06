@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -12,6 +13,8 @@ using MsSqlAccessor.Helpers;
 using MsSqlAccessor.Models;
 using MsSqlAccessor.Services;
 using NuGet.Configuration;
+using NuGet.Protocol;
+using Task = System.Threading.Tasks.Task;
 
 namespace MsSqlAccessor.Hubs
 {
@@ -48,7 +51,9 @@ namespace MsSqlAccessor.Hubs
             
             if (dbItem == null)
             {
-                await Clients.Caller.SendAsync("ReceiveGetOne", new TmodelDTO());
+                //throw new HubException("ReceiveGetOne");
+                throw new HubException($"========Error. User with id {id} not found=========");
+                //await Clients.Caller.SendAsync("ReceiveGetOne", new TmodelDTO());
                 return;
             }
             var dtoItem = dbItem.ConvertToDto<Tmodel, TmodelDTO>();
@@ -141,6 +146,27 @@ namespace MsSqlAccessor.Hubs
 
             await Clients.Caller.SendAsync("ReceiveDelete", new TmodelDTO());
             return;
+        }
+
+        public override async Task OnConnectedAsync()
+        {
+            var context = this.Context.GetHttpContext();
+            // получаем кук name
+            if (context.Request.Cookies.ContainsKey("name"))
+            {
+                string userName;
+                if (context.Request.Cookies.TryGetValue("name", out userName))
+                {
+                    Debug.WriteLine($"name = {userName}");
+                }
+            }
+
+            // получаем юзер-агент
+            Debug.WriteLine($"UserAgent = {context.Request.Headers["User-Agent"]}");
+            // получаем ip
+            Debug.WriteLine($"RemoteIpAddress = {context.Connection.RemoteIpAddress.ToString()}");
+
+            await base.OnConnectedAsync();
         }
 
         private bool isItemExists(int id)

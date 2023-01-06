@@ -6,6 +6,8 @@ using Microsoft.Extensions.Hosting;
 using MsSqlAccessor.Hubs;
 using MsSqlAccessor.DbControllers;
 using Task = MsSqlAccessor.Models.Task;
+using MsSqlAccessor.Services;
+using Owin;
 
 namespace MsSqlAccessor
 {
@@ -20,7 +22,11 @@ namespace MsSqlAccessor
             builder.Services.AddControllers().AddJsonOptions(options => {
 				options.JsonSerializerOptions.PropertyNamingPolicy = null;
 			});
-            builder.Services.AddSignalR();
+            builder.Services.AddSignalR(hubOptions =>
+            {
+                hubOptions.EnableDetailedErrors = true;
+                hubOptions.KeepAliveInterval = System.TimeSpan.FromMinutes(1);
+            });
 
             builder.Services.AddDbContext<CompetitionBdTestContext>();
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -50,6 +56,7 @@ namespace MsSqlAccessor
 					pattern: "{controller=Home}/{action=Index}/{id?}");
 				//endpoints.MapHub<UserHub>("/users");
 			});
+
             //app.MapHub<UserHub>("/users");
             //app.MapHub<MssqlHubOld<User>>("/users");
             //app.MapHub<EventParticipantTeamHub>("/eventparticipantteams");
@@ -70,6 +77,12 @@ namespace MsSqlAccessor
 			app.MapControllers();
 
 			app.Run();
+		}
+		public void Configuration(IAppBuilder app)
+		{
+			// Any connection or hub wire up and configuration should go here
+			GlobalHost.HubPipeline.AddModule(new ErrorHandlingPipelineModule());
+			app.MapSignalR();
 		}
 	}
 }
