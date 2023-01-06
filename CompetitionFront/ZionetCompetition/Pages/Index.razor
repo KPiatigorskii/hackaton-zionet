@@ -16,7 +16,7 @@
     protected override async Task OnInitializedAsync()
     {
         //var token = HttpContextAccessor.HttpContext.Request;
-        token = HttpContextAccessor.HttpContext.User.Claims.FirstOrDefault(e => e.Type == "jwt_token").Value;
-        userName = HttpContextAccessor.HttpContext.User.Claims.FirstOrDefault(e => e.Type == "name").Value;
+        //token = HttpContextAccessor.HttpContext.User.Claims.FirstOrDefault(e => e.Type == "jwt_token").Value;
+        //userName = HttpContextAccessor.HttpContext.User.Claims.FirstOrDefault(e => e.Type == "name").Value;
     }
 }
