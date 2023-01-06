@@ -4,23 +4,25 @@ using System.Text.Json.Serialization;
 
 namespace MsSqlAccessor.Models;
 
-public partial class TeamTask : IdModel
+public partial class EventParticipantTeam : IdModel
 {
     public int Id { get; set; }
 
+    public int ParticipantId { get; set; }
+
+    public int EventId { get; set; }
+
     public int TeamId { get; set; }
 
-    public int TaskId { get; set; }
-
-    public DateTime? StartTime { get; set; }
-
-    public DateTime? EndTime { get; set; }
+    public bool? IsLeader { get; set; }
 
     public int StatusId { get; set; }
 
-    public virtual Status Status { get; set; } = null!;
+    public virtual Event Event { get; set; } = null!;
 
-    public virtual Task Task { get; set; } = null!;
+    public virtual User Participant { get; set; } = null!;
+
+    public virtual Status Status { get; set; } = null!;
 
     [JsonIgnore]
     public virtual ICollection<TaskParticipant> TaskParticipants { get; } = new List<TaskParticipant>();
