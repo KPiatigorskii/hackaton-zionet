@@ -7,23 +7,26 @@ using ZionetCompetition.Models;
 using BlazorBootstrap;
 using Blazorise.DataGrid;
 using Microsoft.JSInterop;
-
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Components;
 
 namespace ZionetCompetition.Controllers
 {
     public class UserController : Controller
     {
         private readonly IJSRuntime _jsRuntime;
+        private readonly NavigationManager _navigationManager;
         public IEnumerable<User> messages = new List<User> { };
         public User message;
         private HubConnection hubConnection;
         private bool isLoaded = false;
 
-        public UserController(IJSRuntime jsRuntime) {
+        public UserController(IJSRuntime jsRuntime, NavigationManager navigationManager) {
             _jsRuntime = jsRuntime;
             hubConnection = new HubConnectionBuilder()
                 .WithUrl("https://localhost:7277/users")
                 .Build();
+            _navigationManager = navigationManager;
         }
 
         public async Task StartConnection()
@@ -37,31 +40,31 @@ namespace ZionetCompetition.Controllers
         }
         public async Task ConfigureHub()
         {
-            hubConnection.On<List<User>>("ReceiveUsers", async (users) =>
+            hubConnection.On<List<User>>("ReceiveGetAll", async (users) =>
             {
                 messages = users;
                 isLoaded = true;
             });
 
-            hubConnection.On<User>("ReceiveUser", async (user) =>
+            hubConnection.On<User>("ReceiveGetOne", async (user) =>
             {
                 message = user;
                 isLoaded = true;
             });
 
-            hubConnection.On<User>("CreateUser", (user) =>
+            hubConnection.On<User>("ReceiveUpdate", (user) =>
             {
                 message = user;
                 isLoaded = true;
             });
 
-            hubConnection.On<User>("DeleteUser", (user) =>
+            hubConnection.On<User>("ReceiveCreate", (user) =>
             {
                 message = user;
                 isLoaded = true;
             });
 
-            hubConnection.On<User>("UpdateUser", (user) =>
+            hubConnection.On<User>("ReceiveDelete", (user) =>
             {
                 message = user;
                 isLoaded = true;
@@ -75,25 +78,38 @@ namespace ZionetCompetition.Controllers
             isLoaded= false;
         }
 
-        public async void Get(int id)
+        public async Task Get(int id)
         {
-            await hubConnection.SendAsync("GetOne", id);
-            while (!isLoaded) { }
+            try
+            {
+                await hubConnection.InvokeAsync("GetOne", id);
+            }
+            catch (HubException ex)
+            {
+                Console.WriteLine(ex.Message);
+                if (ex.Message.Contains("Not found")) NotFoundPage();
+            }
+            //while (!isLoaded) { }
             isLoaded = false;
         }
 
         public async void Update(int id, User user)
         {
-            await hubConnection.SendAsync("UpdateOne", id, user);
+            await hubConnection.SendAsync("Update", id, user);
             while (!isLoaded) { }
             isLoaded = false;
         }
 
         public async void Delete(int id)
         {
-            await hubConnection.SendAsync("ForceDeleteOne", id);
+            await hubConnection.SendAsync("Delete", id);
             while (!isLoaded) { }
             isLoaded = false;
+        }
+
+        private void NotFoundPage()
+        {
+            _navigationManager.NavigateTo("/404");
         }
     }
 }

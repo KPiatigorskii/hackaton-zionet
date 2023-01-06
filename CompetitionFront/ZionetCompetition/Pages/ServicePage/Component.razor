@@ -1,0 +1,11 @@
+﻿@page "/404"
+@inject NavigationManager UriHelper
+<h1 style="text-align:center">404 Page not found</h1>
+<div style="text-align:center"><a @onclick="Home">To home page</a></div>
+
+@code {
+    private void Home()
+    {
+        UriHelper.NavigateTo("/");
+    }
+}

@@ -23,6 +23,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<UserController>();
 builder.Services.AddTransient<EventController>();
 
+builder.Services.AddTransient<UserEventTeam>();
 builder.Services
     .AddBlazorise(options =>
     {
@@ -82,6 +83,7 @@ builder.Services
 builder.Services.AddHttpClient();
 
 builder.Services.AddHttpContextAccessor();
+
 
 var app = builder.Build();
 

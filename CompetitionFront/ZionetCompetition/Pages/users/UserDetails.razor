@@ -41,7 +41,7 @@
     {
         await UserController.ConfigureHub();
         await UserController.StartConnection();
-        UserController.Get(id);
+        await UserController.Get(id);
         message = UserController.message;
         StateHasChanged();
 
