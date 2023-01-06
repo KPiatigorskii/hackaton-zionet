@@ -83,8 +83,6 @@ builder.Services.AddHttpClient();
 
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddTransient<AuthMiddleware>();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
