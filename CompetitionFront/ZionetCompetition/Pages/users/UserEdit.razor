@@ -66,12 +66,9 @@ else
         await UserController.ConfigureHub();
         await UserController.StartConnection();
 
-        UserController.Get(id);
-        loaded = true;
-        while (!loaded) { }
-
+        await UserController.Get(id);
         message = UserController.message;
-
+        loaded = true;
     }
 
     public bool IsConnected =>

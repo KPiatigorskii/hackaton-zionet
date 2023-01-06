@@ -8,23 +8,25 @@ using BlazorBootstrap;
 using Blazorise.DataGrid;
 using Microsoft.JSInterop;
 using Microsoft.AspNetCore.SignalR;
-
+using Microsoft.AspNetCore.Components;
 
 namespace ZionetCompetition.Controllers
 {
     public class UserController : Controller
     {
         private readonly IJSRuntime _jsRuntime;
+        private readonly NavigationManager _navigationManager;
         public IEnumerable<User> messages = new List<User> { };
         public User message;
         private HubConnection hubConnection;
         private bool isLoaded = false;
 
-        public UserController(IJSRuntime jsRuntime) {
+        public UserController(IJSRuntime jsRuntime, NavigationManager navigationManager) {
             _jsRuntime = jsRuntime;
             hubConnection = new HubConnectionBuilder()
                 .WithUrl("https://localhost:7277/users")
                 .Build();
+            _navigationManager = navigationManager;
         }
 
         public async Task StartConnection()
@@ -76,17 +78,18 @@ namespace ZionetCompetition.Controllers
             isLoaded= false;
         }
 
-        public async void Get(int id)
+        public async Task Get(int id)
         {
             try
             {
-                await hubConnection.SendAsync("GetOne", id);
+                await hubConnection.InvokeAsync("GetOne", id);
             }
             catch (HubException ex)
             {
                 Console.WriteLine(ex.Message);
+                if (ex.Message.Contains("Not found")) NotFoundPage();
             }
-            while (!isLoaded) { }
+            //while (!isLoaded) { }
             isLoaded = false;
         }
 
@@ -102,6 +105,11 @@ namespace ZionetCompetition.Controllers
             await hubConnection.SendAsync("Delete", id);
             while (!isLoaded) { }
             isLoaded = false;
+        }
+
+        private void NotFoundPage()
+        {
+            _navigationManager.NavigateTo("/404");
         }
     }
 }
