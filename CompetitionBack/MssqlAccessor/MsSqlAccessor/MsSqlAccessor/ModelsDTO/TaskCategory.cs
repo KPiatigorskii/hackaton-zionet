@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace MsSqlAccessor.Models;
 
-public partial class TaskCategory : IdModel
+public partial class TaskCategoryDTO : IdModel
 {
     public int Id { get; set; }
 
@@ -25,9 +25,6 @@ public partial class TaskCategory : IdModel
     public virtual User CreateUser { get; set; } = null!;
 
     public virtual Status Status { get; set; } = null!;
-
-    [JsonIgnore]
-    public virtual ICollection<Task> Tasks { get; } = new List<Task>();
 
     public virtual User UpdateUser { get; set; } = null!;
 }

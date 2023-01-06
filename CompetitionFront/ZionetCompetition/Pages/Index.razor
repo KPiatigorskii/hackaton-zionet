@@ -1,9 +1,22 @@
 ﻿@page "/"
 
+@using Microsoft.AspNetCore.Http
+@inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
+
 
 <PageTitle>Index</PageTitle>
 
-Welcome to Zionet Competition app.
 
 <h1>Index</h1>
 <!-- Page content goes here -->
+
+@code {
+    private string userName;
+    private string token;
+    protected override async Task OnInitializedAsync()
+    {
+        //var token = HttpContextAccessor.HttpContext.Request;
+        //token = HttpContextAccessor.HttpContext.User.Claims.FirstOrDefault(e => e.Type == "jwt_token").Value;
+        //userName = HttpContextAccessor.HttpContext.User.Claims.FirstOrDefault(e => e.Type == "name").Value;
+    }
+}

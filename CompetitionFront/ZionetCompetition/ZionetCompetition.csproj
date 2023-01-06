@@ -14,6 +14,7 @@
     <PackageReference Include="Blazorise.Icons.FontAwesome" Version="1.1.5" />
     <PackageReference Include="BlazorStrap" Version="5.1.100" />
     <PackageReference Include="BlazorStrap.V5" Version="5.1.100" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.1">
@@ -21,6 +22,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="7.0.1" />
+    <PackageReference Include="RestSharp" Version="108.0.3" />
   </ItemGroup>
 
   <ItemGroup>
