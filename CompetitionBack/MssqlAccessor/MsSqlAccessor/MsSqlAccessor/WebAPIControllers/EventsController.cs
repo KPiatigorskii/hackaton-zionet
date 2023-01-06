@@ -43,7 +43,7 @@ namespace MsSqlAccessor.Controllers
             {
                 switch (ex.Error)
                 {
-                    case AppError.NoData:
+                    case AppError.ItemNotFound:
                         return NotFound();
 
                     default:
@@ -70,7 +70,7 @@ namespace MsSqlAccessor.Controllers
                     case AppError.BadRequest:
                         return BadRequest();
 
-                    case AppError.NoData: 
+                    case AppError.ItemNotFound: 
                         return NotFound();
 
                     default:
@@ -108,7 +108,7 @@ namespace MsSqlAccessor.Controllers
             {
                 switch (ex.Error)
                 {
-                    case AppError.NoData:
+                    case AppError.ItemNotFound:
                         return NotFound();
 
                     default:
@@ -129,7 +129,7 @@ namespace MsSqlAccessor.Controllers
             {
                 switch (ex.Error)
                 {
-                    case AppError.NoData:
+                    case AppError.ItemNotFound:
                         return NotFound();
 
                     default:

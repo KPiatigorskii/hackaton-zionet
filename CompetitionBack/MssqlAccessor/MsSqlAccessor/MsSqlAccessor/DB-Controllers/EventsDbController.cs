@@ -38,7 +38,7 @@ namespace MsSqlAccessor.DbControllers
             var eventDb = await _context.Events.IncludeVirtualProperties(new Event { }).FirstOrDefaultAsync(e => e.Id == id);
             if (!EventExists(id))
             {
-                throw new ServerError(AppError.NoData);
+                throw new ServerError(AppError.ItemNotFound);
             }
             else
             {
@@ -73,7 +73,7 @@ namespace MsSqlAccessor.DbControllers
                 {
                     if (!EventExists(id))
                     {
-                        throw new ServerError(AppError.NoData);
+                        throw new ServerError(AppError.ItemNotFound);
                     }
                     else
                     {
@@ -85,7 +85,7 @@ namespace MsSqlAccessor.DbControllers
             {
                 if (!EventExists(id))
                 {
-                    throw new ServerError(AppError.NoData);
+                    throw new ServerError(AppError.ItemNotFound);
                 }
                 else
                 {
@@ -122,7 +122,7 @@ namespace MsSqlAccessor.DbControllers
             var eventDb = await _context.Events.FindAsync(id);
             if (eventDb == null)
             {
-                throw new ServerError(AppError.NoData);
+                throw new ServerError(AppError.ItemNotFound);
             }
             eventDb.StatusId = (int)StatusEnm.NotActive;
             _context.Entry(eventDb).State = EntityState.Modified;
@@ -136,7 +136,7 @@ namespace MsSqlAccessor.DbControllers
             {
                 if (!EventExists(id))
                 {
-                    throw new ServerError(AppError.NoData);
+                    throw new ServerError(AppError.ItemNotFound);
                 }
                 else
                 {
@@ -150,7 +150,7 @@ namespace MsSqlAccessor.DbControllers
             var eventDb = await _context.Events.FindAsync(id);
             if (eventDb == null)
             {
-                throw new ServerError(AppError.NoData);
+                throw new ServerError(AppError.ItemNotFound);
             }
 
             _context.Events.Remove(eventDb);
@@ -163,7 +163,7 @@ namespace MsSqlAccessor.DbControllers
             {
                 if (!EventExists(id))
                 {
-                    throw new ServerError(AppError.NoData);
+                    throw new ServerError(AppError.ItemNotFound);
                 }
                 else
                 {
