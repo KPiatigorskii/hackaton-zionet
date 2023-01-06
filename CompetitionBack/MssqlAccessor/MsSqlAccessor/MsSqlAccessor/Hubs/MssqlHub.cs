@@ -52,7 +52,7 @@ namespace MsSqlAccessor.Hubs
             if (dbItem == null)
             {
                 //throw new HubException("ReceiveGetOne");
-                throw new HubException($"========Error. User with id {id} not found=========");
+                throw new HubException("Not found");
                 //await Clients.Caller.SendAsync("ReceiveGetOne", new TmodelDTO());
                 return;
             }
