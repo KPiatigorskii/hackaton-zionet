@@ -3,6 +3,7 @@
 @using BlazorBootstrap
 @using Blazorise
 @using ZionetCompetition.Models
+@inject ZionetCompetition.Controllers.UserController UserController
 
 @if (!loaded)
 {
@@ -62,36 +63,23 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        hubConnection = new HubConnectionBuilder()
-            .WithUrl("https://localhost:7277/users")
-            .Build();
+        await UserController.ConfigureHub();
+        await UserController.StartConnection();
 
-        hubConnection.On<User>("ReceiveUser", (user) =>
-            {
-                message = user;
-                InvokeAsync(StateHasChanged);
-                loaded = true;
-            });
-
-        hubConnection.On<User>("UpdateUser", (user) =>
-            {
-                message = user;
-                InvokeAsync(StateHasChanged);
-            });
-
-        await hubConnection.StartAsync();
-        await hubConnection.SendAsync("GetOne", id);
+        UserController.Get(id);
+        loaded = true;
         while (!loaded) { }
 
+        message = UserController.message;
 
     }
 
     public bool IsConnected =>
         hubConnection?.State == HubConnectionState.Connected;
 
-    private async void Save(EditContext editContext)
+    private async Task Save(EditContext editContext)
     {
-        await hubConnection.SendAsync("UpdateOne",id, message);
+        UserController.Update(id, message);
     }
 
     private void InvalidFormSubmitted(){}

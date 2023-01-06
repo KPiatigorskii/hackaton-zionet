@@ -7,6 +7,7 @@ using ZionetCompetition.Models;
 using BlazorBootstrap;
 using Blazorise.DataGrid;
 using Microsoft.JSInterop;
+using Microsoft.AspNetCore.SignalR;
 
 
 namespace ZionetCompetition.Controllers
@@ -77,7 +78,14 @@ namespace ZionetCompetition.Controllers
 
         public async void Get(int id)
         {
-            await hubConnection.SendAsync("GetOne", id);
+            try
+            {
+                await hubConnection.SendAsync("GetOne", id);
+            }
+            catch (HubException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
             while (!isLoaded) { }
             isLoaded = false;
         }
