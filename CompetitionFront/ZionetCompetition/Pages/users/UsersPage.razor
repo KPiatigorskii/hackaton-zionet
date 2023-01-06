@@ -62,7 +62,7 @@
     {
         await UserController.ConfigureHub();
         await UserController.StartConnection();
-        UserController.GetAll();
+        await UserController.GetAll();
         messages = UserController.messages;
         StateHasChanged();
     }
