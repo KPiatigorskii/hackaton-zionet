@@ -37,6 +37,7 @@ namespace MsSqlAccessor.Hubs
         {
             var dtoItems = await _context.Set<Tmodel>()
                 .IncludeVirtualProperties(new Tmodel { })
+                .Where(e => e.StatusId == (int)StatusEnm.Active)
                 .Select(e => e.ConvertToDto<Tmodel, TmodelDTO>())
                 .ToListAsync();
 
@@ -48,6 +49,7 @@ namespace MsSqlAccessor.Hubs
         {
             var dbItem = await _context.Set<Tmodel>()
                 .IncludeVirtualProperties(new Tmodel { })
+                .Where(e => e.StatusId == (int)StatusEnm.Active)
                 .FirstOrDefaultAsync(e => e.Id == id);
             
             if (dbItem == null)
@@ -55,7 +57,7 @@ namespace MsSqlAccessor.Hubs
                 throw new HubException(Errors.ItemNotFound);
             }
             var dtoItem = dbItem.ConvertToDto<Tmodel, TmodelDTO>();
-
+            await Task.Delay(2000);
             await Clients.Caller.SendAsync("ReceiveGetOne", dtoItem);
         }
 
@@ -70,6 +72,7 @@ namespace MsSqlAccessor.Hubs
 
             dbItem = await _context.Set<Tmodel>()
                 .IncludeVirtualProperties(new Tmodel { })
+                .Where(e => e.StatusId == (int)StatusEnm.Active)
                 .FirstOrDefaultAsync(e => e.Id == id);
 
             dbItem = dbItem.MakeChangesFromDto<Tmodel, TmodelDTO>(dtoItem);
