@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace MsSqlAccessor.Models;
 
-public partial class TaskParticipant : IdModel
+public partial class TaskParticipantDTO : IdModel
 {
     public int Id { get; set; }
 

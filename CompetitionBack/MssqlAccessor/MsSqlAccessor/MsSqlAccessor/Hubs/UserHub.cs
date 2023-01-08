@@ -34,7 +34,7 @@ namespace MsSqlAccessor.Hubs
         {
             var dbItem = await _context.Users.FindAsync(id); // ADD HANDLE
 
-            
+
             dbItem.FirstName = !string.IsNullOrWhiteSpace(request.FirstName) ? request.FirstName : dbItem.FirstName;
             dbItem.LastName = !string.IsNullOrWhiteSpace(request.LastName) ? request.LastName : dbItem.LastName;
             dbItem.Email = !string.IsNullOrWhiteSpace(request.Email) ? request.Email : dbItem.Email;

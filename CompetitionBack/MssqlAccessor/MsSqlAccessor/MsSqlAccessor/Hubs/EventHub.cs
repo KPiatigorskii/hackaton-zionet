@@ -4,69 +4,137 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using MsSqlAccessor.Models;
 using MsSqlAccessor.Enums;
+using MsSqlAccessor.DbControllers;
+using MsSqlAccessor.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MsSqlAccessor.Hubs
 {
     public class EventHub : Hub
     {
-        private readonly CompetitionBdTestContext _context;
-        public EventHub(CompetitionBdTestContext context)
-        {
-            _context = context;
+        private readonly EventsDbController _dbController;
 
+        public EventHub(EventsDbController dbController)
+        {
+            _dbController = dbController;
         }
 
         public async System.Threading.Tasks.Task GetAll()
         {
-            var dbItems = await _context.Events.ToArrayAsync();
+            var dbItems = await _dbController.GetEvents();
 
-            await Clients.All.SendAsync("ReceiveEvents", dbItems);
+            await Clients.All.SendAsync("ReceiveEvents", dbItems.Value);
         }
 
         public async System.Threading.Tasks.Task GetOne(int id)
         {
-            var dbItem = await _context.Events.Where(e => e.Id == id).FirstOrDefaultAsync();
+            try
+            {
+                var dbItem = await _dbController.GetEvent(id);
 
-            await Clients.All.SendAsync("ReceiveEvent", dbItem);
+                await Clients.All.SendAsync("ReceiveEvent", dbItem.Value);
+            }
+            catch (ServerError ex)
+            {
+                switch (ex.Error)
+                {
+                    case AppError.NoData:
+                        await Clients.All.SendAsync("ReceiveEvent", "Not Found");
+                        break;
+
+                    default:
+                        await Clients.All.SendAsync("ReceiveEvent", "Bad Request");
+                        break;
+                }
+            }
         }
 
-        public async System.Threading.Tasks.Task UpdateOne(int id, Event request)
+        public async System.Threading.Tasks.Task UpdateOne(int id, EventDTO request, int userId)
         {
-            var dbItem = await _context.Events.FindAsync(id); // ADD HANDLE
+            try
+            {
+                var dbItem = await _dbController.PutEvent(id, request, userId);
+                await Clients.All.SendAsync("UpdateEvent", dbItem.Value);
+            }
+            catch (ServerError ex)
+            {
+                switch (ex.Error)
+                {
+                    case AppError.BadRequest:
+                        await Clients.All.SendAsync("ReceiveEvent", "Bad Request");
+                        break;
 
-            dbItem.Title = !string.IsNullOrWhiteSpace(request.Title) ? request.Title : dbItem.Title;
-            dbItem.Address = request.Address;
-            dbItem.DateTime = request.DateTime;
-            dbItem.NumberParticipantsInTeam = !(request.NumberParticipantsInTeam == 0) ? request.NumberParticipantsInTeam : dbItem.NumberParticipantsInTeam;
-            dbItem.NumberConcurrentTasks = !(request.NumberConcurrentTasks == 0) ? request.NumberConcurrentTasks : dbItem.NumberConcurrentTasks;
-            dbItem.Hashcode = request.Hashcode;
-            dbItem.UpdateDate = DateTime.Now;
-            dbItem.UpdateUserId = request.UpdateUserId;
-            dbItem.StatusId = !(request.StatusId == 0) ? request.StatusId : dbItem.StatusId;
+                    case AppError.NoData:
+                        await Clients.All.SendAsync("ReceiveEvent", "Not Found");
+                        break;
 
-            await _context.SaveChangesAsync();
+                    default:
+                        await Clients.All.SendAsync("ReceiveEvent", "Bad Request");
+                        break;
+                }
+            }        
+        }
 
-            await Clients.All.SendAsync("UpdateEvent", dbItem);
+        public async System.Threading.Tasks.Task PostOne(EventDTO request, int userId)
+        {
+            try
+            {
+                var dbItem = await _dbController.PostEvent(request, userId);
+                await Clients.All.SendAsync("PostEvent", dbItem.Value);
+            }
+            catch (ServerError ex)
+            {
+                switch (ex.Error)
+                {
+                    default:
+                        await Clients.All.SendAsync("ReceiveEvent", "Bad Request");
+                        break;
+                }
+            }
         }
 
         public async System.Threading.Tasks.Task DeleteOne(int id)
         {
-            var dbItem = await _context.Events.FindAsync(id); // ADD HANDLE
+            try
+            {
+                var results = await _dbController.DeleteEvent(id);
+                if (results.Value) await Clients.All.SendAsync("DeleteEvent", true);
+            }
+            catch (ServerError ex)
+            {
+                switch (ex.Error)
+                {
+                    case AppError.NoData:
+                        await Clients.All.SendAsync("ReceiveEvent", "Not Found");
+                        break;
 
-            dbItem.StatusId = (int)StatusEnm.NotActive;
-            await _context.SaveChangesAsync();
-            await Clients.All.SendAsync("DeleteEvent", dbItem);
+                    default:
+                        await Clients.All.SendAsync("ReceiveEvent", "Bad Request");
+                        break;
+                }
+            }
         }
 
         public async System.Threading.Tasks.Task ForceDeleteOne(int id)
         {
-            var dbItem = await _context.Events.FindAsync(id); // ADD HANDLE
+            try
+            {
+                var results = await _dbController.DeleteEventForce(id);
+                if(results.Value) await Clients.All.SendAsync("ForceDeleteEvent", true);
+            }
+            catch (ServerError ex)
+            {
+                switch (ex.Error)
+                {
+                    case AppError.NoData:
+                        await Clients.All.SendAsync("ReceiveEvent", "Not Found");
+                        break;
 
-            _context.Events.Remove(dbItem);
-            await _context.SaveChangesAsync();
-            await Clients.All.SendAsync("ForceDeleteEvent", dbItem);
+                    default:
+                        await Clients.All.SendAsync("ReceiveEvent", "Bad Request");
+                        break;
+                }
+            }
         }
-
-
     }
 }

@@ -4,13 +4,29 @@ using System.Text.Json.Serialization;
 
 namespace MsSqlAccessor.Models;
 
-public partial class TaskCategory : IdModel
+public partial class TaskDTO : IdModel
 {
     public int Id { get; set; }
 
     public string Title { get; set; } = null!;
 
-    public string? Color { get; set; }
+    public string? TaskBody { get; set; }
+
+    public int CategoryId { get; set; }
+
+    public string? Language { get; set; }
+
+    public string? Platform { get; set; }
+
+    public int? Duration { get; set; }
+
+    public int? Points { get; set; }
+
+    public bool? HasBonus { get; set; }
+
+    public int? BonusExtraTime { get; set; }
+
+    public int? BonusPoints { get; set; }
 
     public DateTime CreateDate { get; set; }
 
@@ -22,12 +38,11 @@ public partial class TaskCategory : IdModel
 
     public int StatusId { get; set; }
 
+    public virtual TaskCategory Category { get; set; } = null!;
+
     public virtual User CreateUser { get; set; } = null!;
 
     public virtual Status Status { get; set; } = null!;
-
-    [JsonIgnore]
-    public virtual ICollection<Task> Tasks { get; } = new List<Task>();
 
     public virtual User UpdateUser { get; set; } = null!;
 }
