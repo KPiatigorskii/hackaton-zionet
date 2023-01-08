@@ -51,7 +51,7 @@ namespace ZionetCompetition.Controllers
                 .Build();
 
 
-            hubConnection.On<List<User>>("ReceiveGetAll", async (users) =>
+            hubConnection.On<List<User>>("ReceiveGetAll", (users) =>
             {
                 messages = users;
                 isLoaded = true;
