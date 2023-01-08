@@ -3,9 +3,12 @@
 @using BlazorBootstrap
 @using Blazorise
 @using ZionetCompetition.Models
-@inject ZionetCompetition.Controllers.UserController UserController
 
 @inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
+@inject ZionetCompetition.Controllers.UserController UserController
+@inject NavigationManager Navigation
+@inject ZionetCompetition.Services.TokenService TokenService
+@inject ZionetCompetition.Controllers.UserController UserController
 
 @if (!loaded)
 {
@@ -65,8 +68,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var tokenstring = HttpContextAccessor.HttpContext.User.Claims.FirstOrDefault(e => e.Type == "jwt_token").Value;
-        await UserController.ConfigureHub(tokenstring);
+        await UserController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
         await UserController.StartConnection();
 
         await UserController.Get(id);
