@@ -1,11 +1,13 @@
 ﻿@page "/users/{id:int}"
 
-@inject ZionetCompetition.Controllers.UserController UserController
-@inject NavigationManager UriHelper
-@inject IJSRuntime JSRuntime
 @using Microsoft.AspNetCore.SignalR.Client
 @using ZionetCompetition.Models
 @using Blazorise
+
+@inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
+@inject ZionetCompetition.Controllers.UserController UserController
+@inject NavigationManager Navigation
+@inject ZionetCompetition.Services.TokenService TokenService
 
 <h3>User Details</h3>
 
@@ -39,7 +41,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await UserController.ConfigureHub();
+        await UserController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
         await UserController.StartConnection();
         await UserController.Get(id);
         message = UserController.message;
@@ -60,7 +62,7 @@
 
     private void Edit()
     {
-        UriHelper.NavigateTo("/Users/" + id + "/Edit");
+        Navigation.NavigateTo("/Users/" + id + "/Edit");
     }
 
     private async Task Delete()
