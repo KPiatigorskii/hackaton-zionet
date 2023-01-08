@@ -8,9 +8,13 @@
 @using Blazorise.DataGrid
 @using System.Linq
 
-@inject NavigationManager UriHelper
 @inject ZionetCompetition.Controllers.EventController EventController
 @inject ZionetCompetition.Controllers.UserEventTeam UserEventTeam
+@inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
+@inject ZionetCompetition.Controllers.UserController UserController
+@inject NavigationManager Navigation
+@inject ZionetCompetition.Services.TokenService TokenService
+@inject ZionetCompetition.Controllers.EventController EventController
 
 @implements IAsyncDisposable
 
@@ -301,17 +305,16 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await EventController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
+        await UserEventTeam.StartConnection();
+        UserEventTeam.GetAll();
+        eventParticipantTeamMessages = UserEventTeam.messages.ToList();
+        loaded = true;
 
-        //await UserEventTeam.ConfigureHub();
-        //await UserEventTeam.StartConnection();
-        //UserEventTeam.GetAll();
-        //eventParticipantTeamMessages = UserEventTeam.messages.ToList();
-        //loaded = true;
-
-        //await EventController.ConfigureHub();
-        //await EventController.StartConnection();
-        //EventController.Get(id);
-        //message = EventController.message;
+        await EventController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
+        await EventController.StartConnection();
+        EventController.Get(id);
+        message = EventController.message;
         StateHasChanged();
     }
 
@@ -328,7 +331,7 @@
 
     private void Edit()
     {
-        UriHelper.NavigateTo("/events/" + id + "/Edit");
+        Navigation.NavigateTo("/events/" + id + "/Edit");
     }
 
     private async Task Delete()
@@ -336,13 +339,13 @@
         if (hubConnection is not null)
         {
             await hubConnection.SendAsync("ForceDeleteOne", id);
-            UriHelper.NavigateTo("/events/");
+            Navigation.NavigateTo("/events/");
         }
     }
 
     private async Task EditEvent()
     {
-        UriHelper.NavigateTo("/events/" + id + "/edit");
+        Navigation.NavigateTo("/events/" + id + "/edit");
     }
 
     private async Task DeleteEvent()

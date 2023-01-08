@@ -7,8 +7,11 @@
 @using ZionetCompetition.Models
 @using Blazorise.DataGrid
 
-@inject ZionetCompetition.Controllers.EventController EventController
+@inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
+@inject ZionetCompetition.Controllers.UserController UserController
 @inject NavigationManager Navigation
+@inject ZionetCompetition.Services.TokenService TokenService
+@inject ZionetCompetition.Controllers.EventController EventController
 
 @implements IAsyncDisposable
 
@@ -68,11 +71,11 @@
 
     protected override async Task OnInitializedAsync()
     {
-        //await EventController.ConfigureHub();
-        //await EventController.StartConnection();
-        //await EventController.GetAll();
-        //messages = EventController.messages;
-        //StateHasChanged();
+        await EventController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
+        await EventController.StartConnection();
+        await EventController.GetAll();
+        messages = EventController.messages;
+        StateHasChanged();
     }
 
     public bool IsConnected =>
