@@ -67,7 +67,6 @@ namespace MsSqlAccessor
 			app.MapHub<MsSQLHub<EventTask, EventTaskDTO>>("/EventTasks");
 			app.MapHub<MsSQLHub<EventTaskEvaluateUser, EventTaskEvaluateUserDTO>>("/EventTaskEvaluateUsers");
 			app.MapHub<MsSQLHub<Role, RoleDTO>>("/Roles");
-			app.MapHub<MsSQLHub<Status, StatusDTO>>("/Statuses");
 			app.MapHub<MsSQLHub<Task, TaskDTO>>("/Tasks");
 			app.MapHub<MsSQLHub<TaskCategory, TaskCategoryDTO>>("/TaskCategories");
 			app.MapHub<MsSQLHub<TaskParticipant, TaskParticipantDTO>>("/TaskParticipants");

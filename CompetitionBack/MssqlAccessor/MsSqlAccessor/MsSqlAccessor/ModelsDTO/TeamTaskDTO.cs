@@ -16,11 +16,17 @@ public partial class TeamTaskDTO : IdModel
 
     public DateTime? EndTime { get; set; }
 
+    public int TaskStatus { get; set; }
+
+    public int? TaskScore { get; set; }
+
     public int StatusId { get; set; }
 
     public virtual Status Status { get; set; } = null!;
 
     public virtual Task Task { get; set; } = null!;
+
+    public virtual TaskStatus TaskStatusNavigation { get; set; } = null!;
 
     public virtual Team Team { get; set; } = null!;
 }

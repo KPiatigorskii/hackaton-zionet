@@ -57,7 +57,7 @@ namespace MsSqlAccessor.Hubs
                 throw new HubException(Errors.ItemNotFound);
             }
             var dtoItem = dbItem.ConvertToDto<Tmodel, TmodelDTO>();
-            await Task.Delay(2000);
+            //await Task.Delay(1000);
             await Clients.Caller.SendAsync("ReceiveGetOne", dtoItem);
         }
 

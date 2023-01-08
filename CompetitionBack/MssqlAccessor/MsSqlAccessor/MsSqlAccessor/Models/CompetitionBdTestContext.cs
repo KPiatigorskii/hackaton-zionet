@@ -21,6 +21,8 @@ public partial class CompetitionBdTestContext : DbContext
 
     public virtual DbSet<EventParticipantTeam> EventParticipantTeams { get; set; }
 
+    public virtual DbSet<EventStatus> EventStatuses { get; set; }
+
     public virtual DbSet<EventTask> EventTasks { get; set; }
 
     public virtual DbSet<EventTaskEvaluateUser> EventTaskEvaluateUsers { get; set; }
@@ -34,6 +36,8 @@ public partial class CompetitionBdTestContext : DbContext
     public virtual DbSet<TaskCategory> TaskCategories { get; set; }
 
     public virtual DbSet<TaskParticipant> TaskParticipants { get; set; }
+
+    public virtual DbSet<TaskStatus> TaskStatuses { get; set; }
 
     public virtual DbSet<Team> Teams { get; set; }
 
@@ -62,9 +66,11 @@ public partial class CompetitionBdTestContext : DbContext
             entity.Property(e => e.EndTime)
                 .HasColumnType("datetime")
                 .HasColumnName("end_time");
+            entity.Property(e => e.EventStatusId).HasColumnName("event_status_id");
             entity.Property(e => e.Hashcode)
                 .HasMaxLength(200)
                 .HasColumnName("hashcode");
+            entity.Property(e => e.IsEnable).HasColumnName("is_enable");
             entity.Property(e => e.NumberConcurrentTasks).HasColumnName("number_concurrent_tasks");
             entity.Property(e => e.NumberParticipantsInTeam).HasColumnName("number_participants_in_team");
             entity.Property(e => e.StartTime)
@@ -83,6 +89,11 @@ public partial class CompetitionBdTestContext : DbContext
                 .HasForeignKey(d => d.CreateUserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_event_user_create");
+
+            entity.HasOne(d => d.EventStatus).WithMany(p => p.Events)
+                .HasForeignKey(d => d.EventStatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_event_event_status");
 
             entity.HasOne(d => d.Status).WithMany(p => p.Events)
                 .HasForeignKey(d => d.StatusId)
@@ -156,6 +167,22 @@ public partial class CompetitionBdTestContext : DbContext
                 .HasForeignKey(d => d.TeamId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_team-participant_team");
+        });
+
+        modelBuilder.Entity<EventStatus>(entity =>
+        {
+            entity.ToTable("event_status");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.StatusId).HasColumnName("status_id");
+            entity.Property(e => e.Title)
+                .HasMaxLength(50)
+                .HasColumnName("title");
+
+            entity.HasOne(d => d.Status).WithMany(p => p.EventStatuses)
+                .HasForeignKey(d => d.StatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_event_status_status");
         });
 
         modelBuilder.Entity<EventTask>(entity =>
@@ -357,6 +384,17 @@ public partial class CompetitionBdTestContext : DbContext
                 .HasConstraintName("FK_task_participant_team-task");
         });
 
+        modelBuilder.Entity<TaskStatus>(entity =>
+        {
+            entity.ToTable("task_status");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.StatusId).HasColumnName("status_id");
+            entity.Property(e => e.Title)
+                .HasMaxLength(50)
+                .HasColumnName("title");
+        });
+
         modelBuilder.Entity<Team>(entity =>
         {
             entity.ToTable("team");
@@ -412,6 +450,8 @@ public partial class CompetitionBdTestContext : DbContext
                 .HasColumnName("start_time");
             entity.Property(e => e.StatusId).HasColumnName("status_id");
             entity.Property(e => e.TaskId).HasColumnName("task_id");
+            entity.Property(e => e.TaskScore).HasColumnName("task_score");
+            entity.Property(e => e.TaskStatus).HasColumnName("task_status");
             entity.Property(e => e.TeamId).HasColumnName("team_id");
 
             entity.HasOne(d => d.Status).WithMany(p => p.TeamTasks)
@@ -423,6 +463,11 @@ public partial class CompetitionBdTestContext : DbContext
                 .HasForeignKey(d => d.TaskId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_team-task_task");
+
+            entity.HasOne(d => d.TaskStatusNavigation).WithMany(p => p.TeamTasks)
+                .HasForeignKey(d => d.TaskStatus)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_team-task_task_status");
 
             entity.HasOne(d => d.Team).WithMany(p => p.TeamTasks)
                 .HasForeignKey(d => d.TeamId)
