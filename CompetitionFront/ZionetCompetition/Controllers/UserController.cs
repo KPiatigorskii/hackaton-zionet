@@ -30,8 +30,6 @@ namespace ZionetCompetition.Controllers
 
         public UserController(IJSRuntime jsRuntime, NavigationManager navigationManager) {
             _jsRuntime = jsRuntime;
-           //tokenString =
-           // hubConnection.User = HttpContextAccessor.HttpContext.User;
             _navigationManager = navigationManager;
         }
 
@@ -47,11 +45,11 @@ namespace ZionetCompetition.Controllers
         public async Task ConfigureHub(string tokenString)
         {
             hubConnection = new HubConnectionBuilder()
-              .WithUrl("https://localhost:7277/users", options =>
-                                {
-                                    options.AccessTokenProvider = () => Task.FromResult(tokenString);
-                                })
-            .Build();
+                .WithUrl("https://localhost:7277/users", options =>
+                        {
+                            options.AccessTokenProvider = () => Task.FromResult(tokenString);
+                        })
+                .Build();
 
 
             hubConnection.On<List<User>>("ReceiveGetAll", async (users) =>
