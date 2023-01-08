@@ -1,4 +1,4 @@
-﻿@page "/users"
+@page "/users"
 
 @using System;
 @using System.Globalization;
@@ -7,9 +7,12 @@
 @using ZionetCompetition.Models
 @using BlazorBootstrap
 @using Blazorise.DataGrid
+@using Microsoft.AspNetCore.Http
 
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @inject ZionetCompetition.Controllers.UserController UserController
 @inject NavigationManager Navigation
+@inject ZionetCompetition.Services.TokenService TokenService
 
 @implements IAsyncDisposable
 
@@ -67,7 +70,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        await UserController.ConfigureHub();
+        await UserController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
         await UserController.StartConnection();
         await UserController.GetAll();
         messages = UserController.messages;

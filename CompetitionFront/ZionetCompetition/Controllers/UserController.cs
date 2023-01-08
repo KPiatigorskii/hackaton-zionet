@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc;
+
 using Microsoft.AspNetCore.SignalR.Client;
 using System.Net.NetworkInformation;
 using ZionetCompetition.Models;
@@ -7,6 +8,12 @@ using BlazorBootstrap;
 using Blazorise.DataGrid;
 using Microsoft.JSInterop;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Authorization;
+using Auth0.AspNetCore.Authentication;
+using System.Security.Claims;
+using NuGet.Common;
+using Newtonsoft.Json.Linq;
 
 namespace ZionetCompetition.Controllers
 {
@@ -19,11 +26,9 @@ namespace ZionetCompetition.Controllers
         private HubConnection hubConnection;
         private bool isLoaded = false;
 
+
         public UserController(IJSRuntime jsRuntime, NavigationManager navigationManager) {
             _jsRuntime = jsRuntime;
-            hubConnection = new HubConnectionBuilder()
-                .WithUrl("https://localhost:7277/users")
-                .Build();
             _navigationManager = navigationManager;
         }
 
@@ -36,9 +41,17 @@ namespace ZionetCompetition.Controllers
         {
             await hubConnection.StopAsync();
         }
-        public async Task ConfigureHub()
+        public async Task ConfigureHub(string tokenString)
         {
-            hubConnection.On<List<User>>("ReceiveGetAll", (users) =>
+            hubConnection = new HubConnectionBuilder()
+                .WithUrl("https://localhost:7277/users", options =>
+                        {
+                            options.AccessTokenProvider = () => Task.FromResult(tokenString);
+                        })
+                .Build();
+
+
+            hubConnection.On<List<User>>("ReceiveGetAll", async (users) =>
             {
                 messages = users;
                 isLoaded = true;

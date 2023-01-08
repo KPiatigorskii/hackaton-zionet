@@ -7,6 +7,9 @@ using BlazorBootstrap;
 using Blazorise.DataGrid;
 using Microsoft.JSInterop;
 using Microsoft.AspNetCore.SignalR;
+using ZionetCompetition.Data;
+using static Microsoft.AspNetCore.Razor.Language.TagHelperMetadata;
+
 
 namespace ZionetCompetition.Controllers
 {
@@ -15,16 +18,15 @@ namespace ZionetCompetition.Controllers
         private readonly IJSRuntime _jsRuntime;
         private readonly NavigationManager _navigationManager;
         public IEnumerable<EventModel> messages;
+        private readonly NavigationManager _navigationManager;
         public EventModel message;
         private HubConnection hubConnection;
         private bool isLoaded = false;
 
-        public EventController(IJSRuntime jsRuntime)
+        public EventController(IJSRuntime jsRuntime, NavigationManager navigationManager)
         {
             _jsRuntime = jsRuntime;
-            hubConnection = new HubConnectionBuilder()
-                .WithUrl("https://localhost:7277/events")
-                .Build();
+            _navigationManager = navigationManager;
         }
 
         public async Task StartConnection()
@@ -36,9 +38,17 @@ namespace ZionetCompetition.Controllers
         {
             await hubConnection.StopAsync();
         }
-        public async Task ConfigureHub()
+        public async Task ConfigureHub(string tokenString)
         {
-            hubConnection.On<List<EventModel>>("ReceiveGetAll", (events) =>
+
+            hubConnection = new HubConnectionBuilder()
+                .WithUrl("https://localhost:7277/events", options =>
+                {
+                    options.AccessTokenProvider = () => Task.FromResult(tokenString);
+                })
+                .Build();
+
+            hubConnection.On<List<EventModel>>("ReceiveEvents", async (events) =>
             {
                 messages = events;
                 isLoaded = true;

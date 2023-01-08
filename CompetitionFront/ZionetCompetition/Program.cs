@@ -2,6 +2,7 @@ using Auth0.AspNetCore.Authentication;
 using Blazorise;
 using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -10,6 +11,7 @@ using ZionetCompetition.Data;
 using Microsoft.JSInterop;
 using Microsoft.DotNet.Scaffolding.Shared.ProjectModel;
 using BlazorBootstrap;
+using ZionetCompetition.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +28,9 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<UserController>();
 builder.Services.AddTransient<EventController>();
 builder.Services.AddTransient<UserEventTeamController>();
+
+builder.Services.AddTransient<TokenService>();
+
 builder.Services
     .AddBlazorise(options =>
     {
@@ -41,7 +46,8 @@ builder.Services.AddServerSideBlazor();
 
 
 builder.Services
-    .AddAuth0WebAppAuthentication(options => {
+    .AddAuth0WebAppAuthentication(options =>
+    {
         options.Domain = builder.Configuration["Auth0:Domain"];
         options.ClientId = builder.Configuration["Auth0:ClientId"];
         options.ClientSecret = builder.Configuration["Auth0:ClientSecret"];
@@ -49,13 +55,21 @@ builder.Services
         {
             OnTokenValidated = (context) =>
             {
-                var token = context.SecurityToken.RawPayload;
+                var token = context.SecurityToken.RawHeader+ "." + 
+                context.SecurityToken.RawPayload + "." + context.SecurityToken.RawSignature;
                 var claims = new List<Claim>
                     {
-                        new Claim("jwt_token", context.SecurityToken.RawPayload)
+                        new Claim("jwt_token", token)
                     };
-                var appIdentity = new ClaimsIdentity(claims);
+                var appIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                 context.Principal.AddIdentity(appIdentity);
+                context.Response.Cookies.Append("auth_token", token, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict
+                });
+
                 return Task.CompletedTask;
             },
 
@@ -81,7 +95,7 @@ builder.Services
     {
         options.Audience = builder.Configuration["Auth0:Audience"];
         options.UseRefreshTokens = true;
-    }); ;
+    });
 
 builder.Services.AddHttpClient();
 
