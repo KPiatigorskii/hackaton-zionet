@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc;
+
 using Microsoft.AspNetCore.SignalR.Client;
 using System.Net.NetworkInformation;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -9,6 +10,11 @@ using Blazorise.DataGrid;
 using Microsoft.JSInterop;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Authorization;
+using Auth0.AspNetCore.Authentication;
+using System.Security.Claims;
+using NuGet.Common;
+using Newtonsoft.Json.Linq;
 
 namespace ZionetCompetition.Controllers
 {
@@ -21,11 +27,11 @@ namespace ZionetCompetition.Controllers
         private HubConnection hubConnection;
         private bool isLoaded = false;
 
+
         public UserController(IJSRuntime jsRuntime, NavigationManager navigationManager) {
             _jsRuntime = jsRuntime;
-            hubConnection = new HubConnectionBuilder()
-                .WithUrl("https://localhost:7277/users")
-                .Build();
+           //tokenString =
+           // hubConnection.User = HttpContextAccessor.HttpContext.User;
             _navigationManager = navigationManager;
         }
 
@@ -38,8 +44,16 @@ namespace ZionetCompetition.Controllers
         {
             await hubConnection.StopAsync();
         }
-        public async Task ConfigureHub()
+        public async Task ConfigureHub(string tokenString)
         {
+            hubConnection = new HubConnectionBuilder()
+              .WithUrl("https://localhost:7277/users", options =>
+                                {
+                                    options.AccessTokenProvider = () => Task.FromResult(tokenString);
+                                })
+            .Build();
+
+
             hubConnection.On<List<User>>("ReceiveGetAll", async (users) =>
             {
                 messages = users;
@@ -73,7 +87,7 @@ namespace ZionetCompetition.Controllers
 
         public async void GetAll() 
         {
-            await hubConnection.SendAsync("GetAll");
+            await hubConnection.InvokeAsync("GetAll");
             while (!isLoaded) { }
             isLoaded= false;
         }

@@ -5,6 +5,8 @@
 @using ZionetCompetition.Models
 @inject ZionetCompetition.Controllers.UserController UserController
 
+@inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
+
 @if (!loaded)
 {
     <H1 style="text-align:center">Loading...</H1>
@@ -63,7 +65,8 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        await UserController.ConfigureHub();
+        var tokenstring = HttpContextAccessor.HttpContext.User.Claims.FirstOrDefault(e => e.Type == "jwt_token").Value;
+        await UserController.ConfigureHub(tokenstring);
         await UserController.StartConnection();
 
         await UserController.Get(id);

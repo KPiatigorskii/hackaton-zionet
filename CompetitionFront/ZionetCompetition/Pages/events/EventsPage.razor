@@ -68,11 +68,11 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await EventController.ConfigureHub();
-        await EventController.StartConnection();
-        await EventController.GetAll();
-        messages = EventController.messages;
-        StateHasChanged();
+        //await EventController.ConfigureHub();
+        //await EventController.StartConnection();
+        //await EventController.GetAll();
+        //messages = EventController.messages;
+        //StateHasChanged();
     }
 
     public bool IsConnected =>
