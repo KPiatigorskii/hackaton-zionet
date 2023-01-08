@@ -13,7 +13,12 @@
 
 @implements IAsyncDisposable
 
-
+@if(!loaded)
+{
+    <SpinKit Type="SpinKitType.Plane" Color="SlateBlue" Centered />
+}
+else
+{
 
 <PageTitle>Users</PageTitle>
 
@@ -52,18 +57,21 @@
         </div>
     </LoadingTemplate>
 </DataGrid>
-
+}
 
 @code {
     private HubConnection? hubConnection;
     private User selectedUser;
     private IEnumerable<User> messages = new List<User> { };
+    private bool loaded = false;
+
     protected override async Task OnInitializedAsync()
     {
         await UserController.ConfigureHub();
         await UserController.StartConnection();
         await UserController.GetAll();
         messages = UserController.messages;
+        loaded = true;
         StateHasChanged();
     }
 

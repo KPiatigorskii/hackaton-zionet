@@ -10,7 +10,7 @@
 
 @inject NavigationManager UriHelper
 @inject ZionetCompetition.Controllers.EventController EventController
-@inject ZionetCompetition.Controllers.UserEventTeam UserEventTeam
+@inject ZionetCompetition.Controllers.UserEventTeamController UserEventTeamController
 
 @implements IAsyncDisposable
 
@@ -302,10 +302,10 @@
     protected override async Task OnInitializedAsync()
     {
 
-        await UserEventTeam.ConfigureHub();
-        await UserEventTeam.StartConnection();
-        UserEventTeam.GetAll();
-        eventParticipantTeamMessages = UserEventTeam.messages.ToList();
+        await UserEventTeamController.ConfigureHub();
+        await UserEventTeamController.StartConnection();
+        UserEventTeamController.GetAll();
+        eventParticipantTeamMessages = UserEventTeamController.messages.ToList();
         loaded = true;
 
         //await EventController.ConfigureHub();
@@ -360,7 +360,7 @@
 
         changedTeamMember.Team = newTeam;
         changedTeamMember.TeamId = newTeam.Id;
-        UserEventTeam.Update(changedTeamMember.Id, changedTeamMember);
+        UserEventTeamController.Update(changedTeamMember.Id, changedTeamMember);
         return Task.CompletedTask;
         
     }

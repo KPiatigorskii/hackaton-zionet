@@ -6,74 +6,76 @@ using ZionetCompetition.Models;
 using BlazorBootstrap;
 using Blazorise.DataGrid;
 using Microsoft.JSInterop;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.SignalR;
 
 namespace ZionetCompetition.Controllers
 {
-    public class EventController : Controller
-    {
-        private readonly IJSRuntime _jsRuntime;
+	public class UserEventTeamController : Controller
+	{
+		private readonly IJSRuntime _jsRuntime;
         private readonly NavigationManager _navigationManager;
-        public IEnumerable<EventModel> messages;
-        public EventModel message;
-        private HubConnection hubConnection;
-        private bool isLoaded = false;
+        public IEnumerable<EventParticipantTeam> messages = new List<EventParticipantTeam> { };
+		public EventParticipantTeam message;
+		private HubConnection hubConnection;
+		private bool isLoaded = false;
 
-        public EventController(IJSRuntime jsRuntime)
-        {
-            _jsRuntime = jsRuntime;
-            hubConnection = new HubConnectionBuilder()
-                .WithUrl("https://localhost:7277/events")
-                .Build();
-        }
+		public UserEventTeamController(IJSRuntime jsRuntime)
+		{
+			_jsRuntime = jsRuntime;
+			hubConnection = new HubConnectionBuilder()
+				.WithUrl("https://localhost:7277/eventparticipantteams")
+				.Build();
+		}
 
-        public async Task StartConnection()
-        {
-            await hubConnection.StartAsync();
-        }
+		public async Task StartConnection()
+		{
+			await hubConnection.StartAsync();
+		}
 
-        public async Task StopConnection()
-        {
-            await hubConnection.StopAsync();
-        }
-        public async Task ConfigureHub()
-        {
-            hubConnection.On<List<EventModel>>("ReceiveGetAll", (events) =>
+		public async Task StopConnection()
+		{
+			await hubConnection.StopAsync();
+		}
+		public async Task ConfigureHub()
+		{
+			hubConnection.On<List<EventParticipantTeam>>("ReceiveGetAll", (eventParticipantTeams) =>
+			{
+				messages = eventParticipantTeams;
+				isLoaded = true;
+			});
+
+			hubConnection.On<EventParticipantTeam>("ReceiveGetOne", (eventParticipantTeam) =>
+			{
+				message = eventParticipantTeam;
+				isLoaded = true;
+			});
+
+            hubConnection.On<EventParticipantTeam>("ReceiveUpdate", (eventParticipantTeam) =>
             {
-                messages = events;
+                message = eventParticipantTeam;
                 isLoaded = true;
             });
 
-            hubConnection.On<EventModel>("ReceiveGetOne", (@event) =>
-            {
-                message = @event;
-                isLoaded = true;
-            });
+            hubConnection.On<EventParticipantTeam>("ReceiveCreate", (eventParticipantTeam) =>
+			{
+				message = eventParticipantTeam;
+				isLoaded = true;
+			});
 
-            hubConnection.On<EventModel>("ReceiveUpdate", (@event) =>
-            {
-                message = @event;
-                isLoaded = true;
-            });
+			hubConnection.On<EventParticipantTeam>("ReceiveDelete", (eventParticipantTeam) =>
+			{
+				message = eventParticipantTeam;
+				isLoaded = true;
+			});
+		}
 
-            hubConnection.On<EventModel>("ReceiveCreate", (@event) =>
-            {
-                message = @event;
-                isLoaded = true;
-            });
+		public async void GetAll()
+		{
 
-            hubConnection.On<EventModel>("ReceiveDelete", (@event) =>
-            {
-                message = @event;
-                isLoaded = true;
-            });
-        }
-
-        public async Task GetAll()
-        {
             try
             {
-                await hubConnection.InvokeAsync("GetAll");
+                await hubConnection.SendAsync("GetAll");
                 while (!isLoaded) { }
                 isLoaded = false;
             }
@@ -84,11 +86,11 @@ namespace ZionetCompetition.Controllers
             }
         }
 
-        public async Task Get(int id)
-        {
+		public async Task Get(int id)
+		{
             try
             {
-                await hubConnection.InvokeAsync("GetOne", id);
+                await hubConnection.SendAsync("GetOne", id);
                 while (!isLoaded) { }
                 isLoaded = false;
             }
@@ -100,11 +102,11 @@ namespace ZionetCompetition.Controllers
             }
         }
 
-        public async Task Update(int id, EventModel @event)
-        {
+		public async Task Update(int id, EventParticipantTeam eventParticipantTeam)
+		{
             try
             {
-                await hubConnection.InvokeAsync("Update", id, @event);
+                await hubConnection.InvokeAsync("Update", id, eventParticipantTeam);
                 while (!isLoaded) { }
                 isLoaded = false;
             }
@@ -117,11 +119,11 @@ namespace ZionetCompetition.Controllers
             }
         }
 
-        public async Task Post(EventModel @event)
-        {
+		public async Task Post(EventParticipantTeam eventParticipantTeam)
+		{
             try
             {
-                await hubConnection.SendAsync("Create", @event);
+                await hubConnection.SendAsync("Create", eventParticipantTeam);
                 while (!isLoaded) { }
                 isLoaded = false;
             }
@@ -133,11 +135,11 @@ namespace ZionetCompetition.Controllers
             }
         }
 
-        public async Task Delete(int id)
-        {
+		public async Task Delete(int id)
+		{
             try
             {
-                await hubConnection.InvokeAsync("Delete", id);
+                await hubConnection.SendAsync("Delete", id);
                 while (!isLoaded) { }
                 isLoaded = false;
             }
@@ -148,7 +150,6 @@ namespace ZionetCompetition.Controllers
                 GeneralErr();
             }
         }
-
         private void NotFoundPage()
         {
             _navigationManager.NavigateTo("/404");

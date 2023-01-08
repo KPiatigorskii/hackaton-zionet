@@ -10,6 +10,7 @@ using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
 using Microsoft.JSInterop;
 using Microsoft.DotNet.Scaffolding.Shared.ProjectModel;
+using BlazorBootstrap;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,7 +27,7 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddTransient<UserController>();
 builder.Services.AddTransient<EventController>();
-builder.Services.AddTransient<UserEventTeam>();
+builder.Services.AddTransient<UserEventTeamController>();
 builder.Services
     .AddBlazorise(options =>
     {
@@ -34,6 +35,7 @@ builder.Services
     })
     .AddBootstrapProviders()
     .AddFontAwesomeIcons();
+builder.Services.AddBlazorBootstrap();
 
 builder.Services.AddDbContext<ZionetCompetitionContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ZionetCompetitionContext") ?? throw new InvalidOperationException("Connection string 'ZionetCompetitionContext' not found.")));

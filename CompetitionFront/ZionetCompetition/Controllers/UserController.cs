@@ -2,14 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR.Client;
 using System.Net.NetworkInformation;
-using Microsoft.AspNetCore.SignalR.Client;
 using ZionetCompetition.Models;
 using BlazorBootstrap;
 using Blazorise.DataGrid;
 using Microsoft.JSInterop;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.Components;
-using ZionetCompetition.Errors;
 
 namespace ZionetCompetition.Controllers
 {
@@ -41,14 +38,16 @@ namespace ZionetCompetition.Controllers
         }
         public async Task ConfigureHub()
         {
-            hubConnection.On<List<User>>("ReceiveGetAll", async (users) =>
+            hubConnection.On<List<User>>("ReceiveGetAll", (users) =>
             {
                 messages = users;
+                isLoaded = true;
             });
 
-            hubConnection.On<User>("ReceiveGetOne", async (user) =>
+            hubConnection.On<User>("ReceiveGetOne", (user) =>
             {
                 message = user;
+                isLoaded = true;
             });
 
             hubConnection.On<User>("ReceiveUpdate", (user) =>
@@ -75,6 +74,8 @@ namespace ZionetCompetition.Controllers
             try
             {
                 await hubConnection.InvokeAsync("GetAll");
+                while (!isLoaded) { }
+                isLoaded = false;
             }
             catch (HubException ex)
             {
@@ -88,6 +89,8 @@ namespace ZionetCompetition.Controllers
             try
             {
                 await hubConnection.InvokeAsync("GetOne", id);
+                while (!isLoaded) { }
+                isLoaded = false;
             }
             catch (HubException ex)
             {
@@ -101,7 +104,9 @@ namespace ZionetCompetition.Controllers
         {
             try
             {
-                await hubConnection.SendAsync("Update", id, user);
+                await hubConnection.InvokeAsync("Update", id, user);
+                while (!isLoaded) { }
+                isLoaded = false;
             }
             catch (HubException ex)
             {
@@ -116,7 +121,9 @@ namespace ZionetCompetition.Controllers
         {
             try
             {
-                await hubConnection.SendAsync("Delete", id);
+                await hubConnection.InvokeAsync("Delete", id);
+                while (!isLoaded) { }
+                isLoaded = false;
             }
             catch (HubException ex)
             {
