@@ -9,7 +9,6 @@
 @using System.Linq
 
 @inject ZionetCompetition.Controllers.UserEventTeamController UserEventTeamController
-@inject ZionetCompetition.Controllers.UserEventTeam UserEventTeam
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @inject ZionetCompetition.Controllers.UserController UserController
 @inject NavigationManager Navigation
@@ -305,15 +304,15 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await EventController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
-        await UserEventTeam.StartConnection();
-        UserEventTeam.GetAll();
+        await UserEventTeamController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
+        await UserEventTeamController.StartConnection();
+        await UserEventTeamController.GetAll();
         eventParticipantTeamMessages = UserEventTeamController.messages.ToList();
         loaded = true;
 
         await EventController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
         await EventController.StartConnection();
-        EventController.Get(id);
+        await EventController.Get(id);
         message = EventController.message;
         StateHasChanged();
     }

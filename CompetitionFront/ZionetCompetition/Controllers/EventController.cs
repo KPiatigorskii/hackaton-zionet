@@ -16,7 +16,6 @@ namespace ZionetCompetition.Controllers
     public class EventController : Controller
     {
         private readonly IJSRuntime _jsRuntime;
-        private readonly NavigationManager _navigationManager;
         public IEnumerable<EventModel> messages;
         private readonly NavigationManager _navigationManager;
         public EventModel message;
@@ -48,7 +47,7 @@ namespace ZionetCompetition.Controllers
                 })
                 .Build();
 
-            hubConnection.On<List<EventModel>>("ReceiveEvents", async (events) =>
+            hubConnection.On<List<EventModel>>("ReceiveGetAll", async (events) =>
             {
                 messages = events;
                 isLoaded = true;

@@ -23,9 +23,6 @@ namespace ZionetCompetition.Controllers
 		public UserEventTeamController(IJSRuntime jsRuntime)
 		{
 			_jsRuntime = jsRuntime;
-			hubConnection = new HubConnectionBuilder()
-				.WithUrl("https://localhost:7277/eventparticipantteams")
-				.Build();
 		}
 
 		public async Task StartConnection()
@@ -37,9 +34,16 @@ namespace ZionetCompetition.Controllers
 		{
 			await hubConnection.StopAsync();
 		}
-		public async Task ConfigureHub()
+		public async Task ConfigureHub(string tokenString)
 		{
-			hubConnection.On<List<EventParticipantTeam>>("ReceiveGetAll", (eventParticipantTeams) =>
+            hubConnection = new HubConnectionBuilder()
+            .WithUrl("https://localhost:7277/eventparticipantteams", options =>
+            {
+                options.AccessTokenProvider = () => Task.FromResult(tokenString);
+            })
+                .Build();
+
+            hubConnection.On<List<EventParticipantTeam>>("ReceiveGetAll", (eventParticipantTeams) =>
 			{
 				messages = eventParticipantTeams;
 				isLoaded = true;
@@ -70,7 +74,7 @@ namespace ZionetCompetition.Controllers
 			});
 		}
 
-		public async void GetAll()
+		public async Task GetAll()
 		{
 
             try
