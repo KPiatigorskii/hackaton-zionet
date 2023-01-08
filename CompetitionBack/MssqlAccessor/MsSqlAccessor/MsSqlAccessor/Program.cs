@@ -5,9 +5,15 @@ using Microsoft.AspNet.SignalR;
 using Microsoft.Extensions.Hosting;
 using MsSqlAccessor.Hubs;
 using MsSqlAccessor.DbControllers;
-using Task = MsSqlAccessor.Models.Task;
 using MsSqlAccessor.Services;
 using Owin;
+using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer; 
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.IdentityModel.Tokens;
+using System.Threading.Tasks;
+using Azure.Core;
+using System.Security.Claims;
 
 namespace MsSqlAccessor
 {
@@ -22,16 +28,85 @@ namespace MsSqlAccessor
             builder.Services.AddControllers().AddJsonOptions(options => {
 				options.JsonSerializerOptions.PropertyNamingPolicy = null;
 			});
+
+
+            string domain = $"https://{builder.Configuration["Auth0:Domain"]}/";
+            builder.Services
+                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.Authority = domain;
+                    options.Audience = builder.Configuration["Auth0:ClientId"];
+                    // If the access token does not have a `sub` claim, `User.Identity.Name` will be `null`. Map it to a different claim by setting the NameClaimType below.
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        NameClaimType = ClaimTypes.NameIdentifier
+                    };
+/*                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            //var accessToken = context.Request.Query["access_token"];
+                            var accessToken = context.Request.Cookies["auth_token"];
+
+                            // If the request is for our hub...
+                            var path = context.HttpContext.Request.Path;
+                            *//*                        *//*                        if (!string.IsNullOrEmpty(accessToken) &&
+                                                                                (path.StartsWithSegments("/hubs/chat")))*//*
+                                                    {
+                                                        // Read the token out of the query string*//*
+                            context.Token = accessToken;
+
+                            return System.Threading.Tasks.Task.CompletedTask;
+                        }*/
+                   // };
+                });
+
+
+
             builder.Services.AddSignalR(hubOptions =>
             {
                 hubOptions.EnableDetailedErrors = true;
                 hubOptions.KeepAliveInterval = System.TimeSpan.FromMinutes(1);
             });
+            builder.Services.AddHttpContextAccessor();
+
+            //builder.Services.AddCors();
 
             builder.Services.AddDbContext<CompetitionBdTestContext>();
-			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-			builder.Services.AddEndpointsApiExplorer();
-			builder.Services.AddSwaggerGen();
+
+            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            builder.Services.AddEndpointsApiExplorer();
+            //builder.Services.AddSwaggerGen();
+
+            builder.Services.AddSwaggerGen(opt =>
+            {
+                opt.SwaggerDoc("v1", new OpenApiInfo { Title = "MyAPI", Version = "v1" });
+                opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Please enter token",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    BearerFormat = "JWT",
+                    Scheme = "bearer"
+                });
+                opt.AddSecurityRequirement(new OpenApiSecurityRequirement
+                    {
+                        {
+                            new OpenApiSecurityScheme
+                            {
+                                Reference = new OpenApiReference
+                                {
+                                    Type=ReferenceType.SecurityScheme,
+                                    Id="Bearer"
+                                }
+                            },
+                            new string[]{}
+                        }
+                });
+            });
+
             //builder.Services.AddTransient<IUserRole, MockUserRole>();
             builder.Services.AddTransient<EventsDbController>();
 
@@ -48,6 +123,8 @@ namespace MsSqlAccessor
 
 
 			app.UseRouting();
+            //app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+            app.UseAuthentication();
             app.UseAuthorization();
 			app.UseEndpoints(endpoints =>
 			{
@@ -67,7 +144,7 @@ namespace MsSqlAccessor
 			app.MapHub<MsSQLHub<EventTaskEvaluateUser, EventTaskEvaluateUserDTO>>("/EventTaskEvaluateUsers");
 			app.MapHub<MsSQLHub<Role, RoleDTO>>("/Roles");
 			app.MapHub<MsSQLHub<Status, StatusDTO>>("/Statuses");
-			app.MapHub<MsSQLHub<Task, TaskDTO>>("/Tasks");
+			app.MapHub<MsSQLHub<MsSqlAccessor.Models.Task, TaskDTO>>("/Tasks");
 			app.MapHub<MsSQLHub<TaskCategory, TaskCategoryDTO>>("/TaskCategories");
 			app.MapHub<MsSQLHub<TaskParticipant, TaskParticipantDTO>>("/TaskParticipants");
 			app.MapHub<MsSQLHub<Team, TeamDTO>>("/Teams");
@@ -75,7 +152,6 @@ namespace MsSqlAccessor
 			app.MapHub<MsSQLHub<User, UserDTO>>("/Users");
 
 			app.MapControllers();
-
 			app.Run();
 		}
 		public void Configuration(IAppBuilder app)
