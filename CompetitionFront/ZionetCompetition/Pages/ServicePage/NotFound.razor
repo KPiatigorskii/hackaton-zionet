@@ -1,0 +1,14 @@
+﻿@page "/404"
+@using ZionetCompetition;
+
+@inject NavigationManager UriHelper
+<h1 style="text-align:center">404 Page not found</h1>
+
+<div style="text-align:center"><img src="https://localhost:7130/img/404.gif" @onclick="Home" /></div>
+
+@code {
+    private void Home()
+    {
+        UriHelper.NavigateTo("/");
+    }
+}

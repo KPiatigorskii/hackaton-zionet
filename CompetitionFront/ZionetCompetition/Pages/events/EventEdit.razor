@@ -1,0 +1,99 @@
+﻿@page "/Events/{id:int}/edit"
+
+@using Microsoft.AspNetCore.SignalR.Client
+@using BlazorBootstrap
+@using Blazorise
+@using ZionetCompetition.Models
+
+@inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
+@inject ZionetCompetition.Controllers.UserController UserController
+@inject NavigationManager Navigation
+@inject ZionetCompetition.Services.TokenService TokenService
+@inject ZionetCompetition.Controllers.EventController EventController
+
+
+    <EditForm Model="@message" OnValidSubmit="@Save" OnInvalidSubmit=@InvalidFormSubmitted>
+        <DataAnnotationsValidator />
+        <div>
+            <label>
+                Title
+                <InputText @bind-Value="@message.Title" />
+            </label>
+        </div>
+        <div>
+            <label>
+                StartTime
+                <InputDate @bind-Value="@message.StartTime" />
+            </label>
+        </div>
+        <div>
+            <label>
+                EndTime
+                <InputDate @bind-Value="@message.EndTime" />
+            </label>
+        </div>
+        <div>
+            <label>
+                NumberParticipantsInTeam
+                <InputNumber @bind-Value="@message.NumberParticipantsInTeam" />
+            </label>
+        </div>
+        <div>
+            
+            <label>
+            NumberConcurrentTasks
+            <InputNumber @bind-Value="@message.NumberConcurrentTasks" />
+            </label>
+        </div>
+@*         <div>
+            <label>
+                Status Title
+                <InputText @bind-Value="@message.Status?.Title" />
+            </label>
+        </div>*@
+         <div>
+            <label>
+                Hashcode
+                <InputText @bind-Value="@message.Hashcode" />
+            </label>
+        </div>
+
+        <Blazorise.Bootstrap.Button Color="Color.Primary" Type="Blazorise.ButtonType.Submit">Save</Blazorise.Bootstrap.Button>
+    </EditForm>
+
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+
+    private HubConnection? hubConnection;
+    private EventModel EventFields;
+    private EventModel message = new EventModel();
+    private string? EventInput;
+    private int? EventId;
+    private int userId = 1;
+    private string? messageInput;
+    private bool loaded = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await EventController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
+        await EventController.StartConnection();
+        await EventController.Get(id);
+        message = EventController.message;
+        StateHasChanged();
+    }
+
+    public bool IsConnected =>
+        hubConnection?.State == HubConnectionState.Connected;
+
+    private async void Save(EditContext editContext)
+    {
+        await EventController.Update(id, message);
+    }
+
+    private void InvalidFormSubmitted(){}
+
+
+}
