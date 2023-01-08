@@ -10,12 +10,29 @@
     public enum AppError
     {
         General = 1,
-        ConnectionError = 2,
-        BadRequest = 3,
-        NoData = 4,
-        NonNumericInput = 5,
-        InputParameterNotSupplied = 6,
-        DeletionConflict = 7
+        ConnectionError,
+        BadRequest,
+        ItemNotFound,
+        ConflictData,
+        NonNumericInput,
+        InputParameterNotSupplied,
+        DeletionConflict
     }
+
+    public static class Entities
+    {
+        public static Dictionary<string, string> Errors = new Dictionary<string, string>() 
+        { 
+            {"General", "General"},
+            {"ConnectionError", "Connection Error" },
+            {"BadRequest", "Bad Request"},
+            {"ItemNotFound", "Item Not Found"},
+            {"ConflictData", "Conflict Data collision" }
+        };
+
+
+    }
+
+
 }
 

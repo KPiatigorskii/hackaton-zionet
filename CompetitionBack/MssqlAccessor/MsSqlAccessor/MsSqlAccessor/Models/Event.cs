@@ -22,6 +22,10 @@ public partial class Event : IdModel
 
     public string? Hashcode { get; set; }
 
+    public int EventStatusId { get; set; }
+
+    public bool IsEnable { get; set; }
+
     public DateTime CreateDate { get; set; }
 
     public DateTime UpdateDate { get; set; }
@@ -39,6 +43,8 @@ public partial class Event : IdModel
 
     [JsonIgnore]
     public virtual ICollection<EventParticipantTeam> EventParticipantTeams { get; } = new List<EventParticipantTeam>();
+
+    public virtual EventStatus EventStatus { get; set; } = null!;
 
     [JsonIgnore]
     public virtual ICollection<EventTask> EventTasks { get; } = new List<EventTask>();

@@ -38,7 +38,7 @@ namespace MsSqlAccessor.Hubs
             {
                 switch (ex.Error)
                 {
-                    case AppError.NoData:
+                    case AppError.ItemNotFound:
                         await Clients.All.SendAsync("ReceiveEvent", "Not Found");
                         break;
 
@@ -64,7 +64,7 @@ namespace MsSqlAccessor.Hubs
                         await Clients.All.SendAsync("ReceiveEvent", "Bad Request");
                         break;
 
-                    case AppError.NoData:
+                    case AppError.ItemNotFound:
                         await Clients.All.SendAsync("ReceiveEvent", "Not Found");
                         break;
 
@@ -104,7 +104,7 @@ namespace MsSqlAccessor.Hubs
             {
                 switch (ex.Error)
                 {
-                    case AppError.NoData:
+                    case AppError.ItemNotFound:
                         await Clients.All.SendAsync("ReceiveEvent", "Not Found");
                         break;
 
@@ -126,7 +126,7 @@ namespace MsSqlAccessor.Hubs
             {
                 switch (ex.Error)
                 {
-                    case AppError.NoData:
+                    case AppError.ItemNotFound:
                         await Clients.All.SendAsync("ReceiveEvent", "Not Found");
                         break;
 

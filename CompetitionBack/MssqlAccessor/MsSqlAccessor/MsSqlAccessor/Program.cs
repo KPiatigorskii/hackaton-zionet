@@ -137,12 +137,14 @@ namespace MsSqlAccessor
             //app.MapHub<UserHub>("/users");
             //app.MapHub<MssqlHubOld<User>>("/users");
             //app.MapHub<EventParticipantTeamHub>("/eventparticipantteams");
-            app.MapHub<EventHub>("/events");
-			app.MapHub<MsSQLHub<EventManager, EventManagerDTO>>("/EventManagers");
+            //app.MapHub<EventHub>("/events");
+            app.MapHub<MsSQLHub<Event, EventDTO>>("/events");
+            app.MapHub<MsSQLHub<EventManager, EventManagerDTO>>("/EventManagers");
 			app.MapHub<MsSQLHub<EventParticipantTeam, EventParticipantTeamDTO>>("/eventparticipantteams");
 			app.MapHub<MsSQLHub<EventTask, EventTaskDTO>>("/EventTasks");
 			app.MapHub<MsSQLHub<EventTaskEvaluateUser, EventTaskEvaluateUserDTO>>("/EventTaskEvaluateUsers");
 			app.MapHub<MsSQLHub<Role, RoleDTO>>("/Roles");
+			//app.MapHub<MsSQLHub<Task, TaskDTO>>("/Tasks");
 			app.MapHub<MsSQLHub<Status, StatusDTO>>("/Statuses");
 			app.MapHub<MsSQLHub<MsSqlAccessor.Models.Task, TaskDTO>>("/Tasks");
 			app.MapHub<MsSQLHub<TaskCategory, TaskCategoryDTO>>("/TaskCategories");

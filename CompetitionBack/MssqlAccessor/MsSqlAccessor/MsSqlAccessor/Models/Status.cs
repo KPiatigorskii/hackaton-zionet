@@ -19,6 +19,9 @@ public partial class Status : IdModel
     public virtual ICollection<EventParticipantTeam> EventParticipantTeams { get; } = new List<EventParticipantTeam>();
 
     [JsonIgnore]
+    public virtual ICollection<EventStatus> EventStatuses { get; } = new List<EventStatus>();
+
+    [JsonIgnore]
     public virtual ICollection<EventTaskEvaluateUser> EventTaskEvaluateUsers { get; } = new List<EventTaskEvaluateUser>();
 
     [JsonIgnore]
