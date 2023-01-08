@@ -9,10 +9,11 @@
 @inject NavigationManager Navigation
 @inject ZionetCompetition.Services.TokenService TokenService
 @inject ZionetCompetition.Controllers.UserController UserController
+@inject NavigationManager UriHelper
 
 @if (!loaded)
 {
-    <H1 style="text-align:center">Loading...</H1>
+    <SpinKit Type="SpinKitType.Plane" Color="SlateBlue" Centered />
 }
 else
 {
@@ -82,6 +83,7 @@ else
     private async Task Save(EditContext editContext)
     {
         UserController.Update(id, message);
+        UriHelper.NavigateTo("/Users/" + id);
     }
 
     private void InvalidFormSubmitted(){}

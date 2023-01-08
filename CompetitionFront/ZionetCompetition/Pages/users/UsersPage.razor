@@ -1,4 +1,4 @@
-﻿@page "/users"
+@page "/users"
 
 @using System;
 @using System.Globalization;
@@ -9,14 +9,19 @@
 @using Blazorise.DataGrid
 @using Microsoft.AspNetCore.Http
 
-@inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @inject ZionetCompetition.Controllers.UserController UserController
 @inject NavigationManager Navigation
 @inject ZionetCompetition.Services.TokenService TokenService
 
 @implements IAsyncDisposable
 
-
+@if(!loaded)
+{
+    <SpinKit Type="SpinKitType.Plane" Color="SlateBlue" Centered />
+}
+else
+{
 
 <PageTitle>Users</PageTitle>
 
@@ -55,19 +60,21 @@
         </div>
     </LoadingTemplate>
 </DataGrid>
-
+}
 
 @code {
     private HubConnection? hubConnection;
     private User selectedUser;
     private IEnumerable<User> messages = new List<User> { };
-    private string tokenString;
+    private bool loaded = false;
+
     protected override async Task OnInitializedAsync()
     {
         await UserController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
         await UserController.StartConnection();
-        UserController.GetAll();
+        await UserController.GetAll();
         messages = UserController.messages;
+        loaded = true;
         StateHasChanged();
     }
 

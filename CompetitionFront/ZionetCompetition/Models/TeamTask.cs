@@ -16,6 +16,10 @@ public partial class TeamTask
 
     public DateTime? EndTime { get; set; }
 
+    public int TaskStatus { get; set; }
+
+    public int? TaskScore { get; set; }
+
     public int StatusId { get; set; }
 
     public virtual Status Status { get; set; } = null!;

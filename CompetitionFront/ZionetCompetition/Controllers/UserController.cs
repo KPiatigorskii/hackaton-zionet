@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 
 using Microsoft.AspNetCore.SignalR.Client;
 using System.Net.NetworkInformation;
-using Microsoft.AspNetCore.SignalR.Client;
 using ZionetCompetition.Models;
 using BlazorBootstrap;
 using Blazorise.DataGrid;
@@ -58,7 +57,7 @@ namespace ZionetCompetition.Controllers
                 isLoaded = true;
             });
 
-            hubConnection.On<User>("ReceiveGetOne", async (user) =>
+            hubConnection.On<User>("ReceiveGetOne", (user) =>
             {
                 message = user;
                 isLoaded = true;
@@ -83,11 +82,19 @@ namespace ZionetCompetition.Controllers
             });
         }
 
-        public async void GetAll() 
+        public async Task GetAll() 
         {
-            await hubConnection.InvokeAsync("GetAll");
-            while (!isLoaded) { }
-            isLoaded= false;
+            try
+            {
+                await hubConnection.InvokeAsync("GetAll");
+                while (!isLoaded) { }
+                isLoaded = false;
+            }
+            catch (HubException ex)
+            {
+                Console.WriteLine(ex.Message);
+                GeneralErr();
+            }
         }
 
         public async Task Get(int id)
@@ -95,33 +102,58 @@ namespace ZionetCompetition.Controllers
             try
             {
                 await hubConnection.InvokeAsync("GetOne", id);
+                while (!isLoaded) { }
+                isLoaded = false;
             }
             catch (HubException ex)
             {
                 Console.WriteLine(ex.Message);
-                if (ex.Message.Contains("Not found")) NotFoundPage();
+                if (ex.Message.Contains(Errors.Errors.ItemNotFound)) NotFoundPage();
+                GeneralErr();
             }
-            //while (!isLoaded) { }
-            isLoaded = false;
         }
 
-        public async void Update(int id, User user)
+        public async Task Update(int id, User user)
         {
-            await hubConnection.SendAsync("Update", id, user);
-            while (!isLoaded) { }
-            isLoaded = false;
+            try
+            {
+                await hubConnection.InvokeAsync("Update", id, user);
+                while (!isLoaded) { }
+                isLoaded = false;
+            }
+            catch (HubException ex)
+            {
+                Console.WriteLine(ex.Message);
+                if (ex.Message.Contains(Errors.Errors.ItemNotFound)) NotFoundPage();
+                if (ex.Message.Contains(Errors.Errors.BadRequest)) GeneralErr();
+                GeneralErr();
+            }
         }
 
-        public async void Delete(int id)
+        public async Task Delete(int id)
         {
-            await hubConnection.SendAsync("Delete", id);
-            while (!isLoaded) { }
-            isLoaded = false;
+            try
+            {
+                await hubConnection.InvokeAsync("Delete", id);
+                while (!isLoaded) { }
+                isLoaded = false;
+            }
+            catch (HubException ex)
+            {
+                Console.WriteLine(ex.Message);
+                if (ex.Message.Contains(Errors.Errors.ItemNotFound)) NotFoundPage();
+                GeneralErr();
+            }
         }
 
         private void NotFoundPage()
         {
             _navigationManager.NavigateTo("/404");
+        }
+
+        private void GeneralErr()
+        {
+            _navigationManager.NavigateTo("/500");
         }
     }
 }

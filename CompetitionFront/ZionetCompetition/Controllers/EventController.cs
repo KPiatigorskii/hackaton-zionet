@@ -2,11 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR.Client;
 using System.Net.NetworkInformation;
-using Microsoft.AspNetCore.SignalR.Client;
 using ZionetCompetition.Models;
 using BlazorBootstrap;
 using Blazorise.DataGrid;
 using Microsoft.JSInterop;
+using Microsoft.AspNetCore.SignalR;
 using ZionetCompetition.Data;
 using static Microsoft.AspNetCore.Razor.Language.TagHelperMetadata;
 
@@ -15,8 +15,8 @@ namespace ZionetCompetition.Controllers
 {
     public class EventController : Controller
     {
-
         private readonly IJSRuntime _jsRuntime;
+        private readonly NavigationManager _navigationManager;
         public IEnumerable<EventModel> messages;
         private readonly NavigationManager _navigationManager;
         public EventModel message;
@@ -40,6 +40,7 @@ namespace ZionetCompetition.Controllers
         }
         public async Task ConfigureHub(string tokenString)
         {
+
             hubConnection = new HubConnectionBuilder()
                 .WithUrl("https://localhost:7277/events", options =>
                 {
@@ -53,25 +54,25 @@ namespace ZionetCompetition.Controllers
                 isLoaded = true;
             });
 
-            hubConnection.On<EventModel>("ReceiveEvent", async (@event) =>
+            hubConnection.On<EventModel>("ReceiveGetOne", (@event) =>
             {
                 message = @event;
                 isLoaded = true;
             });
 
-            hubConnection.On<EventModel>("CreateEvent", (@event) =>
+            hubConnection.On<EventModel>("ReceiveUpdate", (@event) =>
             {
                 message = @event;
                 isLoaded = true;
             });
 
-            hubConnection.On<EventModel>("DeleteEvent", (@event) =>
+            hubConnection.On<EventModel>("ReceiveCreate", (@event) =>
             {
                 message = @event;
                 isLoaded = true;
             });
 
-            hubConnection.On<EventModel>("UpdateEvent", (@event) =>
+            hubConnection.On<EventModel>("ReceiveDelete", (@event) =>
             {
                 message = @event;
                 isLoaded = true;
@@ -80,30 +81,92 @@ namespace ZionetCompetition.Controllers
 
         public async Task GetAll()
         {
-            await hubConnection.SendAsync("GetAll");
-            while (!isLoaded) { }
-            isLoaded = false;
+            try
+            {
+                await hubConnection.InvokeAsync("GetAll");
+                while (!isLoaded) { }
+                isLoaded = false;
+            }
+            catch (HubException ex)
+            {
+                Console.WriteLine(ex.Message);
+                GeneralErr();
+            }
         }
 
         public async Task Get(int id)
         {
-            await hubConnection.SendAsync("GetOne", id);
-            while (!isLoaded) { }
-            isLoaded = false;
+            try
+            {
+                await hubConnection.InvokeAsync("GetOne", id);
+                while (!isLoaded) { }
+                isLoaded = false;
+            }
+            catch (HubException ex)
+            {
+                Console.WriteLine(ex.Message);
+                if (ex.Message.Contains(Errors.Errors.ItemNotFound)) NotFoundPage();
+                GeneralErr();
+            }
         }
 
-        public async Task Update(int id, EventModel @event, int userId)
+        public async Task Update(int id, EventModel @event)
         {
-            await hubConnection.SendAsync("UpdateOne", id, message, userId);
-            while (!isLoaded) { }
-            isLoaded = false;
+            try
+            {
+                await hubConnection.InvokeAsync("Update", id, @event);
+                while (!isLoaded) { }
+                isLoaded = false;
+            }
+            catch (HubException ex)
+            {
+                Console.WriteLine(ex.Message);
+                if (ex.Message.Contains(Errors.Errors.ItemNotFound)) NotFoundPage();
+                if (ex.Message.Contains(Errors.Errors.BadRequest)) GeneralErr();
+                GeneralErr();
+            }
+        }
+
+        public async Task Post(EventModel @event)
+        {
+            try
+            {
+                await hubConnection.SendAsync("Create", @event);
+                while (!isLoaded) { }
+                isLoaded = false;
+            }
+            catch (HubException ex)
+            {
+                Console.WriteLine(ex.Message);
+                if (ex.Message.Contains(Errors.Errors.BadRequest)) GeneralErr();
+                GeneralErr();
+            }
         }
 
         public async Task Delete(int id)
         {
-            await hubConnection.SendAsync("ForceDeleteOne", id);
-            while (!isLoaded) { }
-            isLoaded = false;
+            try
+            {
+                await hubConnection.InvokeAsync("Delete", id);
+                while (!isLoaded) { }
+                isLoaded = false;
+            }
+            catch (HubException ex)
+            {
+                Console.WriteLine(ex.Message);
+                if (ex.Message.Contains(Errors.Errors.ItemNotFound)) NotFoundPage();
+                GeneralErr();
+            }
+        }
+
+        private void NotFoundPage()
+        {
+            _navigationManager.NavigateTo("/404");
+        }
+
+        private void GeneralErr()
+        {
+            _navigationManager.NavigateTo("/500");
         }
     }
 }
