@@ -150,7 +150,7 @@ namespace MsSqlAccessor
 			app.MapHub<MsSQLHub<TaskParticipant, TaskParticipantDTO>>("/TaskParticipants");
 			app.MapHub<MsSQLHub<Team, TeamDTO>>("/Teams");
 			app.MapHub<MsSQLHub<TeamTask, TeamTaskDTO>>("/TeamTasks");
-			app.MapHub<MsSQLHub<User, UserDTO>>("/Users");
+			app.MapHub<UserHub<User, UserDTO>>("/Users");
 
 			app.MapControllers();
 			app.Run();
