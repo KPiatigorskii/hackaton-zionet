@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using MsSqlAccessor.Models;
 
 namespace MsSqlAccessor.Controllers
@@ -21,11 +24,19 @@ namespace MsSqlAccessor.Controllers
         }
 
         // GET: api/Users
+        
         [HttpGet]
+        [Authorize(Roles ="user")]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
+            var jwt = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
             return await _context.Users.Include(u => u.Status).Include(u => u.Role).ToListAsync();
             //return await _context.Users.ToListAsync();
+
+
+
+
+
         }
 
         // GET: api/Users/5
