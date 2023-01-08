@@ -14,6 +14,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Threading.Tasks;
 using Azure.Core;
 using System.Security.Claims;
+using Task = MsSqlAccessor.Models.Task;
 
 namespace MsSqlAccessor
 {
@@ -144,9 +145,7 @@ namespace MsSqlAccessor
 			app.MapHub<MsSQLHub<EventTask, EventTaskDTO>>("/EventTasks");
 			app.MapHub<MsSQLHub<EventTaskEvaluateUser, EventTaskEvaluateUserDTO>>("/EventTaskEvaluateUsers");
 			app.MapHub<MsSQLHub<Role, RoleDTO>>("/Roles");
-			//app.MapHub<MsSQLHub<Task, TaskDTO>>("/Tasks");
-			app.MapHub<MsSQLHub<Status, StatusDTO>>("/Statuses");
-			app.MapHub<MsSQLHub<MsSqlAccessor.Models.Task, TaskDTO>>("/Tasks");
+			app.MapHub<MsSQLHub<Task, TaskDTO>>("/Tasks");
 			app.MapHub<MsSQLHub<TaskCategory, TaskCategoryDTO>>("/TaskCategories");
 			app.MapHub<MsSQLHub<TaskParticipant, TaskParticipantDTO>>("/TaskParticipants");
 			app.MapHub<MsSQLHub<Team, TeamDTO>>("/Teams");

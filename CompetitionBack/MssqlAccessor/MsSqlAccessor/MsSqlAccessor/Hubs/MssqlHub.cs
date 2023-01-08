@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -21,6 +22,7 @@ namespace MsSqlAccessor.Hubs
 {
     public class MsSQLHub<Tmodel, TmodelDTO> : Hub where Tmodel : class, IdModel, new() where TmodelDTO : class, IdModel, new()
     {
+        private const string roles = "admin,user,paritcipant";
         private readonly CompetitionBdTestContext _context;
         //const string _header = "User";
         //const string str = typeof(Tmodel).Name;
@@ -33,6 +35,7 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("GetAll")]
+        [Authorize(Roles = roles)]
         public async Task GetAll()
         {
             var dtoItems = await _context.Set<Tmodel>()
@@ -45,6 +48,7 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("GetOne")]
+        [Authorize(Roles = "admin")]
         public async Task GetOne(int id)
         {
             var dbItem = await _context.Set<Tmodel>()
