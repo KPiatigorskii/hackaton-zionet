@@ -32,6 +32,12 @@ public partial class EventModel
     [CustomAttribute("Details", true)]
     public string? Hashcode { get; set; }
 
+    [CustomAttribute("Details", true)]
+    public int EventStatusId { get; set; }
+
+    [CustomAttribute("Details", true)]
+    public bool IsEnable { get; set; }
+
     public DateTime CreateDate { get; set; }
 
     public DateTime UpdateDate { get; set; }
@@ -44,6 +50,8 @@ public partial class EventModel
     public int StatusId { get; set; }
 
     public virtual User CreateUser { get; set; } = null!;
+
+    public virtual EventStatus EventStatus { get; set; } = null!;
 
     public virtual Status Status { get; set; } = null!;
 
