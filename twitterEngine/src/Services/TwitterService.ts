@@ -13,11 +13,11 @@ import { TwitterApi } from 'twitter-api-v2';
           });
         }
 
-        public getAllTweets(): Promise<any[]>{
+        public getAllTweets(queryString: string): Promise<any[]>{
         let result: any[] = [];
         return new Promise<any[]>((resolve, reject) => {
             //SqlHelper.executeQueryArrayResult<localEmployee>(this.errorService, Queries.GetAllEmployee)
-            this.twitterClient.v2.get('tweets/search/recent', { query: 'nodeJS', max_results: 100 })
+            this.twitterClient.v2.get('tweets/search/recent', { query: queryString, max_results: 100 })
             .then((result: any) => {
                 resolve(result);
             })

@@ -14,7 +14,7 @@ const getTweets = async (twitterClient: TwitterApi) => {
 
 
   const getAllTweets = async (req: Request, res: Response, next: NextFunction) => {
-    twitterService.getAllTweets()
+    twitterService.getAllTweets(req.params.query)
     .then((result: any) => {
       return res.status(200).json({
           message: result
