@@ -53,8 +53,9 @@ namespace MsSqlAccessor.DbControllers
             return dtoItem;
         }
 
-        public async Task<TmodelDTO> Update(int id, TmodelDTO dtoItem, int userId)
+        public async Task<TmodelDTO> Update(int id, TmodelDTO dtoItem, string userEmail)
         {
+            int userId = await GetUserIdByEmail(userEmail);
 
             if (id != dtoItem.Id)
             {
@@ -96,8 +97,10 @@ namespace MsSqlAccessor.DbControllers
             return dtoItemResult;
         }
 
-        public async Task<TmodelDTO> Create(TmodelDTO dtoItem, int userId)
+        public async Task<TmodelDTO> Create(TmodelDTO dtoItem, string userEmail)
         {
+            int userId = await GetUserIdByEmail(userEmail);
+
             Tmodel dbItem = dtoItem.ConvertFromDto<Tmodel, TmodelDTO>();
 
             dbItem.StatusId = (int)StatusEnm.Active;
@@ -128,8 +131,10 @@ namespace MsSqlAccessor.DbControllers
             return dtoItemResult;
         }
 
-        public async Task<TmodelDTO> Delete(int id, int userId)
+        public async Task<TmodelDTO> Delete(int id, string userEmail)
         {
+            int userId = await GetUserIdByEmail(userEmail);
+
             var dbItem = await _context.Set<Tmodel>().FindAsync(id);
             if (dbItem == null)
             {
@@ -157,8 +162,10 @@ namespace MsSqlAccessor.DbControllers
             return dtoItemResult;
         }
 
-        public async Task<TmodelDTO> ForceDelete(int id, int userId)
+        public async Task<TmodelDTO> ForceDelete(int id, string userEmail)
         {
+            int userId = await GetUserIdByEmail(userEmail);
+
             var dbItem = await _context.Set<Tmodel>().FindAsync(id);
             if (dbItem == null)
             {
@@ -172,10 +179,20 @@ namespace MsSqlAccessor.DbControllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                throw new ServerError(AppError.General);
+                throw new Exception(Errors.General);
             }
 
             return new TmodelDTO();
+        }
+
+        private async Task<int> GetUserIdByEmail(string userEmail)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(e => e.Email == userEmail);
+            if (user == null)
+            {
+                throw new Exception(Errors.NotAuthorizedOnServer);
+            }
+            return user.Id;
         }
 
         private bool isItemExists(int id)

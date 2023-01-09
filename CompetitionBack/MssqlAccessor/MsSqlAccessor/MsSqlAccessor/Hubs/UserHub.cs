@@ -23,7 +23,14 @@ namespace MsSqlAccessor.Hubs
 {
     public class UserHub<Tmodel, TmodelDTO> : Hub where Tmodel : class, IdModel, new() where TmodelDTO : class, IdModel, new()
     {
-        private const string roles = "admin,user,paritcipant";
+        private const string GetAllRoles = "admin,manager,paritcipant";
+        private const string GetOneRoles = "admin,manager,paritcipant";
+        private const string UpdateRoles = "admin";
+        private const string CreateRoles = "admin";
+        private const string DeleteRoles = "admin";
+        private const string ForceDeleteRoles = "admin";
+
+
         private readonly GenDbController<Tmodel, TmodelDTO> _dbController;
 
         public UserHub(GenDbController<Tmodel, TmodelDTO> dbController)
@@ -32,7 +39,7 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("GetAll")]
-        //[Authorize(Roles = roles)]
+        [Authorize(Roles = GetAllRoles)]
         public async Task GetAll()
         {
             var dtoItems = await _dbController.GetAll();
@@ -41,7 +48,7 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("GetOne")]
-        //[Authorize(Roles = "admin")]
+        [Authorize(Roles = GetOneRoles)]
         public async Task GetOne(int id)
         {
             TmodelDTO dtoItem;
@@ -65,19 +72,23 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("Update")]
+        [Authorize(Roles = UpdateRoles)]
         public async Task Update(int id, TmodelDTO dtoItem)
         {
             var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
-            int userId = 1;
 
             TmodelDTO dtoItemResult;
 
             try
             {
-                dtoItemResult = await _dbController.Update(id, dtoItem, userId);
+                dtoItemResult = await _dbController.Update(id, dtoItem, userEmail);
             }
             catch (Exception ex)
             {
+                if (ex.Message == Errors.NotAuthorizedOnServer)
+                {
+                    throw new HubException(Errors.NotAuthorizedOnServer);
+                }
                 if (ex.Message == Errors.ItemNotFound)
                 {
                     throw new HubException(Errors.ItemNotFound);
@@ -96,19 +107,23 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("Create")]
+        [Authorize(Roles = CreateRoles)]
         public async Task Create(TmodelDTO dtoItem)
         {
             var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
-            int userId = 1;
 
             TmodelDTO dtoItemResult;
 
             try
             {
-                dtoItemResult = await _dbController.Create(dtoItem, userId);
+                dtoItemResult = await _dbController.Create(dtoItem, userEmail);
             }
             catch (Exception ex)
             {
+                if (ex.Message == Errors.NotAuthorizedOnServer)
+                {
+                    throw new HubException(Errors.NotAuthorizedOnServer);
+                }
                 if (ex.Message == Errors.ConflictData)
                 {
                     throw new HubException(Errors.ItemNotFound);
@@ -123,19 +138,23 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("Delete")]
+        [Authorize(Roles = DeleteRoles)]
         public async Task Delete(int id)
         {
             var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
-            int userId = 1;
 
             TmodelDTO dtoItemResult;
 
             try
             {
-                dtoItemResult = await _dbController.Delete(id, userId);
+                dtoItemResult = await _dbController.Delete(id, userEmail);
             }
             catch (Exception ex)
             {
+                if (ex.Message == Errors.NotAuthorizedOnServer)
+                {
+                    throw new HubException(Errors.NotAuthorizedOnServer);
+                }
                 if (ex.Message == Errors.ConflictData)
                 {
                     throw new HubException(Errors.ItemNotFound);
@@ -150,19 +169,23 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("ForceDelete")]
+        [Authorize(Roles = ForceDeleteRoles)]
         public async Task ForceDelete(int id)
         {
             var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
-            int userId = 1;
 
             TmodelDTO dtoItemResult;
 
             try
             {
-                dtoItemResult = await _dbController.ForceDelete(id, userId);
+                dtoItemResult = await _dbController.ForceDelete(id, userEmail);
             }
             catch (Exception ex)
             {
+                if (ex.Message == Errors.NotAuthorizedOnServer)
+                {
+                    throw new HubException(Errors.NotAuthorizedOnServer);
+                }
                 if (ex.Message == Errors.ConflictData)
                 {
                     throw new HubException(Errors.ItemNotFound);

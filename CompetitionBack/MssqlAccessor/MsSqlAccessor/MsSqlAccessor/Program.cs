@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Azure.Core;
 using System.Security.Claims;
 using Task = MsSqlAccessor.Models.Task;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MsSqlAccessor
 {
@@ -110,6 +111,21 @@ namespace MsSqlAccessor
 
             //builder.Services.AddTransient<IUserRole, MockUserRole>();
             builder.Services.AddTransient<EventsDbController>();
+            builder.Services.AddTransient<GenDbController<Event, EventDTO>>();
+            builder.Services.AddTransient<GenDbController<EventManager, EventManagerDTO>>();
+            builder.Services.AddTransient<GenDbController<EventParticipantTeam, EventParticipantTeamDTO>>();
+            builder.Services.AddTransient<GenDbController<EventTask, EventTaskDTO>>();
+            builder.Services.AddTransient<GenDbController<EventTaskEvaluateUser, EventTaskEvaluateUserDTO>>();
+            builder.Services.AddTransient<GenDbController<Role, RoleDTO>>();
+            builder.Services.AddTransient<GenDbController<Task, TaskDTO>>();
+            builder.Services.AddTransient<GenDbController<TaskCategory, TaskCategoryDTO>>();
+            builder.Services.AddTransient<GenDbController<TaskParticipant, TaskParticipantDTO>>();
+            builder.Services.AddTransient<GenDbController<Team, TeamDTO>>();
+            builder.Services.AddTransient<GenDbController<TeamTask, TeamTaskDTO>>();
+            builder.Services.AddTransient<GenDbController<User, UserDTO>>();
+          
+
+            
 
             var app = builder.Build();
 
