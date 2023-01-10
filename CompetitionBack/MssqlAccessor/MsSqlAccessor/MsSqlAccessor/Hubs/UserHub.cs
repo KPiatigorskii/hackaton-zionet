@@ -8,8 +8,8 @@ namespace MsSqlAccessor.Hubs
 {
     public class UserHub<Tmodel, TmodelDTO> : Hub where Tmodel : class, IdModel, new() where TmodelDTO : class, IdModel, new()
     {
-        private const string GetAllRoles = "admin,manager,paritcipant";
-        private const string GetOneRoles = "admin,manager,paritcipant";
+        private const string GetAllRoles = "admin,manager";
+        private const string GetOneRoles = "admin,manager";
         private const string UpdateRoles = "admin";
         private const string CreateRoles = "admin";
         private const string DeleteRoles = "admin";
