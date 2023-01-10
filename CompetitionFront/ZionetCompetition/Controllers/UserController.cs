@@ -1,20 +1,8 @@
-﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Mvc;
-
-using Microsoft.AspNetCore.SignalR.Client;
-using System.Net.NetworkInformation;
-using ZionetCompetition.Models;
-using BlazorBootstrap;
-using Blazorise.DataGrid;
-using Microsoft.JSInterop;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Authorization;
-using Auth0.AspNetCore.Authentication;
-using System.Security.Claims;
-using NuGet.Common;
-using Newtonsoft.Json.Linq;
-using ZionetCompetition.Errors;
+using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.JSInterop;
+using ZionetCompetition.Models;
 using ZionetCompetition.Services;
 
 namespace ZionetCompetition.Controllers
@@ -22,14 +10,12 @@ namespace ZionetCompetition.Controllers
     public class UserController : Controller
     {
         private HubConnection hubConnection;
-        private readonly IJSRuntime _jsRuntime;
         private readonly ErrorService _errorService;
         public IEnumerable<User> messages = new List<User> { };
         public User message;
         private bool isLoaded = false;
 
-        public UserController(IJSRuntime jsRuntime, ErrorService errorService) {
-            _jsRuntime = jsRuntime;
+        public UserController(ErrorService errorService) {
             _errorService = errorService;
         }
 

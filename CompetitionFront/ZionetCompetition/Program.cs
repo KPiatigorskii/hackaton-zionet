@@ -12,6 +12,7 @@ using Microsoft.JSInterop;
 using Microsoft.DotNet.Scaffolding.Shared.ProjectModel;
 using BlazorBootstrap;
 using ZionetCompetition.Services;
+using ZionetCompetition.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,9 +29,11 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<TokenService>();
 builder.Services.AddTransient<ErrorService>();
 
-builder.Services.AddTransient<UserController>();
-builder.Services.AddTransient<EventController>();
-builder.Services.AddTransient<UserEventTeamController>();
+//builder.Services.AddTransient<UserController>();
+//builder.Services.AddTransient<EventController>();
+//builder.Services.AddTransient<UserEventTeamController>();
+
+builder.Services.AddTransient<GenClientController<User>>();
 
 builder.Services
     .AddBlazorise(options =>
