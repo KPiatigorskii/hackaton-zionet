@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Azure.Core;
 using System.Security.Claims;
 using Task = MsSqlAccessor.Models.Task;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MsSqlAccessor
 {
@@ -110,6 +111,21 @@ namespace MsSqlAccessor
 
             //builder.Services.AddTransient<IUserRole, MockUserRole>();
             builder.Services.AddTransient<EventsDbController>();
+            builder.Services.AddTransient<GenDbController<Event, EventDTO>>();
+            builder.Services.AddTransient<GenDbController<EventManager, EventManagerDTO>>();
+            builder.Services.AddTransient<GenDbController<EventParticipantTeam, EventParticipantTeamDTO>>();
+            builder.Services.AddTransient<GenDbController<EventTask, EventTaskDTO>>();
+            builder.Services.AddTransient<GenDbController<EventTaskEvaluateUser, EventTaskEvaluateUserDTO>>();
+            builder.Services.AddTransient<GenDbController<Role, RoleDTO>>();
+            builder.Services.AddTransient<GenDbController<Task, TaskDTO>>();
+            builder.Services.AddTransient<GenDbController<TaskCategory, TaskCategoryDTO>>();
+            builder.Services.AddTransient<GenDbController<TaskParticipant, TaskParticipantDTO>>();
+            builder.Services.AddTransient<GenDbController<Team, TeamDTO>>();
+            builder.Services.AddTransient<GenDbController<TeamTask, TeamTaskDTO>>();
+            builder.Services.AddTransient<GenDbController<User, UserDTO>>();
+          
+
+            
 
             var app = builder.Build();
 
@@ -139,18 +155,19 @@ namespace MsSqlAccessor
             //app.MapHub<MssqlHubOld<User>>("/users");
             //app.MapHub<EventParticipantTeamHub>("/eventparticipantteams");
             //app.MapHub<EventHub>("/events");
-            app.MapHub<MsSQLHub<Event, EventDTO>>("/events");
-            app.MapHub<MsSQLHub<EventManager, EventManagerDTO>>("/EventManagers");
-			app.MapHub<MsSQLHub<EventParticipantTeam, EventParticipantTeamDTO>>("/eventparticipantteams");
-			app.MapHub<MsSQLHub<EventTask, EventTaskDTO>>("/EventTasks");
-			app.MapHub<MsSQLHub<EventTaskEvaluateUser, EventTaskEvaluateUserDTO>>("/EventTaskEvaluateUsers");
-			app.MapHub<MsSQLHub<Role, RoleDTO>>("/Roles");
-			app.MapHub<MsSQLHub<Task, TaskDTO>>("/Tasks");
-			app.MapHub<MsSQLHub<TaskCategory, TaskCategoryDTO>>("/TaskCategories");
-			app.MapHub<MsSQLHub<TaskParticipant, TaskParticipantDTO>>("/TaskParticipants");
-			app.MapHub<MsSQLHub<Team, TeamDTO>>("/Teams");
-			app.MapHub<MsSQLHub<TeamTask, TeamTaskDTO>>("/TeamTasks");
-			app.MapHub<MsSQLHub<User, UserDTO>>("/Users");
+            //app.MapHub<MsSQLHub<Event, EventDTO>>("/events");
+            app.MapHub<EventHub<Event, EventDTO>>("/events");
+            app.MapHub<EventManagerHub<EventManager, EventManagerDTO>>("/EventManagers");
+			app.MapHub<EventParticipantTeamHub<EventParticipantTeam, EventParticipantTeamDTO>>("/eventparticipantteams");
+			app.MapHub<EventTaskHub<EventTask, EventTaskDTO>>("/EventTasks");
+			app.MapHub<EventTaskEvaluateUserHub<EventTaskEvaluateUser, EventTaskEvaluateUserDTO>>("/EventTaskEvaluateUsers");
+			app.MapHub<RoleHub<Role, RoleDTO>>("/Roles");
+			app.MapHub<TaskHub<Task, TaskDTO>>("/Tasks");
+			app.MapHub<TaskCategoryHub<TaskCategory, TaskCategoryDTO>>("/TaskCategories");
+			app.MapHub<TaskParticipantHub<TaskParticipant, TaskParticipantDTO>>("/TaskParticipants");
+			app.MapHub<TeamHub<Team, TeamDTO>>("/Teams");
+			app.MapHub<TeamTaskHub<TeamTask, TeamTaskDTO>>("/TeamTasks");
+			app.MapHub<UserHub<User, UserDTO>>("/Users");
 
 			app.MapControllers();
 			app.Run();

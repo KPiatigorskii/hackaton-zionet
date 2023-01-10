@@ -185,26 +185,26 @@ namespace MsSqlAccessor.Hubs
             return;
         }
 
-        public override async Task OnConnectedAsync()
-        {
-            var context = this.Context.GetHttpContext();
-            // получаем кук name
-            if (context.Request.Cookies.ContainsKey("name"))
-            {
-                string userName;
-                if (context.Request.Cookies.TryGetValue("name", out userName))
-                {
-                    Debug.WriteLine($"name = {userName}");
-                }
-            }
+        //public override async Task OnConnectedAsync()
+        //{
+        //    var context = this.Context.GetHttpContext();
+        //    // получаем кук name
+        //    if (context.Request.Cookies.ContainsKey("name"))
+        //    {
+        //        string userName;
+        //        if (context.Request.Cookies.TryGetValue("name", out userName))
+        //        {
+        //            Debug.WriteLine($"name = {userName}");
+        //        }
+        //    }
 
-            // получаем юзер-агент
-            Debug.WriteLine($"UserAgent = {context.Request.Headers["User-Agent"]}");
-            // получаем ip
-            Debug.WriteLine($"RemoteIpAddress = {context.Connection.RemoteIpAddress.ToString()}");
+        //    // получаем юзер-агент
+        //    Debug.WriteLine($"UserAgent = {context.Request.Headers["User-Agent"]}");
+        //    // получаем ip
+        //    Debug.WriteLine($"RemoteIpAddress = {context.Connection.RemoteIpAddress.ToString()}");
 
-            await base.OnConnectedAsync();
-        }
+        //    await base.OnConnectedAsync();
+        //}
 
         private bool isItemExists(int id)
         {
