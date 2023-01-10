@@ -33,7 +33,21 @@ builder.Services.AddTransient<ErrorService>();
 //builder.Services.AddTransient<EventController>();
 //builder.Services.AddTransient<UserEventTeamController>();
 
+builder.Services.AddTransient<GenClientController<EventModel>>();
+builder.Services.AddTransient<GenClientController<EventManager>>();
+builder.Services.AddTransient<GenClientController<EventParticipantTeam>>();
+builder.Services.AddTransient<GenClientController<EventTask>>();
+builder.Services.AddTransient<GenClientController<EventTaskEvaluateUser>>();
+builder.Services.AddTransient<GenClientController<Role>>();
+builder.Services.AddTransient<GenClientController<TaskCategory>>();
+builder.Services.AddTransient<GenClientController<TaskModel>>();
+builder.Services.AddTransient<GenClientController<TaskParticipant>>();
+builder.Services.AddTransient<GenClientController<Team>>();
+builder.Services.AddTransient<GenClientController<TeamParticipant>>();
+builder.Services.AddTransient<GenClientController<TeamTask>>();
 builder.Services.AddTransient<GenClientController<User>>();
+
+
 
 builder.Services
     .AddBlazorise(options =>
