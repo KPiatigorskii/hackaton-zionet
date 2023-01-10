@@ -8,15 +8,15 @@ const cronService = new CronService()
 const twitterService = new TwitterService()
 
   const startCron = (req: Request, res: Response) => {
-    console.log("starting cron job with query " + req.params.query)
-    const result = cronService.startCron(twitterService, req.params.query)
+    console.log("starting cron job with query " + req.body.query)
+    const result = cronService.startCron(twitterService, req.body.query, req.body.team_id);
     return res.status(200).json({
         message: result
     });
 };
 
 const stopCron = async (req: Request, res: Response) => {
-  const result = cronService.stopCron()
+  const result = cronService.stopCron(req.body.team_id);
     return res.status(200).json({
         message: result
     });

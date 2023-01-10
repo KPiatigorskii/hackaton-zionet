@@ -14,13 +14,13 @@ dotenv.config()
           });
         }
 
-        public getAllTweets(queryString: string): Promise<any> {
+        public getTweets(queryString: string): Promise<any> {
           return new Promise<any> ((resolve, reject) => {
               const result = this.twitterClient.v2.get('tweets/search/recent', { query: queryString, max_results: 10 })
           .then((result: any) => {
             console.log("==============================================")
             result.data.forEach((element: { id: string; text: string; }) => {
-              console.log(`queryString:${queryString}`);
+              console.log(`queryString: ${queryString}`);
               console.log(`id: ${element.id}`);
               console.log(`text: ${element.text.slice(0, 50)}`);
             });

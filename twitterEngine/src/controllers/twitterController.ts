@@ -5,16 +5,8 @@ import { TwitterService } from '../services/TwitterService';
 
 const twitterService = new TwitterService()
 
-const getTweets = async (twitterClient: TwitterApi) => {
-
-    return 0;
-    //await twitterClient.v1.tweet('Hello, this is a test.');
-    // rest of the code here
-  };
-
-
-  const getAllTweets = async (req: Request, res: Response, next: NextFunction) => {
-    twitterService.getAllTweets(req.params.query)
+  const getTweets = async (req: Request, res: Response, next: NextFunction) => {
+    twitterService.getTweets(req.body.query)
     .then((result: any) => {
       return res.status(200).json({
           message: result
@@ -22,4 +14,4 @@ const getTweets = async (twitterClient: TwitterApi) => {
   })
 };
 
-export {getAllTweets, getTweets}
+export {getTweets}

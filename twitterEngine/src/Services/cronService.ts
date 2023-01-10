@@ -1,23 +1,17 @@
+import { Scheduler } from "timers/promises";
 import { TwitterService } from "./TwitterService";
 
 const cron = require('node-cron');
 
 export class CronService {
+    public cronJobs: Record<number, any> = {};
 
-    public startCron(twitterService: TwitterService,query: string): any {
-            cron.schedule('*/10 * * * * *',() => twitterService.getAllTweets(query));
+    public startCron(twitterService: TwitterService, query: string, team_id:number): any {
+            this.cronJobs[team_id] = cron.schedule('*/10 * * * * *',() => twitterService.getTweets(query));
     }
 
-    public stopCron(): Promise<any> {
-        return new Promise<any>((resolve, reject) => {
-            cron.gracefulShutdown()
-            .then((result: any) => {
-                resolve("crone stop successfully!");
-            })
-            .catch((error: any) => {
-                reject(error)
-            });
-        });
+    public stopCron(team_id: number): any{
+        this.cronJobs[team_id].stop();
     }
 
 }
