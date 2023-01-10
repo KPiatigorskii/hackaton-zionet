@@ -3,6 +3,7 @@ import express, { Express } from 'express';
 import  twitterRoutes from '../twitterEngine/src/routes/twitterRoutes'
 import * as dotenv from 'dotenv' // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
 dotenv.config()
+const cron = require('node-cron');
 
 
 // Instantiate with desired auth type (here's Bearer v2 auth)
@@ -42,11 +43,17 @@ router.use((req, res, next) => {
     });
 });
 
-/** Server */
-const httpServer = http.createServer(router);
+/* cron schedule */
+cron.schedule('* * * * *', function() {
+    console.log('running a task every minute');
+    });
+
+   /** Server */
+const httpServer = http.createServer(router); 
 const PORT: any = process.env.PORT ?? 6978;
 httpServer.listen(
     PORT, 
     () => {
         console.log(`The server is running on port ${PORT}`)
     });
+
