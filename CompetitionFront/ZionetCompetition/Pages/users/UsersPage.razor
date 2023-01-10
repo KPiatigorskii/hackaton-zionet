@@ -39,13 +39,17 @@ else
         @bind-SelectedRow=selectedUser>
     <ChildContent>
         <DataGridCommandColumn TItem="User"></DataGridCommandColumn>
-        <DataGridColumn TItem="User" Field="Id" Caption="Id" Sortable="false" Displayable="true">
+        <DataGridColumn TItem="User" Field="Id" Caption="Id" Sortable="false" Displayable="true" Width="5%">
             <DisplayTemplate>
                 <NavLink href="@($"/Users/{context.Id}")">@context.Id</NavLink>
             </DisplayTemplate>
         </DataGridColumn>
-        <DataGridColumn TItem="User" Field="FirstName" Caption="FirstName" Sortable="false" Displayable="true" />
-        <DataGridDateColumn TItem="User" Field="LastName" Caption="LastName" Sortable="false" Displayable="true" />
+        <DataGridColumn TItem="User" Field="FirstName" Caption="Name" Sortable="false" Displayable="true" >
+            <DisplayTemplate>
+                    <NavLink href="@($"/Users/{context.Id}")">@context.FirstName @context.LastName</NavLink>
+            </DisplayTemplate>
+        </DataGridColumn>
+        <DataGridColumn TItem="User" Field="Role.Title" Caption="Role" Sortable="true" Displayable="true" />
         <DataGridColumn TItem="User" Field="Email" Caption="Email" Sortable="false" Displayable="true" />
         <DataGridColumn TItem="User" Field="Github" Caption="Github" Sortable="true" Displayable="true" />
     </ChildContent>

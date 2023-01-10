@@ -44,13 +44,25 @@ else
         </div>
         <div>
             <label>
-                RoleId
-                <InputNumber @bind-Value="@message.RoleId" />
+                Role
+                <RadioGroup TValue="int"
+                        Name="roles"
+                        CheckedValue="@checkedRole"
+                        CheckedValueChanged="@OnCheckedValueChanged">
+                    <Radio Value="@(1)">Admin</Radio>
+                    <Radio Value="@(2)">Manager</Radio>
+                    <Radio Value="@(3)">Partic</Radio>
+                </RadioGroup>
+                <InputText @bind-Value="@message.Role.Title" />
             </label>
         </div>
-
         <Blazorise.Bootstrap.Button Color="Color.Primary" Type="Blazorise.ButtonType.Submit">Save</Blazorise.Bootstrap.Button>
     </EditForm>
+
+}
+
+
+@code {
 
 }
 
@@ -65,6 +77,7 @@ else
     private string? userInput;
     private int? userId;
     private string? messageInput;
+    private int checkedRole;
     private bool loaded = false;
 
     protected override async Task OnInitializedAsync()
@@ -74,6 +87,7 @@ else
 
         await UserController.Get(id);
         message = UserController.message;
+        checkedRole = message.RoleId;
         loaded = true;
     }
 
@@ -84,6 +98,15 @@ else
     {
         UserController.Update(id, message);
         UriHelper.NavigateTo("/Users/" + id);
+    }
+
+    
+
+    Task OnCheckedValueChanged(int value)
+    {
+        checkedRole = value;
+
+        return Task.CompletedTask;
     }
 
     private void InvalidFormSubmitted(){}

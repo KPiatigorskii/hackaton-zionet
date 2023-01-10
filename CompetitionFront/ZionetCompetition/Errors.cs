@@ -7,7 +7,7 @@
         public const string BadRequest = "Bad Request";
         public const string ItemNotFound = "Item not found";
         public const string ConflictData = "Conflict Data collision";
-        public const string NotAuthorizedOnClient = "User can not be authorizen on client";
+        public const string NotAuthorizedOnClient = "user is unauthorized";
         public const string NotAuthorizedOnServer = "User can not be authorizen by Email";
     }
 }
