@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace ZionetCompetition.Models;
 
-public partial class EventModel
+public partial class Event
 {
     public int? Id { get; set; }
 

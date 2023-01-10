@@ -33,7 +33,7 @@ builder.Services.AddTransient<ErrorService>();
 //builder.Services.AddTransient<EventController>();
 //builder.Services.AddTransient<UserEventTeamController>();
 
-builder.Services.AddTransient<GenClientController<EventModel>>();
+builder.Services.AddTransient<GenClientController<Event>>();
 builder.Services.AddTransient<GenClientController<EventManager>>();
 builder.Services.AddTransient<GenClientController<EventParticipantTeam>>();
 builder.Services.AddTransient<GenClientController<EventTask>>();

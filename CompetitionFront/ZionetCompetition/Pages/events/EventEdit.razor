@@ -6,7 +6,7 @@
 @using ZionetCompetition.Models
 
 @inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
-@inject ZionetCompetition.Controllers.GenClientController<EventModel> EventController
+@inject ZionetCompetition.Controllers.GenClientController<Event> EventController
 @inject NavigationManager Navigation
 @inject ZionetCompetition.Services.TokenService TokenService
 
@@ -67,8 +67,8 @@
 
 
     private HubConnection? hubConnection;
-    private EventModel EventFields;
-    private EventModel message = new EventModel();
+    private Event EventFields;
+    private Event message = new Event();
     private string? EventInput;
     private int? EventId;
     private int userId = 1;
