@@ -1,6 +1,9 @@
 import http from 'http';
 import express, { Express } from 'express';
 import  twitterRoutes from '../twitterEngine/src/routes/twitterRoutes'
+import * as dotenv from 'dotenv' // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
+dotenv.config()
+
 
 // Instantiate with desired auth type (here's Bearer v2 auth)
 

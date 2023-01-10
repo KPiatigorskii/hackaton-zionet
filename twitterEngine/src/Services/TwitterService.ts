@@ -1,15 +1,16 @@
 import { TwitterApi } from 'twitter-api-v2';
-
+import * as dotenv from 'dotenv' // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
+dotenv.config()
 
   export class TwitterService {
     twitterClient: TwitterApi;
 
     constructor(){
         this.twitterClient = new TwitterApi({
-            appKey: 'M4TuwEsziKK5gZS1uGujpsuHM',
-            appSecret: 'i4WkYEPn27YUohbfPRsi3DStkyFV45rHTYC4M13Rp0i5XLXNYV',
-            accessToken: '1606734720569692160-IV0JnoYdvyARYLXzXC1qv89uy36dT7',
-            accessSecret: 'kw6RrolXZrrebqX54GLSdeCzjGrsk2coU7vBQ3toYCjyh',
+            appKey: String(process.env.TWITTER_API_KEY) || '',
+            appSecret: String(process.env.TWITTER_API_SECRET) || '',
+            accessToken: String(process.env.TWITTER_ACCESS_TOKEN) || '',
+            accessSecret: String(process.env.TWITTER_ACCESS_TOKEN_SECRET) || '',
           });
         }
 

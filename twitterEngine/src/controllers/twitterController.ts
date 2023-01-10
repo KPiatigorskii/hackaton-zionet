@@ -1,6 +1,6 @@
 import { TwitterApi } from 'twitter-api-v2';
 import { Request, Response, NextFunction } from 'express';
-import { TwitterService } from '../services/twitterService';
+import { TwitterService } from '../services/TwitterService';
 
 
 const twitterService = new TwitterService()
