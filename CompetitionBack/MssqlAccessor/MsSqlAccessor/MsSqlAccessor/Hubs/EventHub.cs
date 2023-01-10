@@ -1,140 +1,190 @@
-﻿using Azure.Core;
-//using Microsoft.AspNet.SignalR;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
-using MsSqlAccessor.Models;
-using MsSqlAccessor.Enums;
 using MsSqlAccessor.DbControllers;
-using MsSqlAccessor.Services;
-using Microsoft.Extensions.Logging;
+using MsSqlAccessor.Models;
+using Task = System.Threading.Tasks.Task;
 
 namespace MsSqlAccessor.Hubs
 {
-    public class EventHub : Hub
+    public class EventHub<Tmodel, TmodelDTO> : Hub where Tmodel : class, IdModel, new() where TmodelDTO : class, IdModel, new()
     {
-        private readonly EventsDbController _dbController;
+        private const string GetAllRoles = "admin,manager,paritcipant";
+        private const string GetOneRoles = "admin,manager,paritcipant";
+        private const string UpdateRoles = "admin";
+        private const string CreateRoles = "admin";
+        private const string DeleteRoles = "admin";
+        private const string ForceDeleteRoles = "admin";
 
-        public EventHub(EventsDbController dbController)
+
+        private readonly GenDbController<Tmodel, TmodelDTO> _dbController;
+
+        public EventHub(GenDbController<Tmodel, TmodelDTO> dbController)
         {
             _dbController = dbController;
         }
 
-        public async System.Threading.Tasks.Task GetAll()
+        [HubMethodName("GetAll")]
+        [Authorize(Roles = GetAllRoles)]
+        public async Task GetAll()
         {
-            var dbItems = await _dbController.GetEvents();
+            var dtoItems = await _dbController.GetAll();
 
-            await Clients.All.SendAsync("ReceiveEvents", dbItems.Value);
+            await Clients.Caller.SendAsync("ReceiveGetAll", dtoItems);
         }
 
-        public async System.Threading.Tasks.Task GetOne(int id)
+        [HubMethodName("GetOne")]
+        [Authorize(Roles = GetOneRoles)]
+        public async Task GetOne(int id)
         {
+            TmodelDTO dtoItem;
             try
             {
-                var dbItem = await _dbController.GetEvent(id);
-
-                await Clients.All.SendAsync("ReceiveEvent", dbItem.Value);
+                dtoItem = await _dbController.GetOne(id);
             }
-            catch (ServerError ex)
+            catch (Exception ex)
             {
-                switch (ex.Error)
+                if (ex.Message == Errors.ItemNotFound)
                 {
-                    case AppError.ItemNotFound:
-                        await Clients.All.SendAsync("ReceiveEvent", "Not Found");
-                        break;
-
-                    default:
-                        await Clients.All.SendAsync("ReceiveEvent", "Bad Request");
-                        break;
+                    throw new HubException(Errors.ItemNotFound);
+                }
+                else
+                {
+                    throw new HubException(Errors.General);
                 }
             }
+            //await Task.Delay(1000);
+            await Clients.Caller.SendAsync("ReceiveGetOne", dtoItem);
         }
 
-        public async System.Threading.Tasks.Task UpdateOne(int id, EventDTO request, int userId)
+        [HubMethodName("Update")]
+        [Authorize(Roles = UpdateRoles)]
+        public async Task Update(int id, TmodelDTO dtoItem)
         {
+            var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
+
+            TmodelDTO dtoItemResult;
+
             try
             {
-                var dbItem = await _dbController.PutEvent(id, request, userId);
-                await Clients.All.SendAsync("UpdateEvent", dbItem.Value);
+                dtoItemResult = await _dbController.Update(id, dtoItem, userEmail);
             }
-            catch (ServerError ex)
+            catch (Exception ex)
             {
-                switch (ex.Error)
+                if (ex.Message == Errors.NotAuthorizedOnServer)
                 {
-                    case AppError.BadRequest:
-                        await Clients.All.SendAsync("ReceiveEvent", "Bad Request");
-                        break;
-
-                    case AppError.ItemNotFound:
-                        await Clients.All.SendAsync("ReceiveEvent", "Not Found");
-                        break;
-
-                    default:
-                        await Clients.All.SendAsync("ReceiveEvent", "Bad Request");
-                        break;
+                    throw new HubException(Errors.NotAuthorizedOnServer);
                 }
-            }        
+                if (ex.Message == Errors.ItemNotFound)
+                {
+                    throw new HubException(Errors.ItemNotFound);
+                }
+                if (ex.Message == Errors.BadRequest)
+                {
+                    throw new HubException(Errors.BadRequest);
+                }
+                else
+                {
+                    throw new HubException(Errors.General);
+                }
+            }
+
+            await Clients.Caller.SendAsync("ReceiveUpdate", dtoItemResult);
         }
 
-        public async System.Threading.Tasks.Task PostOne(EventDTO request, int userId)
+        [HubMethodName("Create")]
+        [Authorize(Roles = CreateRoles)]
+        public async Task Create(TmodelDTO dtoItem)
         {
+            var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
+
+            TmodelDTO dtoItemResult;
+
             try
             {
-                var dbItem = await _dbController.PostEvent(request, userId);
-                await Clients.All.SendAsync("PostEvent", dbItem.Value);
+                dtoItemResult = await _dbController.Create(dtoItem, userEmail);
             }
-            catch (ServerError ex)
+            catch (Exception ex)
             {
-                switch (ex.Error)
+                if (ex.Message == Errors.NotAuthorizedOnServer)
                 {
-                    default:
-                        await Clients.All.SendAsync("ReceiveEvent", "Bad Request");
-                        break;
+                    throw new HubException(Errors.NotAuthorizedOnServer);
+                }
+                if (ex.Message == Errors.ConflictData)
+                {
+                    throw new HubException(Errors.ItemNotFound);
+                }
+                else
+                {
+                    throw new HubException(Errors.General);
                 }
             }
+
+            await Clients.Caller.SendAsync("ReceiveCreate", dtoItemResult);
         }
 
-        public async System.Threading.Tasks.Task DeleteOne(int id)
+        [HubMethodName("Delete")]
+        [Authorize(Roles = DeleteRoles)]
+        public async Task Delete(int id)
         {
+            var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
+
+            TmodelDTO dtoItemResult;
+
             try
             {
-                var results = await _dbController.DeleteEvent(id);
-                if (results.Value) await Clients.All.SendAsync("DeleteEvent", true);
+                dtoItemResult = await _dbController.Delete(id, userEmail);
             }
-            catch (ServerError ex)
+            catch (Exception ex)
             {
-                switch (ex.Error)
+                if (ex.Message == Errors.NotAuthorizedOnServer)
                 {
-                    case AppError.ItemNotFound:
-                        await Clients.All.SendAsync("ReceiveEvent", "Not Found");
-                        break;
-
-                    default:
-                        await Clients.All.SendAsync("ReceiveEvent", "Bad Request");
-                        break;
+                    throw new HubException(Errors.NotAuthorizedOnServer);
+                }
+                if (ex.Message == Errors.ConflictData)
+                {
+                    throw new HubException(Errors.ItemNotFound);
+                }
+                else
+                {
+                    throw new HubException(Errors.General);
                 }
             }
+
+            await Clients.Caller.SendAsync("ReceiveDelete", dtoItemResult);
         }
 
-        public async System.Threading.Tasks.Task ForceDeleteOne(int id)
+        [HubMethodName("ForceDelete")]
+        [Authorize(Roles = ForceDeleteRoles)]
+        public async Task ForceDelete(int id)
         {
+            var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
+
+            TmodelDTO dtoItemResult;
+
             try
             {
-                var results = await _dbController.DeleteEventForce(id);
-                if(results.Value) await Clients.All.SendAsync("ForceDeleteEvent", true);
+                dtoItemResult = await _dbController.ForceDelete(id, userEmail);
             }
-            catch (ServerError ex)
+            catch (Exception ex)
             {
-                switch (ex.Error)
+                if (ex.Message == Errors.NotAuthorizedOnServer)
                 {
-                    case AppError.ItemNotFound:
-                        await Clients.All.SendAsync("ReceiveEvent", "Not Found");
-                        break;
-
-                    default:
-                        await Clients.All.SendAsync("ReceiveEvent", "Bad Request");
-                        break;
+                    throw new HubException(Errors.NotAuthorizedOnServer);
+                }
+                if (ex.Message == Errors.ConflictData)
+                {
+                    throw new HubException(Errors.ItemNotFound);
+                }
+                else
+                {
+                    throw new HubException(Errors.General);
                 }
             }
+
+
+            await Clients.Caller.SendAsync("ReceiveForceDelete", new TmodelDTO());
+            return;
         }
+
     }
 }

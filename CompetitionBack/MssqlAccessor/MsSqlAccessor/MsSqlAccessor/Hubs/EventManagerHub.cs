@@ -6,7 +6,7 @@ using Task = System.Threading.Tasks.Task;
 
 namespace MsSqlAccessor.Hubs
 {
-    public class UserHub<Tmodel, TmodelDTO> : Hub where Tmodel : class, IdModel, new() where TmodelDTO : class, IdModel, new()
+    public class EventManagerHub<Tmodel, TmodelDTO> : Hub where Tmodel : class, IdModel, new() where TmodelDTO : class, IdModel, new()
     {
         private const string GetAllRoles = "admin,manager,paritcipant";
         private const string GetOneRoles = "admin,manager,paritcipant";
@@ -18,7 +18,7 @@ namespace MsSqlAccessor.Hubs
 
         private readonly GenDbController<Tmodel, TmodelDTO> _dbController;
 
-        public UserHub(GenDbController<Tmodel, TmodelDTO> dbController)
+        public EventManagerHub(GenDbController<Tmodel, TmodelDTO> dbController)
         {
             _dbController = dbController;
         }
