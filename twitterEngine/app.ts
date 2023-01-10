@@ -3,6 +3,7 @@ import express, { Express } from 'express';
 
 import  twitterRoutes from '../twitterEngine/src/routes/twitterRoutes'
 import cronRoutes from '../twitterEngine/src/routes/cronRoutes'
+import mssqlAccessorRoutes from './src/routes/mssqlAccessorRoutes';
 
 import { TwitterService } from '../twitterEngine/src/services/TwitterService';
 
@@ -40,6 +41,7 @@ router.use((req, res, next) => {
 // /** Routes */
 router.use('/CronSchedule', cronRoutes.router);
 router.use('/twitter/', twitterRoutes.router);
+router.use('/mssqlAccessor/',mssqlAccessorRoutes.router )
 
 /** Error handling */
 router.use((req, res, next) => {
