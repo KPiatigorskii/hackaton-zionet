@@ -14,7 +14,7 @@ public partial class EventTask
 
     public int StatusId { get; set; }
 
-    public virtual EventModel Event { get; set; } = null!;
+    public virtual Event Event { get; set; } = null!;
 
     public virtual TaskModel Task { get; set; } = null!;
 

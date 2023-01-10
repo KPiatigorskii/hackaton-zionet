@@ -12,6 +12,7 @@ using Microsoft.JSInterop;
 using Microsoft.DotNet.Scaffolding.Shared.ProjectModel;
 using BlazorBootstrap;
 using ZionetCompetition.Services;
+using ZionetCompetition.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,11 +26,28 @@ builder.Services.AddSession();
 
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddTransient<UserController>();
-builder.Services.AddTransient<EventController>();
-builder.Services.AddTransient<UserEventTeamController>();
-
 builder.Services.AddTransient<TokenService>();
+builder.Services.AddTransient<ErrorService>();
+
+//builder.Services.AddTransient<UserController>();
+//builder.Services.AddTransient<EventController>();
+//builder.Services.AddTransient<UserEventTeamController>();
+
+builder.Services.AddTransient<GenClientController<Event>>();
+builder.Services.AddTransient<GenClientController<EventManager>>();
+builder.Services.AddTransient<GenClientController<EventParticipantTeam>>();
+builder.Services.AddTransient<GenClientController<EventTask>>();
+builder.Services.AddTransient<GenClientController<EventTaskEvaluateUser>>();
+builder.Services.AddTransient<GenClientController<Role>>();
+builder.Services.AddTransient<GenClientController<TaskCategory>>();
+builder.Services.AddTransient<GenClientController<TaskModel>>();
+builder.Services.AddTransient<GenClientController<TaskParticipant>>();
+builder.Services.AddTransient<GenClientController<Team>>();
+builder.Services.AddTransient<GenClientController<TeamParticipant>>();
+builder.Services.AddTransient<GenClientController<TeamTask>>();
+builder.Services.AddTransient<GenClientController<User>>();
+
+
 
 builder.Services
     .AddBlazorise(options =>

@@ -2,20 +2,20 @@
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.JSInterop;
-using ZionetCompetition.Models;
 using ZionetCompetition.Services;
 
 namespace ZionetCompetition.Controllers
 {
-    public class UserController : Controller
+    public class GenClientController<Tmodel> : Controller where Tmodel : class
     {
+        public string connectionUrl = $"https://localhost:7277/" + typeof(Tmodel).Name + "s";
         private HubConnection hubConnection;
         private readonly ErrorService _errorService;
-        public IEnumerable<User> messages = new List<User> { };
-        public User message;
+        public IEnumerable<Tmodel> messages = new List<Tmodel> { };
+        public Tmodel message;
         private bool isLoaded = false;
 
-        public UserController(ErrorService errorService) {
+        public GenClientController(ErrorService errorService) {
             _errorService = errorService;
         }
 
@@ -31,40 +31,40 @@ namespace ZionetCompetition.Controllers
         public async Task ConfigureHub(string tokenString)
         {
             hubConnection = new HubConnectionBuilder()
-                .WithUrl("https://localhost:7277/users", options =>
+                .WithUrl(connectionUrl, options =>
                         {
                             options.AccessTokenProvider = () => Task.FromResult(tokenString);
                         })
                 .Build();
 
 
-            hubConnection.On<List<User>>("ReceiveGetAll", (users) =>
+            hubConnection.On<List<Tmodel>>("ReceiveGetAll", (receiveObj) =>
             {
-                messages = users;
+                messages = receiveObj;
                 isLoaded = true;
             });
 
-            hubConnection.On<User>("ReceiveGetOne", (user) =>
+            hubConnection.On<Tmodel>("ReceiveGetOne", (receiveObj) =>
             {
-                message = user;
+                message = receiveObj;
                 isLoaded = true;
             });
 
-            hubConnection.On<User>("ReceiveUpdate", (user) =>
+            hubConnection.On<Tmodel>("ReceiveUpdate", (receiveObj) =>
             {
-                message = user;
+                message = receiveObj;
                 isLoaded = true;
             });
 
-            hubConnection.On<User>("ReceiveCreate", (user) =>
+            hubConnection.On<Tmodel>("ReceiveCreate", (receiveObj) =>
             {
-                message = user;
+                message = receiveObj;
                 isLoaded = true;
             });
 
-            hubConnection.On<User>("ReceiveDelete", (user) =>
+            hubConnection.On<Tmodel>("ReceiveDelete", (receiveObj) =>
             {
-                message = user;
+                message = receiveObj;
                 isLoaded = true;
             });
         }
@@ -97,11 +97,11 @@ namespace ZionetCompetition.Controllers
             }
         }
 
-        public async Task Update(int id, User user)
+        public async Task Update(int id, Tmodel item)
         {
             try
             {
-                await hubConnection.InvokeAsync("Update", id, user);
+                await hubConnection.InvokeAsync("Update", id, item);
                 while (!isLoaded) { }
                 isLoaded = false;
             }
@@ -111,11 +111,11 @@ namespace ZionetCompetition.Controllers
             }
         }
 
-        public async Task Create(User user)
+        public async Task Create(Tmodel item)
         {
             try
             {
-                await hubConnection.InvokeAsync("Create", user);
+                await hubConnection.InvokeAsync("Create", item);
                 while (!isLoaded) { }
                 isLoaded = false;
             }

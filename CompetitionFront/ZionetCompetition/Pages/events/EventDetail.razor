@@ -8,12 +8,12 @@
 @using Blazorise.DataGrid
 @using System.Linq
 
-@inject ZionetCompetition.Controllers.UserEventTeamController UserEventTeamController
+@inject ZionetCompetition.Controllers.GenClientController<EventParticipantTeam> UserEventTeamController
+@inject ZionetCompetition.Controllers.GenClientController<Event> EventController
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
-@inject ZionetCompetition.Controllers.UserController UserController
 @inject NavigationManager Navigation
 @inject ZionetCompetition.Services.TokenService TokenService
-@inject ZionetCompetition.Controllers.EventController EventController
+
 
 @implements IAsyncDisposable
 
@@ -186,7 +186,7 @@
             <TabPanel Name="Info">
 
             <tbody>
-                @foreach (var property in typeof(EventModel).GetProperties())
+                @foreach (var property in typeof(Event).GetProperties())
                 {
                     @if (property.IsDefined(typeof(CustomAttribute), false))
                     {
@@ -286,7 +286,7 @@
     };
 
     private HubConnection? hubConnection;
-    private EventModel message = new EventModel { };
+    private Event message = new Event { };
     private List<User> teamList;
     private string? userInput;
     private int? userId;

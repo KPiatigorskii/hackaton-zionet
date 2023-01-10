@@ -2,13 +2,15 @@
 
 @using Microsoft.AspNetCore.SignalR.Client
 @using ZionetCompetition.Models
+@using ZionetCompetition
 
 @inject NavigationManager UriHelper
 @inject IJSRuntime JSRuntime
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
-@inject ZionetCompetition.Controllers.UserController UserController
+@inject ZionetCompetition.Controllers.GenClientController<User> UserController
 @inject NavigationManager Navigation
 @inject ZionetCompetition.Services.TokenService TokenService
+
 
 @if(!loaded)
 {
@@ -16,21 +18,42 @@
 }
 else
 {
-    <h3>User Details</h3>
+    <Card Margin="Margin.Is4.OnY">
+        <CardImage Source="@userIcon" Alt="Placeholder image" Style="width:30%;height:30%;">
+    </CardImage>
+    <CardBody>
+            <CardTitle Size="5"> <h3>User Details</h3></CardTitle>
+        <CardText>
+            <TableBody>
+                    <TableRow>
+                        <TableRowHeader>FirstName:</TableRowHeader>
+                        <TableRowCell style="padding-left: 20px">@message.FirstName</TableRowCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableRowHeader>LastName:</TableRowHeader>
+                        <TableRowCell style="padding-left: 20px">@message.LastName</TableRowCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableRowHeader>RoleId:</TableRowHeader>
+                        <TableRowCell style="padding-left: 20px">@message.Role.Title</TableRowCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableRowHeader>Email:</TableRowHeader>
+                        <TableRowCell style="padding-left: 20px">@message.Email</TableRowCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableRowHeader>Github:</TableRowHeader>
+                        <TableRowCell style="padding-left: 20px">@message.Github</TableRowCell>
+                    </TableRow>
+            </TableBody>
+        </CardText>
+            <div style="margin-top: 20px">
+                <Button Color="Color.Primary" @onclick="Edit">Edit</Button>
+                <Button Color="Color.Primary" @onclick="Delete">Delete</Button>
+            </div>
+    </CardBody>
+    </Card>
 
-
-    <div><span>FirstName:</span><span>@message.FirstName</span></div>
-    <div><span>LastName:</span><span>@message.LastName</span></div>
-    <div><span>Email:</span><span>@message.Email</span></div>
-    <div><span>Github:</span><span>@message.Github</span></div>
-    <div><span>RoleId:</span><span>@message.RoleId</span></div>
-
-
-<div style="margin-top: 20px">
-
-    <Button Color="Color.Primary" @onclick="Edit" >Edit</Button>
-    <Button Color="Color.Primary" @onclick="Delete" >Delete</Button>
-</div>
 }
 
 
@@ -38,6 +61,7 @@ else
     [Parameter]
     public int id { get; set; }
 
+    string userIcon = ImagesBase64.userImg;
 
     private HubConnection? hubConnection;
     private User message = new User { };

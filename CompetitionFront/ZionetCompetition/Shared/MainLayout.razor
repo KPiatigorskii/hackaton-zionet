@@ -1,4 +1,6 @@
 ﻿@inherits LayoutComponentBase
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Zionet Competition</PageTitle>
 
@@ -8,7 +10,9 @@
     </div>
 
     <main>
+
         <div class="top-row px-4">
+            <b>@userAuthenticated</b>
             <AccessControl />
             <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
         </div>
@@ -18,3 +22,24 @@
         </article>
     </main>
 </div>
+@code {
+    private string userName;
+    private string token;
+    private bool isLoaded;
+    private string userAuthenticated;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity.IsAuthenticated)
+        {
+            userAuthenticated = $"{user.Identity.Name}";
+        }
+        else
+        {
+            userAuthenticated = "";
+        }
+        //userName = HttpContextAccessor.HttpContext.User.Claims.FirstOrDefault(e => e.Type == "name").Value;
+    }
+}

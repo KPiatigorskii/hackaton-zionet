@@ -17,7 +17,7 @@ public partial class EventParticipantTeam
 
     public bool IsLeader { get; set; }
 
-    public virtual EventModel Event { get; set; } = null!;
+    public virtual Event Event { get; set; } = null!;
 
     public virtual User Participant { get; set; } = null!;
 
