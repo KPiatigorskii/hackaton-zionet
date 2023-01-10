@@ -1,9 +1,14 @@
 import http from 'http';
 import express, { Express } from 'express';
+
 import  twitterRoutes from '../twitterEngine/src/routes/twitterRoutes'
+import cronRoutes from '../twitterEngine/src/routes/cronRoutes'
+
+import { TwitterService } from '../twitterEngine/src/services/TwitterService';
+
 import * as dotenv from 'dotenv' // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
 dotenv.config()
-const cron = require('node-cron');
+
 
 
 // Instantiate with desired auth type (here's Bearer v2 auth)
@@ -33,6 +38,7 @@ router.use((req, res, next) => {
 });
 
 // /** Routes */
+router.use('/CronSchedule', cronRoutes.router);
 router.use('/twitter/', twitterRoutes.router);
 
 /** Error handling */
@@ -42,11 +48,6 @@ router.use((req, res, next) => {
         message: error.message
     });
 });
-
-/* cron schedule */
-cron.schedule('* * * * *', function() {
-    console.log('running a task every minute');
-    });
 
    /** Server */
 const httpServer = http.createServer(router); 
