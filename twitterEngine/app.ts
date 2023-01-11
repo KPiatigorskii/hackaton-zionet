@@ -5,8 +5,6 @@ import  twitterRoutes from '../twitterEngine/src/routes/twitterRoutes'
 import cronRoutes from '../twitterEngine/src/routes/cronRoutes'
 import mssqlAccessorRoutes from './src/routes/mssqlAccessorRoutes';
 
-import { TwitterService } from '../twitterEngine/src/services/TwitterService';
-
 import * as dotenv from 'dotenv' // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
 dotenv.config()
 

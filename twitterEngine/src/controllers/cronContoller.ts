@@ -1,22 +1,21 @@
 import { TwitterApi } from 'twitter-api-v2';
 import { Request, Response, NextFunction } from 'express';
-import { CronService } from '../services/CronService';
-import { TwitterService } from '../services/TwitterService';
+import { TwitterService } from '../Services/TwitterService';
+import { CronService } from '../Services/CronService';
+import { Team } from '../entities';
 
-
-const cronService = new CronService()
 const twitterService = new TwitterService()
 
   const startCron = (req: Request, res: Response) => {
-    console.log("starting cron job with query " + req.body.query)
-    const result = cronService.startCron(twitterService, req.body.query, req.body.team_id);
+    console.log("starting cron job with query " + req.body.eventName + " " + req.body.teamName)
+    const result = CronService.startCron(twitterService, req.body.eventName, req.body.teamName, req.body.userTwitterId);
     return res.status(200).json({
         message: result
     });
 };
 
 const stopCron = async (req: Request, res: Response) => {
-  const result = cronService.stopCron(req.body.team_id);
+  const result = CronService.stopCron(req.body.team_id);
     return res.status(200).json({
         message: result
     });
