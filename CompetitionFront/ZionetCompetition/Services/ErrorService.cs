@@ -43,7 +43,7 @@ namespace ZionetCompetition.Services
                     break;
 
                 default:
-                    GeneralErr(Errors.Errors.General); 
+                    GeneralErr(error); 
                     break;
 
             }
@@ -59,6 +59,11 @@ namespace ZionetCompetition.Services
            // errorMessage = "asdf";
             _navigationManager.NavigateTo($"/404/{errorMessage}");
         }
+
+        //private void GeneralErr(string errorMessage)
+        //{
+        //    _navigationManager.NavigateTo($"/500/{errorMessage}");
+        //}
 
         private void GeneralErr(string errorMessage)
         {

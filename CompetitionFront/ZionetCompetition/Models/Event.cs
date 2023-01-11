@@ -9,7 +9,7 @@ namespace ZionetCompetition.Models;
 
 public partial class Event
 {
-    public int? Id { get; set; }
+    public int Id { get; set; }
 
     [CustomAttribute("Details", true)]
     public string Title { get; set; } = null!;

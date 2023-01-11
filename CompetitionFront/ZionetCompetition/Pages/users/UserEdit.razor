@@ -75,15 +75,11 @@ else
 
 
 @code {
-
-}
-
-@code {
     [Parameter]
     public int id { get; set; }
 
 
-    private HubConnection? hubConnection;
+    //private HubConnection? hubConnection;
     private User UserFields;
     private User message;
     private string? userInput;
@@ -107,10 +103,8 @@ else
         checkedRole = message.RoleId;
 
         loaded = true;
+        StateHasChanged();
     }
-
-    public bool IsConnected =>
-        hubConnection?.State == HubConnectionState.Connected;
 
     private async Task Save(EditContext editContext)
     {
@@ -129,5 +123,8 @@ else
 
     private void InvalidFormSubmitted(){}
 
-
+    public async ValueTask DisposeAsync()
+    {
+        await UserController.DisposeAsync();
+    }
 }

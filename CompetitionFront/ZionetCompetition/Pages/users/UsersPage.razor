@@ -67,7 +67,7 @@ else
 }
 
 @code {
-    private HubConnection? hubConnection;
+    //private HubConnection? hubConnection;
     private User selectedUser;
     private IEnumerable<User> messages = new List<User> { };
     private bool loaded = false;
@@ -84,9 +84,6 @@ else
 
     public async ValueTask DisposeAsync()
     {
-        if (hubConnection is not null)
-        {
-            await hubConnection.DisposeAsync();
-        }
+        await UserController.DisposeAsync();
     }
 }

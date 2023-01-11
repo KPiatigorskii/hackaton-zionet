@@ -36,6 +36,7 @@
                 <NavLink href="@($"/Events/{context.Id}")">@context.Title</NavLink>
             </DisplayTemplate>
         </DataGridColumn>
+        <DataGridColumn TItem="Event" Field="IsEnable" Caption="Enable" Sortable="true" Displayable="true" />
         <DataGridColumn TItem="Event" Field="Address" Caption="Address" Sortable="false" Displayable="true" />
         <DataGridDateColumn TItem="Event" Field="StartTime" Caption="StartTime" Sortable="true" Displayable="true" />
         <DataGridDateColumn TItem="Event" Field="EndTime" Caption="EndTime" Sortable="false" Displayable="true" />
@@ -56,7 +57,7 @@
     </LoadingTemplate>
 
     <ButtonRowTemplate>
-        <Button Color="Color.Success" >New</Button>
+        <Button Color="Color.Success" @onclick="Create">New</Button>
         <Button Color="Color.Primary" Disabled="(selectedEvent is null)">Duplicate</Button>
         <Button Color="Color.Danger" Disabled="(selectedEvent is null)">Delete</Button>
     </ButtonRowTemplate>
@@ -80,6 +81,11 @@
 
     public bool IsConnected =>
     hubConnection?.State == HubConnectionState.Connected;
+
+    private void Create()
+    {
+        Navigation.NavigateTo("/Events/Create");
+    }
 
     public async ValueTask DisposeAsync()
     {

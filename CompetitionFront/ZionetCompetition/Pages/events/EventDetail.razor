@@ -24,12 +24,29 @@
     <Tabs SelectedTab="@selectedTab" SelectedTabChanged="@OnSelectedTabChanged">
         
         <Items>
+            <Tab Name="Info">Info</Tab>
             <Tab Name="Teams">Teams</Tab>
             <Tab Name="Tasks">Tasks</Tab>
             <Tab Name="Managers">Managers</Tab>
-            <Tab Name="Info">Info</Tab>
         </Items>
         <Content>
+            <TabPanel Name="Info">
+                <tbody>
+                    @foreach (var property in typeof(Event).GetProperties())
+                    {
+                        @if (property.IsDefined(typeof(CustomAttribute), false))
+                        {
+                            <tr>
+                                <td>@property.Name &nbsp;&nbsp;</td>
+                                <td>@message.GetType().GetProperty(property.Name).GetValue(message)</td>
+                            </tr>
+                        }
+                    }
+                    <div style="margin-top: 20px">
+                        <Button Color="Color.Primary" @onclick="EditEvent">Edit</Button>
+                    </div>
+                </tbody>
+            </TabPanel>
             <TabPanel Name="Teams">
 
                 <DropContainer TItem="EventParticipantTeam" Items="@eventParticipantTeamMessages" ItemsFilter="@((item, dropZone) => item.Team.Title == dropZone)" ItemDropped="@ItemDropped" Flex="Flex.Wrap.Grow.Is1">
@@ -48,158 +65,143 @@
                                 <Button Color="Color.Primary">Add Participant to team @dropzone</Button>
                             </Card>
                         }
-                </ChildContent>
-                <ItemTemplate>
-                    <Card Shadow="Shadow.Default" Margin="Margin.Is3.OnY">
-                        <CardBody>
-                            <div>
-                                <p>user @context.Participant.FirstName     @context.Participant.LastName   <a href="/"> <Icon Name="IconName.Ban" IconSize=IconSize.Small /></a></p>
-                            </div>
-                        </CardBody>
-                    </Card>
-                </ItemTemplate>
-            </DropContainer>
+                    </ChildContent>
+                    <ItemTemplate>
+                        <Card Shadow="Shadow.Default" Margin="Margin.Is3.OnY">
+                            <CardBody>
+                                <div>
+                                    <p>user @context.Participant.FirstName     @context.Participant.LastName   <a href="/"> <Icon Name="IconName.Ban" IconSize=IconSize.Small /></a></p>
+                                </div>
+                            </CardBody>
+                        </Card>
+                    </ItemTemplate>
+                </DropContainer>
         
-        </TabPanel>
+            </TabPanel>
             <TabPanel Name="Tasks">
-            <DataGrid TItem="TaskModel"
-                      Data="@tasksList"
-                      Filterable="true"
-                      FilterMethod="DataGridFilterMethod.Contains"
-                      ShowPager="true"
-                      ShowPageSizes="true"
-                      EditMode="DataGridEditMode.Popup"
-                      CommandMode="DataGridCommandMode.ButtonRow"
-                      Editable="false"
-                      Striped="true"
-                      Hoverable="true"
-                      SelectionMode="DataGridSelectionMode.Single"
-                      Responsive="true"
-                      @bind-SelectedRow=selectedTask>
-                <ChildContent>
-                    <DataGridCommandColumn TItem="TaskModel" NewCommandAllowed="false" EditCommandAllowed="false" DeleteCommandAllowed="false">
-                        <SaveCommandTemplate>
-                            <Button ElementId="btnSave" Type="ButtonType.Submit" PreventDefaultOnSubmit Color="Color.Primary" Clicked="@context.Clicked">@context.LocalizationString</Button>
-                        </SaveCommandTemplate>
-                        <CancelCommandTemplate>
-                            <Button ElementId="btnCancel" Color="Color.Secondary" Clicked="@context.Clicked">@context.LocalizationString</Button>
-                        </CancelCommandTemplate>
-                    </DataGridCommandColumn>
-                    <DataGridColumn TItem="TaskModel" Field="Id" Caption="Id" Sortable="false" Displayable="true" Editable />
-                    <DataGridColumn TItem="TaskModel" Field="Title" Caption="Title" Sortable="false" Displayable="true" Editable />
-                    <DataGridDateColumn TItem="TaskModel" Field="Language" Caption="Language" Sortable="false" Displayable="true" Editable />
-                    <DataGridColumn TItem="TaskModel" Field="Platform" Caption="Platform" Sortable="false" Displayable="true" Editable  />
-                    <DataGridColumn TItem="TaskModel" Field="Duration" Caption="Duration" Sortable="true" Displayable="true" Editable />
-                </ChildContent>
+                <DataGrid TItem="TaskModel"
+                          Data="@tasksList"
+                          Filterable="true"
+                          FilterMethod="DataGridFilterMethod.Contains"
+                          ShowPager="true"
+                          ShowPageSizes="true"
+                          EditMode="DataGridEditMode.Popup"
+                          CommandMode="DataGridCommandMode.ButtonRow"
+                          Editable="false"
+                          Striped="true"
+                          Hoverable="true"
+                          SelectionMode="DataGridSelectionMode.Single"
+                          Responsive="true"
+                          @bind-SelectedRow=selectedTask>
+                    <ChildContent>
+                        <DataGridCommandColumn TItem="TaskModel" NewCommandAllowed="false" EditCommandAllowed="false" DeleteCommandAllowed="false">
+                            <SaveCommandTemplate>
+                                <Button ElementId="btnSave" Type="ButtonType.Submit" PreventDefaultOnSubmit Color="Color.Primary" Clicked="@context.Clicked">@context.LocalizationString</Button>
+                            </SaveCommandTemplate>
+                            <CancelCommandTemplate>
+                                <Button ElementId="btnCancel" Color="Color.Secondary" Clicked="@context.Clicked">@context.LocalizationString</Button>
+                            </CancelCommandTemplate>
+                        </DataGridCommandColumn>
+                        <DataGridColumn TItem="TaskModel" Field="Id" Caption="Id" Sortable="false" Displayable="true" Editable />
+                        <DataGridColumn TItem="TaskModel" Field="Title" Caption="Title" Sortable="false" Displayable="true" Editable />
+                        <DataGridDateColumn TItem="TaskModel" Field="Language" Caption="Language" Sortable="false" Displayable="true" Editable />
+                        <DataGridColumn TItem="TaskModel" Field="Platform" Caption="Platform" Sortable="false" Displayable="true" Editable  />
+                        <DataGridColumn TItem="TaskModel" Field="Duration" Caption="Duration" Sortable="true" Displayable="true" Editable />
+                    </ChildContent>
 
-                <EmptyTemplate>
-                    <div class="box">
-                        No records were found.
-                    </div>
-                </EmptyTemplate>
-                <LoadingTemplate>
-                    <div class="box">
-                        <progress class="progress is-small is-primary" max="100" />
-                    </div>
-                </LoadingTemplate>
-                <ButtonRowTemplate>
-                    <Button Color="Color.Success" Clicked="context.NewCommand.Clicked">New</Button>
-                    <Button Color="Color.Danger" Disabled="(selectedTask is null)" Clicked="context.DeleteCommand.Clicked">Delete</Button>
-                    <Button Color="Color.Primary" Disabled="(selectedTask is null)">Duplicate</Button>
-                    <Button Color="Color.Danger" Disabled="(selectedTask is null)" Clicked="context.EditCommand.Clicked">Edit</Button>
-                </ButtonRowTemplate>
-            </DataGrid>
+                    <EmptyTemplate>
+                        <div class="box">
+                            No records were found.
+                        </div>
+                    </EmptyTemplate>
+                    <LoadingTemplate>
+                        <div class="box">
+                            <progress class="progress is-small is-primary" max="100" />
+                        </div>
+                    </LoadingTemplate>
+                    <ButtonRowTemplate>
+                        <Button Color="Color.Success" Clicked="context.NewCommand.Clicked">New</Button>
+                        <Button Color="Color.Danger" Disabled="(selectedTask is null)" Clicked="context.DeleteCommand.Clicked">Delete</Button>
+                        <Button Color="Color.Primary" Disabled="(selectedTask is null)">Duplicate</Button>
+                        <Button Color="Color.Danger" Disabled="(selectedTask is null)" Clicked="context.EditCommand.Clicked">Edit</Button>
+                    </ButtonRowTemplate>
+                </DataGrid>
             </TabPanel>
             <TabPanel Name="Managers">
-            <DataGrid TItem="User"
-                      Data="@teamUsers"
-                      Filterable="true"
-                      FilterMethod="DataGridFilterMethod.Contains"
-                      ShowPager="true"
-                      ShowPageSizes="true"
-                      EditMode="DataGridEditMode.Popup"
-                      CommandMode="DataGridCommandMode.ButtonRow"
-                      Editable="false"
-                      Striped="true"
-                      Hoverable="true"
-                      SelectionMode="DataGridSelectionMode.Single"
-                      Responsive="true"
-                      @bind-SelectedRow=selectedUser>
-                <DataGridColumns>
-                    <DataGridCommandColumn TItem="TaskModel" NewCommandAllowed="false" EditCommandAllowed="false" DeleteCommandAllowed="false">
-                        <SaveCommandTemplate>
-                            <Button ElementId="btnSave" Type="ButtonType.Submit" PreventDefaultOnSubmit Color="Color.Success" Clicked="@context.Clicked">@context.LocalizationString</Button>
-                        </SaveCommandTemplate>
-                        <CancelCommandTemplate>
-                            <Button ElementId="btnCancel" Color="Color.Secondary" Clicked="@context.Clicked">@context.LocalizationString</Button>
-                        </CancelCommandTemplate>
-                    </DataGridCommandColumn>
-                    <DataGridColumn TItem="User" Field="Id" Caption="Id" Sortable="false" Displayable="true">
-                        <DisplayTemplate>
-                            <NavLink href="@($"/Users/{context.Id}")">@context.Id</NavLink>
-                        </DisplayTemplate>
-                    </DataGridColumn>
-                    <DataGridColumn Caption="Name" Sortable="false" Displayable="true" Editable>
-                        <DisplayTemplate>
-                            @{
-                                var fullName = (context as User)?.FirstName.ToString() + " " + (context as User)?.LastName.ToString();
+                <DataGrid TItem="User"
+                          Data="@teamUsers"
+                          Filterable="true"
+                          FilterMethod="DataGridFilterMethod.Contains"
+                          ShowPager="true"
+                          ShowPageSizes="true"
+                          EditMode="DataGridEditMode.Popup"
+                          CommandMode="DataGridCommandMode.ButtonRow"
+                          Editable="false"
+                          Striped="true"
+                          Hoverable="true"
+                          SelectionMode="DataGridSelectionMode.Single"
+                          Responsive="true"
+                          @bind-SelectedRow=selectedUser>
+                    <DataGridColumns>
+                        <DataGridCommandColumn TItem="TaskModel" NewCommandAllowed="false" EditCommandAllowed="false" DeleteCommandAllowed="false">
+                            <SaveCommandTemplate>
+                                <Button ElementId="btnSave" Type="ButtonType.Submit" PreventDefaultOnSubmit Color="Color.Success" Clicked="@context.Clicked">@context.LocalizationString</Button>
+                            </SaveCommandTemplate>
+                            <CancelCommandTemplate>
+                                <Button ElementId="btnCancel" Color="Color.Secondary" Clicked="@context.Clicked">@context.LocalizationString</Button>
+                            </CancelCommandTemplate>
+                        </DataGridCommandColumn>
+                        <DataGridColumn TItem="User" Field="Id" Caption="Id" Sortable="false" Displayable="true">
+                            <DisplayTemplate>
+                                <NavLink href="@($"/Users/{context.Id}")">@context.Id</NavLink>
+                            </DisplayTemplate>
+                        </DataGridColumn>
+                        <DataGridColumn Caption="Name" Sortable="false" Displayable="true" Editable>
+                            <DisplayTemplate>
+                                @{
+                                    var fullName = (context as User)?.FirstName.ToString() + " " + (context as User)?.LastName.ToString();
 
-                                if (fullName != " ")
-                                {
-                                    @($"{fullName}")
-                                }
-                            }
-                        </DisplayTemplate>
-                        <EditTemplate>
-                            <Select TValue="string">
-                                @foreach(var user in teamUsers)
-                                {
-                                    if (user.RoleId == 2) // TODO fix the hardcode
+                                    if (fullName != " ")
                                     {
-                                        <SelectItem Value="@user.Id">@user.FirstName @user.LastName</SelectItem>
+                                        @($"{fullName}")
                                     }
                                 }
-                            </Select>
-                        </EditTemplate>
-                    </DataGridColumn>
-                    <DataGridColumn TItem="User" Field="Email" Caption="Email" Sortable="false" Displayable="true" />
-                    <DataGridColumn TItem="User" Field="Github" Caption="Github" Sortable="true" Displayable="true" />
-                </DataGridColumns>
+                            </DisplayTemplate>
+                            <EditTemplate>
+                                <Select TValue="string">
+                                    @foreach(var user in teamUsers)
+                                    {
+                                        if (user.RoleId == 2) // TODO fix the hardcode
+                                        {
+                                            <SelectItem Value="@user.Id">@user.FirstName @user.LastName</SelectItem>
+                                        }
+                                    }
+                                </Select>
+                            </EditTemplate>
+                        </DataGridColumn>
+                        <DataGridColumn TItem="User" Field="Email" Caption="Email" Sortable="false" Displayable="true" />
+                        <DataGridColumn TItem="User" Field="Github" Caption="Github" Sortable="true" Displayable="true" />
+                    </DataGridColumns>
 
-                <EmptyTemplate>
-                    <div class="box">
-                        No records were found.
-                    </div>
-                </EmptyTemplate>
-                <LoadingTemplate>
-                    <div class="box">
-                        <progress class="progress is-small is-primary" max="100" />
-                    </div>
-                </LoadingTemplate>
-                <ButtonRowTemplate>
-                    <Button Color="Color.Success" Clicked="context.NewCommand.Clicked">New</Button>
-                    <Button Color="Color.Danger" Disabled="(selectedTask is null)" Clicked="context.DeleteCommand.Clicked">Delete</Button>
-                    </ButtonRowTemplate>
+                    <EmptyTemplate>
+                        <div class="box">
+                            No records were found.
+                        </div>
+                    </EmptyTemplate>
+                    <LoadingTemplate>
+                        <div class="box">
+                            <progress class="progress is-small is-primary" max="100" />
+                        </div>
+                    </LoadingTemplate>
+                    <ButtonRowTemplate>
+                        <Button Color="Color.Success" Clicked="context.NewCommand.Clicked">New</Button>
+                        <Button Color="Color.Danger" Disabled="(selectedTask is null)" Clicked="context.DeleteCommand.Clicked">Delete</Button>
+                        </ButtonRowTemplate>
 
-            </DataGrid>
+                </DataGrid>
             </TabPanel>
-            <TabPanel Name="Info">
-
-            <tbody>
-                @foreach (var property in typeof(Event).GetProperties())
-                {
-                    @if (property.IsDefined(typeof(CustomAttribute), false))
-                    {
-                        <tr>
-                            <td>@property.Name &nbsp;&nbsp;</td>
-                            <td>@message.GetType().GetProperty(property.Name).GetValue(message)</td>
-                        </tr>
-                    }
-                }
-            </tbody>
-        </TabPanel>
-    </Content>
-</Tabs>
+        </Content>
+    </Tabs>
 }
 
 
@@ -320,39 +322,39 @@
     public bool IsConnected =>
         hubConnection?.State == HubConnectionState.Connected;
 
-    private async Task Create()
-    {
-        if (hubConnection is not null)
-        {
-            await hubConnection.SendAsync("Create");
-        }
-    }
+    //private void Edit()
+    //{
+    //    Navigation.NavigateTo("/events/" + id + "/Edit");
+    //}
 
-    private void Edit()
-    {
-        Navigation.NavigateTo("/events/" + id + "/Edit");
-    }
-
-    private async Task Delete()
-    {
-        if (hubConnection is not null)
-        {
-            await hubConnection.SendAsync("ForceDeleteOne", id);
-            Navigation.NavigateTo("/events/");
-        }
-    }
-
-    private async Task EditEvent()
+    private void EditEvent()
     {
         Navigation.NavigateTo("/events/" + id + "/edit");
     }
 
-    private async Task DeleteEvent()
-    {
+    //private async Task Create()
+    //{
+    //    if (hubConnection is not null)
+    //    {
+    //        await hubConnection.SendAsync("Create");
+    //    }
+    //}
 
-    }
+    //private async Task Delete()
+    //{
+    //    if (hubConnection is not null)
+    //    {
+    //        await hubConnection.SendAsync("ForceDeleteOne", id);
+    //        Navigation.NavigateTo("/events/");
+    //    }
+    //}
 
-    private Task ItemDropped(DraggableDroppedEventArgs<EventParticipantTeam> dropItem)
+    //private async Task DeleteEvent()
+    //{
+
+    //}
+
+    private async Task ItemDropped(DraggableDroppedEventArgs<EventParticipantTeam> dropItem)
     {
         var newTeam = teams.FirstOrDefault(e => e.Title == dropItem.DropZoneName);
         var changedTeamMember = eventParticipantTeamMessages.FirstOrDefault(e => e.Participant.Id == dropItem.Item.Participant.Id);
@@ -362,9 +364,9 @@
 
         changedTeamMember.Team = newTeam;
         changedTeamMember.TeamId = newTeam.Id;
-        UserEventTeamController.Update(changedTeamMember.Id, changedTeamMember);
-        return Task.CompletedTask;
-        
+        await UserEventTeamController.Update(changedTeamMember.Id, changedTeamMember);
+        return ;// Task<EventParticipantTeam>.CompletedTask;
+
     }
 
     public async ValueTask DisposeAsync()

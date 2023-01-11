@@ -13,6 +13,7 @@ using Microsoft.DotNet.Scaffolding.Shared.ProjectModel;
 using BlazorBootstrap;
 using ZionetCompetition.Services;
 using ZionetCompetition.Models;
+using TaskStatus = ZionetCompetition.Models.TaskStatus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,6 +47,8 @@ builder.Services.AddTransient<GenClientController<Team>>();
 builder.Services.AddTransient<GenClientController<TeamParticipant>>();
 builder.Services.AddTransient<GenClientController<TeamTask>>();
 builder.Services.AddTransient<GenClientController<User>>();
+builder.Services.AddTransient<GenClientController<EventStatus>>();
+builder.Services.AddTransient<GenClientController<TaskStatus>>();
 
 
 
