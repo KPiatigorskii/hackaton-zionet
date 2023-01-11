@@ -1,59 +1,51 @@
 ﻿@page "/profile"
-@inject AuthenticationStateProvider AuthState
-@using ZionetCompetition.Models
-@attribute [Authorize]
-@using System.Text.Json
-@using System.Text.Json.Serialization
-@inject IHttpClientFactory ClientFactory
+@using CoreTweet;
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.OAuth
+@using Microsoft.AspNetCore.Components.Forms
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
 
-<h1>Call web API from a Blazor Server Razor component</h1>
+@inject IConfiguration Configuration
 
-@if (getBranchesError)
-{
-    <p>Unable to get branches from GitHub. Please try again later.</p>
-}
-else
-{
-    <ul>
-        @foreach (var user in users)
-        {
-            <li>@user.FirstName @user.LastName @user.Github @user.Email @user.Login</li>
-        }
-    </ul>
-}
+<a href=@redirectUrl>Login with Twitter</a>
 
-@code {
-    private IEnumerable<User> users = Array.Empty<User>();
-    private bool getBranchesError;
-    private bool shouldRender;
+<EditForm Model="@exampleModel" OnSubmit="@ConfirmPinCode">
+    <InputText id="PINCode" @bind-Value="exampleModel.PINCode" />
 
-    protected override bool ShouldRender() => shouldRender;
+    <button type="submit">Confirm PINcode</button>
+</EditForm>
+
+@code{
+    public class ExampleModel
+    {
+        public string? PINCode { get; set; }
+    }
+
+    public string redirectUrl;
+    private string strValue;
+    private CoreTweet.OAuth.OAuthSession session;
+    public ExampleModel exampleModel = new();
 
     protected override async Task OnInitializedAsync()
     {
-        var request = new HttpRequestMessage(HttpMethod.Get,
-            "https://localhost:7277/api/User");
+        //_config
+        strValue = Configuration.GetSection("Twitter:TWITTER_API_KEY").Value;
+        session = OAuth.Authorize(Configuration.GetSection("Twitter:TWITTER_API_KEY").Value,
+                                    Configuration.GetSection("Twitter:TWITTER_API_SECRET").Value);
+        var cbUrl = "https://localhost:7130/twitter-callback";
+        redirectUrl = session.AuthorizeUri.AbsoluteUri;
+    }
 
-        var client = ClientFactory.CreateClient();
-        JsonSerializerOptions jsonOptions = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            };
+    private async void BeginLogin()
+    {
+        await JSRuntime.InvokeAsync<object>("open", redirectUrl, "_blank");
+        //Navigation.NavigateTo(redirectUrl);
+    }
 
-        var response = await client.SendAsync(request);
-
-        if (response.IsSuccessStatusCode)
-        {
-            using var responseStream = await response.Content.ReadAsStreamAsync();
-
-            users = await JsonSerializer.DeserializeAsync
-                <IEnumerable<User>>(responseStream, jsonOptions);
-        }
-        else
-        {
-            getBranchesError = true;
-        }
-
-        shouldRender = true;
+    private async Task ConfirmPinCode()
+    {
+        var tokens = OAuth.GetTokens(session, exampleModel.PINCode);
+        var userId = tokens.UserId; // put this id to db
     }
 }
