@@ -1,59 +1,76 @@
 ﻿@page "/profile"
-@inject AuthenticationStateProvider AuthState
-@using ZionetCompetition.Models
-@attribute [Authorize]
-@using System.Text.Json
-@using System.Text.Json.Serialization
-@inject IHttpClientFactory ClientFactory
+@using CoreTweet;
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.OAuth
+@using Microsoft.AspNetCore.Components.Forms
+@using ZionetCompetition.Services
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+@inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
 
-<h1>Call web API from a Blazor Server Razor component</h1>
+@inject IConfiguration Configuration
 
-@if (getBranchesError)
+@if (twitterIsConnected)
 {
-    <p>Unable to get branches from GitHub. Please try again later.</p>
+    <div> You successfully connect to twitter with id @twitterUserId</div>
 }
 else
 {
-    <ul>
-        @foreach (var user in users)
-        {
-            <li>@user.FirstName @user.LastName @user.Github @user.Email @user.Login</li>
-        }
-    </ul>
+    <Button Color="Color.Primary" Clicked=@BeginLogin hidden="@(!twitFormHidden)">Connect Twitter</Button>
+
+    <EditForm Model="@exampleModel" OnSubmit="@ConfirmPinCode" hidden="@twitFormHidden">
+        <InputText id="PINCode" @bind-Value="exampleModel.PINCode" />
+
+        <Button Color="Color.Primary" Type="ButtonType.Submit" >Confirm PINcode</Button>
+    </EditForm>
 }
 
-@code {
-    private IEnumerable<User> users = Array.Empty<User>();
-    private bool getBranchesError;
-    private bool shouldRender;
 
-    protected override bool ShouldRender() => shouldRender;
+@code{
+
+    public class ExampleModel
+    {
+        public string? PINCode { get; set; }
+    }
+
+    public string redirectUrl;
+    private string strValue;
+    private bool twitFormHidden = true;
+    private CoreTweet.OAuth.OAuthSession twitterSession;
+    public ExampleModel exampleModel = new();
+    private bool twitterIsConnected = false;
+    private long twitterUserId = 0;
 
     protected override async Task OnInitializedAsync()
     {
-        var request = new HttpRequestMessage(HttpMethod.Get,
-            "https://localhost:7277/api/User");
-
-        var client = ClientFactory.CreateClient();
-        JsonSerializerOptions jsonOptions = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            };
-
-        var response = await client.SendAsync(request);
-
-        if (response.IsSuccessStatusCode)
+        twitterIsConnected = HttpContextAccessor.HttpContext.User.Claims.FirstOrDefault(e => e.Type == "twitter") != null;
+        if (!twitterIsConnected) // add authentication condition
         {
-            using var responseStream = await response.Content.ReadAsStreamAsync();
-
-            users = await JsonSerializer.DeserializeAsync
-                <IEnumerable<User>>(responseStream, jsonOptions);
+            twitterSession = OAuth.Authorize(Configuration.GetSection("Twitter:TWITTER_API_KEY").Value,
+                                        Configuration.GetSection("Twitter:TWITTER_API_SECRET").Value);
+            redirectUrl = twitterSession.AuthorizeUri.AbsoluteUri;
         }
-        else
-        {
-            getBranchesError = true;
-        }
-
-        shouldRender = true;
     }
+
+    private async Task BeginLogin()
+    {
+        twitFormHidden = false;
+        StateHasChanged();
+        await JSRuntime.InvokeVoidAsync("open", redirectUrl, "_blank");
+        //Navigation.NavigateTo(redirectUrl);
+    }
+
+    private async Task ConfirmPinCode()
+    {
+        var tokens = OAuth.GetTokens(twitterSession, exampleModel.PINCode);
+        twitterUserId = tokens.UserId; //  put this id to db
+        if (twitterUserId != 0) // put this id to db 
+        {
+            twitterIsConnected = true;
+            StateHasChanged();
+        }
+
+    }
+
+
 }
