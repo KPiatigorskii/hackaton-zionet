@@ -16,6 +16,7 @@ using Azure.Core;
 using System.Security.Claims;
 using Task = MsSqlAccessor.Models.Task;
 using Microsoft.Extensions.DependencyInjection;
+using TaskStatus = MsSqlAccessor.Models.TaskStatus;
 
 namespace MsSqlAccessor
 {
@@ -110,7 +111,7 @@ namespace MsSqlAccessor
             });
 
             //builder.Services.AddTransient<IUserRole, MockUserRole>();
-            builder.Services.AddTransient<EventsDbController>();
+            //builder.Services.AddTransient<EventsDbController>();
             builder.Services.AddTransient<GenDbController<Event, EventDTO>>();
             builder.Services.AddTransient<GenDbController<EventManager, EventManagerDTO>>();
             builder.Services.AddTransient<GenDbController<EventParticipantTeam, EventParticipantTeamDTO>>();
@@ -123,9 +124,11 @@ namespace MsSqlAccessor
             builder.Services.AddTransient<GenDbController<Team, TeamDTO>>();
             builder.Services.AddTransient<GenDbController<TeamTask, TeamTaskDTO>>();
             builder.Services.AddTransient<GenDbController<User, UserDTO>>();
-          
+            builder.Services.AddTransient<GenDbController<EventStatus, EventStatusDTO>>();
+            builder.Services.AddTransient<GenDbController<TaskStatus, TaskStatusDTO>>();
 
-            
+
+
 
             var app = builder.Build();
 
@@ -168,8 +171,10 @@ namespace MsSqlAccessor
 			app.MapHub<TeamHub<Team, TeamDTO>>("/Teams");
 			app.MapHub<TeamTaskHub<TeamTask, TeamTaskDTO>>("/TeamTasks");
 			app.MapHub<UserHub<User, UserDTO>>("/Users");
+            app.MapHub<UserHub<EventStatus, EventStatusDTO>>("/EventStatuss");
+            app.MapHub<UserHub<TaskStatus, TaskStatusDTO>>("/TaskStatuss");
 
-			app.MapControllers();
+            app.MapControllers();
 			app.Run();
 		}
 		public void Configuration(IAppBuilder app)
