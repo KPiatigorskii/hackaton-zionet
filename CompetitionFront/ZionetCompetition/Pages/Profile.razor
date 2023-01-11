@@ -3,20 +3,31 @@
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Authentication.OAuth
 @using Microsoft.AspNetCore.Components.Forms
+@using ZionetCompetition.Services
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
+@inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
 
 @inject IConfiguration Configuration
 
-<a href=@redirectUrl>Login with Twitter</a>
+@if (twitterIsConnected)
+{
+    <div> You successfully connect to twitter with id @twitterUserId</div>
+}
+else
+{
+    <Button Color="Color.Primary" Clicked=@BeginLogin hidden="@(!twitFormHidden)">Connect Twitter</Button>
 
-<EditForm Model="@exampleModel" OnSubmit="@ConfirmPinCode">
-    <InputText id="PINCode" @bind-Value="exampleModel.PINCode" />
+    <EditForm Model="@exampleModel" OnSubmit="@ConfirmPinCode" hidden="@twitFormHidden">
+        <InputText id="PINCode" @bind-Value="exampleModel.PINCode" />
 
-    <button type="submit">Confirm PINcode</button>
-</EditForm>
+        <Button Color="Color.Primary" Type="ButtonType.Submit" >Confirm PINcode</Button>
+    </EditForm>
+}
+
 
 @code{
+
     public class ExampleModel
     {
         public string? PINCode { get; set; }
@@ -24,28 +35,42 @@
 
     public string redirectUrl;
     private string strValue;
-    private CoreTweet.OAuth.OAuthSession session;
+    private bool twitFormHidden = true;
+    private CoreTweet.OAuth.OAuthSession twitterSession;
     public ExampleModel exampleModel = new();
+    private bool twitterIsConnected = false;
+    private long twitterUserId = 0;
 
     protected override async Task OnInitializedAsync()
     {
-        //_config
-        strValue = Configuration.GetSection("Twitter:TWITTER_API_KEY").Value;
-        session = OAuth.Authorize(Configuration.GetSection("Twitter:TWITTER_API_KEY").Value,
-                                    Configuration.GetSection("Twitter:TWITTER_API_SECRET").Value);
-        var cbUrl = "https://localhost:7130/twitter-callback";
-        redirectUrl = session.AuthorizeUri.AbsoluteUri;
+        twitterIsConnected = HttpContextAccessor.HttpContext.User.Claims.FirstOrDefault(e => e.Type == "twitter") != null;
+        if (!twitterIsConnected) // add authentication condition
+        {
+            twitterSession = OAuth.Authorize(Configuration.GetSection("Twitter:TWITTER_API_KEY").Value,
+                                        Configuration.GetSection("Twitter:TWITTER_API_SECRET").Value);
+            redirectUrl = twitterSession.AuthorizeUri.AbsoluteUri;
+        }
     }
 
-    private async void BeginLogin()
+    private async Task BeginLogin()
     {
-        await JSRuntime.InvokeAsync<object>("open", redirectUrl, "_blank");
+        twitFormHidden = false;
+        StateHasChanged();
+        await JSRuntime.InvokeVoidAsync("open", redirectUrl, "_blank");
         //Navigation.NavigateTo(redirectUrl);
     }
 
     private async Task ConfirmPinCode()
     {
-        var tokens = OAuth.GetTokens(session, exampleModel.PINCode);
-        var userId = tokens.UserId; // put this id to db
+        var tokens = OAuth.GetTokens(twitterSession, exampleModel.PINCode);
+        twitterUserId = tokens.UserId; //  put this id to db
+        if (twitterUserId != 0) // put this id to db 
+        {
+            twitterIsConnected = true;
+            StateHasChanged();
+        }
+
     }
+
+
 }
