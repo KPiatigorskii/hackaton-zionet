@@ -30,6 +30,7 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddTransient<TokenService>();
 builder.Services.AddTransient<ErrorService>();
+builder.Services.AddTransient<TwitterService>();
 
 //builder.Services.AddTransient<UserController>();
 //builder.Services.AddTransient<EventController>();

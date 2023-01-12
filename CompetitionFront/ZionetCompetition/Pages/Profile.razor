@@ -6,15 +6,13 @@
 @using ZionetCompetition.Services
 @using System.Security.Claims
 @using ZionetCompetition.Models
+
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 @inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
-
-@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
-@inject ProtectedSessionStorage ProtectedSessionStore
-
 @inject IConfiguration Configuration
+@inject ZionetCompetition.Services.TwitterService TwitterService
 
 
 @if (twitterIsConnected)
@@ -53,15 +51,13 @@ else
         if (!string.IsNullOrEmpty(twitterUserName) && !string.IsNullOrEmpty(accessToken) && !string.IsNullOrEmpty(accessTokenSecret))
         {
             twitterIsConnected = true;
-            tokens = Tokens.Create(Configuration.GetSection("Twitter:TWITTER_API_KEY").Value,
-                    Configuration.GetSection("Twitter:TWITTER_API_SECRET").Value, accessToken, accessTokenSecret);
+            tokens = TwitterService.getTokens(accessToken, accessTokenSecret);
         }
     }
 
     private async Task BeginLogin()
     {
-        twitterSession = OAuth.Authorize(Configuration.GetSection("Twitter:TWITTER_API_KEY").Value,
-                                        Configuration.GetSection("Twitter:TWITTER_API_SECRET").Value);
+        twitterSession = TwitterService.getTwitterSession();
         redirectUrl = twitterSession.AuthorizeUri.AbsoluteUri;
         twitFormHidden = false;
         StateHasChanged();
@@ -70,11 +66,8 @@ else
 
     private async Task ConfirmPinCode()
     {
-        tokens = OAuth.GetTokens(twitterSession, pinCodeModel.PINCode);
-
-        await localStorage.SetItemAsync("TwitterUserName", tokens.ScreenName);//  put this id to db
-        await localStorage.SetItemAsync("TwitterRequestToken", tokens.AccessToken);
-        await localStorage.SetItemAsync("TwitterRequestTokenSecret", tokens.AccessTokenSecret);
+        tokens = TwitterService.getTokensByPIN(twitterSession, pinCodeModel.PINCode);
+        TwitterService.setTokensToStorage(tokens);
         twitterUserName = tokens.ScreenName;
         twitterIsConnected = true;
         StateHasChanged();
