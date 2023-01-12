@@ -13,6 +13,8 @@ using Microsoft.DotNet.Scaffolding.Shared.ProjectModel;
 using BlazorBootstrap;
 using ZionetCompetition.Services;
 using ZionetCompetition.Models;
+using Autofac.Core;
+using Blazored.LocalStorage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,7 +59,9 @@ builder.Services
     .AddBootstrapProviders()
     .AddFontAwesomeIcons();
 builder.Services.AddBlazorBootstrap();
-
+builder.Services.AddBlazoredLocalStorage();   // local storage
+builder.Services.AddBlazoredLocalStorage(config => config.JsonSerializerOptions.WriteIndented = true);  // local storage
+builder.Services.AddSession();
 builder.Services.AddDbContext<ZionetCompetitionContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ZionetCompetitionContext") ?? throw new InvalidOperationException("Connection string 'ZionetCompetitionContext' not found.")));
 builder.Services.AddServerSideBlazor();
