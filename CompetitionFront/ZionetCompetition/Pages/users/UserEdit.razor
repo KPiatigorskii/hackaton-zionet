@@ -11,6 +11,8 @@
 @inject ZionetCompetition.Controllers.GenClientController<User> UserController
 @inject NavigationManager UriHelper
 
+@implements IAsyncDisposable
+
 @if (!loaded)
 {
     <SpinKit Type="SpinKitType.Plane" Color="SlateBlue" Centered />
@@ -125,6 +127,7 @@ else
 
     public async ValueTask DisposeAsync()
     {
+        await RoleController.DisposeAsync();
         await UserController.DisposeAsync();
     }
 }

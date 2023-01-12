@@ -11,6 +11,7 @@
 @inject NavigationManager Navigation
 @inject ZionetCompetition.Services.TokenService TokenService
 
+@implements IAsyncDisposable
 
 @if (!loaded)
 {
@@ -147,6 +148,7 @@ else
 
     public async ValueTask DisposeAsync()
     {
+        await EventStatusController.DisposeAsync();
         await EventController.DisposeAsync();
     }
 }

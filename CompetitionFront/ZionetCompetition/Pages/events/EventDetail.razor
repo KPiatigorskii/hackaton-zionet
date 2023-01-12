@@ -43,7 +43,7 @@ else
                         {
                             <tr>
                                 <td>@property.Name &nbsp;&nbsp;</td>
-                                <td>@message.GetType().GetProperty(property.Name).GetValue(message)</td>
+                                <td>@selectedEvent.GetType().GetProperty(property.Name).GetValue(selectedEvent)</td>
                             </tr>
                         }
                     }
@@ -52,6 +52,7 @@ else
                     </div>
                 </tbody>
             </TabPanel>
+            
             <TabPanel Name="Teams">
 
                 <DropContainer TItem="EventParticipantTeam" Items="@eventParticipantTeamMessages" ItemsFilter="@((item, dropZone) => item.Team.Title == dropZone)" ItemDropped="@ItemDropped" Flex="Flex.Wrap.Grow.Is1">
@@ -83,6 +84,7 @@ else
                 </DropContainer>
         
             </TabPanel>
+            
             <TabPanel Name="Tasks">
                 <DataGrid TItem="TaskModel"
                           Data="@tasksList"
@@ -132,6 +134,7 @@ else
                     </ButtonRowTemplate>
                 </DataGrid>
             </TabPanel>
+
             <TabPanel Name="Managers">
                 <DataGrid TItem="User"
                           Data="@teamUsers"
@@ -148,14 +151,14 @@ else
                           Responsive="true"
                           @bind-SelectedRow=selectedUser>
                     <DataGridColumns>
-                        <DataGridCommandColumn TItem="TaskModel" NewCommandAllowed="false" EditCommandAllowed="false" DeleteCommandAllowed="false">
+@*                        <DataGridCommandColumn TItem="TaskModel" NewCommandAllowed="false" EditCommandAllowed="false" DeleteCommandAllowed="false">
                             <SaveCommandTemplate>
                                 <Button ElementId="btnSave" Type="ButtonType.Submit" PreventDefaultOnSubmit Color="Color.Success" Clicked="@context.Clicked">@context.LocalizationString</Button>
                             </SaveCommandTemplate>
                             <CancelCommandTemplate>
                                 <Button ElementId="btnCancel" Color="Color.Secondary" Clicked="@context.Clicked">@context.LocalizationString</Button>
                             </CancelCommandTemplate>
-                        </DataGridCommandColumn>
+                        </DataGridCommandColumn>*@
                         <DataGridColumn TItem="User" Field="Id" Caption="Id" Sortable="false" Displayable="true">
                             <DisplayTemplate>
                                 <NavLink href="@($"/Users/{context.Id}")">@context.Id</NavLink>
@@ -201,10 +204,11 @@ else
                     <ButtonRowTemplate>
                         <Button Color="Color.Success" Clicked="context.NewCommand.Clicked">New</Button>
                         <Button Color="Color.Danger" Disabled="(selectedTask is null)" Clicked="context.DeleteCommand.Clicked">Delete</Button>
-                        </ButtonRowTemplate>
+                    </ButtonRowTemplate>
 
                 </DataGrid>
             </TabPanel>
+            
         </Content>
     </Tabs>
 }
@@ -284,7 +288,7 @@ else
     };
 
     private HubConnection? hubConnection;
-    private Event message = new Event { };
+    private Event selectedEvent = new Event { };
     private List<User> teamList;
     private string? userInput;
     private int? userId;
@@ -302,16 +306,17 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        await EventController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
+        await EventController.StartConnection();
+        await EventController.Get(id);
+        selectedEvent = EventController.message;
+
         await UserEventTeamController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
         await UserEventTeamController.StartConnection();
         await UserEventTeamController.GetAll();
         eventParticipantTeamMessages = UserEventTeamController.messages.ToList();
         loaded = true;
 
-        await EventController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
-        await EventController.StartConnection();
-        await EventController.Get(id);
-        message = EventController.message;
         loaded = true;
         StateHasChanged();
     }

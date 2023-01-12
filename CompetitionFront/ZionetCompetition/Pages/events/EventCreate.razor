@@ -11,6 +11,8 @@
 @inject NavigationManager Navigation
 @inject ZionetCompetition.Services.TokenService TokenService
 
+@implements IAsyncDisposable
+
 @if (!loaded)
 {
     <SpinKit Type="SpinKitType.Plane" Color="SlateBlue" Centered />
@@ -105,20 +107,9 @@ else
 }
 
 @code {
-    //[Parameter]
-    //public int id { get; set; }
-
-
-    //private HubConnection? hubConnection;
-    //private Event EventFields = new Event();
     private Event newEvent = new Event();
     private IEnumerable<EventStatus> eventStatuses = new List<EventStatus> { };
     int checkedEventStatus;
-
-    //private string? EventInput;
-    // int? EventId;
-    //private int userId = 1;
-    //private string? messageInput;
     private bool loaded = false;
 
     protected override async Task OnInitializedAsync()
@@ -130,16 +121,11 @@ else
 
         await EventController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
         await EventController.StartConnection();
-        //await EventController.Get(1);
-        //newEvent = EventController.message;
         checkedEventStatus = (int)EnentStatusEnm.Preparation;
         newEvent.IsEnable = true;
         loaded = true;
         StateHasChanged();
     }
-
-    //public bool IsConnected =>
-    //    hubConnection?.State == HubConnectionState.Connected;
 
     private async void Save(EditContext editContext)
     {
@@ -150,10 +136,9 @@ else
         //newEvent.NumberParticipantsInTeam = 5;
         //newEvent.NumberConcurrentTasks = 4;
         //newEvent.Hashcode = "#32";
-        //newEvent.EventStatusId = (int)EnentStatusEnm.Preparation;
-        //newEvent.IsEnable = true;
+        newEvent.EventStatusId = (int)EnentStatusEnm.Preparation;
+        newEvent.IsEnable = false;
 
-    //await EventController.Update((int)newEvent.Id, newEvent);
         await EventController.Create(newEvent);
     }
 
@@ -169,5 +154,6 @@ else
     public async ValueTask DisposeAsync()
     {
         await EventController.DisposeAsync();
+        await EventStatusController.DisposeAsync();
     }
 }
