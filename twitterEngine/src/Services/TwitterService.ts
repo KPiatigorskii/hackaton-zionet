@@ -42,7 +42,7 @@ dotenv.config()
               }
               if (isMatched)
               {
-                this.apiHelper.UserIsTwit(3);
+                this.apiHelper.UserIsTwit(userId);
                 CronService.stopCron(userTwitterId);
               }
             } catch (error) {
