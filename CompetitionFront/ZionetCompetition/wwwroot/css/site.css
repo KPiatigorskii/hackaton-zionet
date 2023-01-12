@@ -77,5 +77,5 @@ a, .btn-link {
 }
 
 .form-bottom-border > .row {
-    height: 40px;
+    margin-bottom: 10px;
 }

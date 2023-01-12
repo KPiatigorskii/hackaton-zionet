@@ -1,11 +1,14 @@
 ﻿@page "/events/{id:int}"
 
-@using Microsoft.AspNetCore.SignalR.Client
+@using System;
+@using System.Globalization;
 @using System.Reflection;
+@using Microsoft.AspNetCore.SignalR.Client
 @using ZionetCompetition.Models
+@using Blazorise.DataGrid
+
 @using ZionetCompetition.Data
 @using Blazorise
-@using Blazorise.DataGrid
 @using System.Linq
 
 @inject ZionetCompetition.Controllers.GenClientController<EventParticipantTeam> UserEventTeamController
@@ -14,13 +17,15 @@
 @inject NavigationManager Navigation
 @inject ZionetCompetition.Services.TokenService TokenService
 
-
 @implements IAsyncDisposable
 
-
-<h3>Event Details</h3>
-            @if (loaded)
-            {
+@if (!loaded)
+{
+    <SpinKit Type="SpinKitType.Plane" Color="SlateBlue" Centered />
+}
+else
+{
+        <h3>Event Details</h3>
     <Tabs SelectedTab="@selectedTab" SelectedTabChanged="@OnSelectedTabChanged">
         
         <Items>
@@ -205,15 +210,6 @@
 }
 
 
-<div style="margin-top: 20px">
-
-
-
-
-
-</div>
-
-
 @code {
     [Parameter]
     public int id { get; set; }
@@ -316,6 +312,7 @@
         await EventController.StartConnection();
         await EventController.Get(id);
         message = EventController.message;
+        loaded = true;
         StateHasChanged();
     }
 
@@ -329,7 +326,7 @@
 
     private void EditEvent()
     {
-        Navigation.NavigateTo("/events/" + id + "/edit");
+        Navigation.NavigateTo("/Events/" + id + "/edit");
     }
 
     //private async Task Create()
@@ -369,11 +366,17 @@
 
     }
 
+    //public async ValueTask DisposeAsync()
+    //{
+    //    if (hubConnection is not null)
+    //    {
+    //        await hubConnection.DisposeAsync();
+    //    }
+    //}
     public async ValueTask DisposeAsync()
     {
-        if (hubConnection is not null)
-        {
-            await hubConnection.DisposeAsync();
-        }
+        await UserEventTeamController.DisposeAsync();
+        await EventController.DisposeAsync();
+        
     }
 }
