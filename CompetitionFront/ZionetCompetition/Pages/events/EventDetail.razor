@@ -13,6 +13,7 @@
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @inject NavigationManager Navigation
 @inject ZionetCompetition.Services.TokenService TokenService
+@inject ZionetCompetition.Services.TwitterService TwitterService
 
 
 @implements IAsyncDisposable
@@ -310,13 +311,14 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await UserEventTeamController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
+        var token = TokenService.GetToken(HttpContextAccessor);
+        await UserEventTeamController.ConfigureHub(token);
         await UserEventTeamController.StartConnection();
         await UserEventTeamController.GetAll();
         eventParticipantTeamMessages = UserEventTeamController.messages.ToList();
         loaded = true;
 
-        await EventController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
+        await EventController.ConfigureHub(token);
         await EventController.StartConnection();
         await EventController.Get(id);
         message = EventController.message;
@@ -350,12 +352,19 @@
 
     private async Task StartEvent()
     {
-        //tokens.Statuses.Update(status => "hello");
+        if (await TwitterService.isTwitterAuthorized())
+        {
+            TwitterService.getTokens(await TwitterService.getTwitterRequestToken(), 
+                                                    await TwitterService.getTwitterRequestTokenSecret());
+            TwitterService.startEventTweet(message.Title);
+        }
     }
 
     private async Task StopEvent()
     {
-
+        TwitterService.getTokens(await TwitterService.getTwitterRequestToken(),
+                                        await TwitterService.getTwitterRequestTokenSecret());
+        TwitterService.stopEventTweet(message.Title);
     }
 
     private async Task EditEvent()

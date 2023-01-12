@@ -71,7 +71,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await EventController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
+        var token = TokenService.GetToken(HttpContextAccessor);
+        await EventController.ConfigureHub(token);
         await EventController.StartConnection();
         await EventController.GetAll();
         messages = EventController.messages;
