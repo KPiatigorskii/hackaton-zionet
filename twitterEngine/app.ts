@@ -12,9 +12,6 @@ dotenv.config()
 
 // Instantiate with desired auth type (here's Bearer v2 auth)
 
-
-
-
 const router: Express = express();
 
 /** Parse the request */
