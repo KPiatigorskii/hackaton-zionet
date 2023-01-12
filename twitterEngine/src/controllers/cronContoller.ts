@@ -1,7 +1,7 @@
 import { TwitterApi } from 'twitter-api-v2';
 import { Request, Response, NextFunction } from 'express';
-import { TwitterService } from '../Services/TwitterService';
-import { CronService } from '../Services/CronService';
+import { TwitterService } from '../services/TwitterService';
+import { CronService } from '../services/CronService';
 import { Team } from '../entities';
 
 const twitterService = new TwitterService()
