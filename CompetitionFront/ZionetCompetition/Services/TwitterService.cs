@@ -71,15 +71,5 @@ namespace ZionetCompetition.Services
                                 _config.GetSection("Twitter:TWITTER_API_SECRET").Value);
             return twitterSession;
         }
-
-        public void startEventTweet(string eventName)
-        {
-            tokens.Statuses.Update(status => $"Challenge {eventName} was started!");
-        }
-
-        public void stopEventTweet(string eventName)
-        {
-            tokens.Statuses.Update(status => $"Challenge {eventName} was stopped!");
-        }
     }
 }

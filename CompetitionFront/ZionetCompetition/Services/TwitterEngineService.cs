@@ -30,5 +30,20 @@ namespace ZionetCompetition.Services
             var client = _clientFactory.CreateClient();
             var response = await client.PostAsync(url, content);
         }
+
+        public async Task SendTweet(string statusMessage)
+        {
+            var url = "http://localhost:6978/twitter/sendTweet";
+
+            var json = JsonConvert.SerializeObject(new TwitterMessageModel {
+                tweetString = statusMessage
+            });
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var client = _clientFactory.CreateClient();
+            var response = await client.PostAsync(url, content);
+        }
+
+
     }
 }

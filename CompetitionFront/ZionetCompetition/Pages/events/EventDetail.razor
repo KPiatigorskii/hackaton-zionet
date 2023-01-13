@@ -13,7 +13,7 @@
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @inject NavigationManager Navigation
 @inject ZionetCompetition.Services.TokenService TokenService
-@inject ZionetCompetition.Services.TwitterService TwitterService
+@inject ZionetCompetition.Services.TwitterEngineService TwitterEngineService
 
 
 @implements IAsyncDisposable
@@ -353,19 +353,12 @@
 
     private async Task StartEvent()
     {
-        if (await TwitterService.isTwitterAuthorized())
-        {
-            TwitterService.getTokens(await TwitterService.getTwitterRequestToken(), 
-                                                    await TwitterService.getTwitterRequestTokenSecret());
-            TwitterService.startEventTweet(message.Title);
-        }
+        TwitterEngineService.SendTweet($"Competition {message.Title} starting! All bets are off");
     }
 
     private async Task StopEvent()
     {
-        TwitterService.getTokens(await TwitterService.getTwitterRequestToken(),
-                                        await TwitterService.getTwitterRequestTokenSecret());
-        TwitterService.stopEventTweet(message.Title);
+        TwitterEngineService.SendTweet($"Competition {message.Title} was stopped");
     }
 
     private async Task EditEvent()
