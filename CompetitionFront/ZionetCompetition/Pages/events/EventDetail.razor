@@ -10,6 +10,7 @@
 @using ZionetCompetition.Data
 @using Blazorise
 @using System.Linq
+@using ZionetCompetition.Pages.Teams
 
 @inject ZionetCompetition.Controllers.GenClientController<Event> EventController
 @inject ZionetCompetition.Controllers.GenClientController<EventParticipantTeam> UserEventTeamController
@@ -27,11 +28,12 @@
 else
 {
         <h3>Event Details</h3>
-    <Tabs SelectedTab="@selectedTab" SelectedTabChanged="@OnSelectedTabChanged">
+    <Tabs SelectedTab="@selectedTab" RenderMode="TabsRenderMode.LazyReload" SelectedTabChanged="@OnSelectedTabChanged">
         
         <Items>
             <Tab Name="Info">Event Info</Tab>
-            <Tab Name="Distribution">Distribution</Tab>
+            <Tab Name="Teams">Teams</Tab>
+            <Tab Name="Participants">Participants</Tab>
             <Tab Name="Tasks">Tasks</Tab>
             <Tab Name="Managers">Managers</Tab>
         </Items>
@@ -54,7 +56,11 @@ else
                 </tbody>
             </TabPanel>
 
-            <TabPanel Name="Distribution">
+            <TabPanel Name="Teams">
+                <TeamsPage eventId="@id" />
+            </TabPanel>
+
+            <TabPanel Name="Participants">
 
                 <DropContainer TItem="EventParticipantTeam" Items="@eventParticipantTeams" ItemsFilter="@((item, dropZone) => item.TeamId.ToString() == dropZone)" ItemDropped="@ItemDropped" Flex="Flex.Wrap.Grow.Is1">
                     <ChildContent>
@@ -381,9 +387,8 @@ else
         var changedTeamMember = dropItem.Item;
         if (changedTeamMember.TeamId == 0) changedTeamMember.TeamId = null;
         await UserEventTeamController.Update(changedTeamMember.Id, changedTeamMember);
-
+        StateHasChanged();
         return;
-
     }
 
     public async ValueTask DisposeAsync()

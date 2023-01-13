@@ -28,7 +28,8 @@ else
 		  Data="@eventTeams"
 		  @bind-SelectedRow="@selectedTeam"
 		  RowInserted="@Create"
-		  RowUpdated = "@Update"
+		  RowUpdated="@Update"
+		  RowRemoved="@Delet"
 		  Editable
 		  Responsive
 		  ShowPager
@@ -105,6 +106,11 @@ else
 	{
 		var chengedTeam = rowUpdated.Item;
 		await TeamController.Update(chengedTeam.Id, chengedTeam);
+	}
+
+	private async void Delet(Team rowRemoved)
+	{
+		await TeamController.Delete(rowRemoved.Id);
 	}
 
 	private int participantsCount(int teamId, List<EventParticipantTeam> eventParticipantTeams)

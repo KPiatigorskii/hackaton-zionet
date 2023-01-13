@@ -49,7 +49,7 @@ builder.Services.AddTransient<GenClientController<TeamTask>>();
 builder.Services.AddTransient<GenClientController<User>>();
 builder.Services.AddTransient<GenClientController<EventStatus>>();
 builder.Services.AddTransient<GenClientController<TaskStatus>>();
-
+builder.Services.AddTransient<AuthClientController<User>>();
 
 
 builder.Services
