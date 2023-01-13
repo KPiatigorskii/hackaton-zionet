@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace MsSqlAccessor.Models;
 
-public partial class EventStatus
+public partial class EventStatus : IdModel
 {
     public int Id { get; set; }
 
