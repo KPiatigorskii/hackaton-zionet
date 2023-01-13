@@ -191,7 +191,7 @@ namespace MsSqlAccessor.DbControllers
             var user = await _context.Users.FirstOrDefaultAsync(e => e.Email == userEmail);
             if (user == null)
             {   
-                if(creatingUser)
+                if(creatingUser) //TODO Better create another Hub for registration new User 
                 {
                     return Constants.systemUser.Id;
                 } else

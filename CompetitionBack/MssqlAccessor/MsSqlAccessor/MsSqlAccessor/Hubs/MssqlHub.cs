@@ -22,7 +22,7 @@ namespace MsSqlAccessor.Hubs
 {
     public class MsSQLHub<Tmodel, TmodelDTO> : Hub where Tmodel : class, IdModel, new() where TmodelDTO : class, IdModel, new()
     {
-        private const string roles = "admin,user,paritcipant";
+        private const string roles = "admin,user,participant";
         private readonly CompetitionBdTestContext _context;
         //const string _header = "User";
         //const string str = typeof(Tmodel).Name;

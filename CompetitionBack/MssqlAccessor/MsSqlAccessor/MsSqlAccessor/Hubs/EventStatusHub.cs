@@ -8,8 +8,8 @@ namespace MsSqlAccessor.Hubs
 {
     public class EventStatusHub<Tmodel, TmodelDTO> : Hub where Tmodel : class, IdModel, new() where TmodelDTO : class, IdModel, new()
     {
-        private const string GetAllRoles = "admin,manager,paritcipant";
-        private const string GetOneRoles = "admin,manager,paritcipant";
+        private const string GetAllRoles = "admin,manager,participant";
+        private const string GetOneRoles = "admin,manager,participant";
         private const string UpdateRoles = "";
         private const string CreateRoles = "";
         private const string DeleteRoles = "";

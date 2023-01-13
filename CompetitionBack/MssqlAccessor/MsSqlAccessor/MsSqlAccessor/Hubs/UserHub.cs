@@ -10,8 +10,8 @@ namespace MsSqlAccessor.Hubs
     {
         private const string GetAllRoles = "admin,manager";
         private const string GetOneRoles = "admin,manager";
-        private const string UpdateRoles = "admin";
-        private const string CreateRoles = "admin";
+        private const string UpdateRoles = "admin, manager, participant";
+        private const string CreateRoles = "admin, participant";
         private const string DeleteRoles = "admin";
         private const string ForceDeleteRoles = "admin";
 
