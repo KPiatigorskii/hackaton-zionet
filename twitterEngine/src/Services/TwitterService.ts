@@ -61,11 +61,12 @@ export class TwitterService {
 
 	public sendTweet(tweetString: string){
 		return new Promise<any>((resolve, reject) => {
-			this.twitterClient.v1.tweet('This tweet was written by a bot').then((val) => {
-				console.log(val)
+			this.twitterClient.v1.tweet(tweetString).then((val) => {
 				console.log("success")
-			}).catch((err) => {
-				console.log(err)
+				resolve("success");
+			}).catch((error) => {
+				console.log(error)
+				reject(error)
 			})
 		});
 	}
