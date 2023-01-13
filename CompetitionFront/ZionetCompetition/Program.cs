@@ -15,6 +15,7 @@ using ZionetCompetition.Services;
 using ZionetCompetition.Models;
 using Autofac.Core;
 using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -77,10 +78,15 @@ builder.Services
         options.ClientSecret = builder.Configuration["Auth0:ClientSecret"];
         options.OpenIdConnectEvents = new OpenIdConnectEvents
         {
-            OnTokenValidated = (context) =>
+            OnTokenValidated = async (context) =>
             {
+
+
                 var token = context.SecurityToken.RawHeader+ "." + 
                 context.SecurityToken.RawPayload + "." + context.SecurityToken.RawSignature;
+                var email = context.Principal.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
+
+
                 var claims = new List<Claim>
                     {
                         new Claim("jwt_token", token)
@@ -94,7 +100,34 @@ builder.Services
                     SameSite = SameSiteMode.Strict
                 });
 
-                return Task.CompletedTask;
+
+                var UserController = context.HttpContext.RequestServices.GetRequiredService<GenClientController<User>>();
+                UserController.ConfigureHub(token);
+
+                await UserController.StartConnection();
+                //var id = await UserController.Get(email);
+/*                if (!id) 
+                {*/
+                    var user = new User
+                    {
+
+                        Email = email,
+                        CreateDate = DateTime.Now,
+                        UpdateDate = DateTime.Now,
+                        RoleId = 1,
+                        Login = context.Principal.Claims.FirstOrDefault(e => e.Type == "name").Value,
+                        CreateUserId = 1,
+                        UpdateUserId = 1,
+                        StatusId = 1,
+                        FirstName = context.Principal.Claims.FirstOrDefault(e => e.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname").Value,
+                        LastName = context.Principal.Claims.FirstOrDefault(e => e.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname").Value,
+
+                    };
+                    await UserController.Create(user);
+             //   } 
+
+
+
             },
 
             OnTicketReceived = notification =>
@@ -120,6 +153,15 @@ builder.Services
         options.Audience = builder.Configuration["Auth0:Audience"];
         options.UseRefreshTokens = true;
     });
+
+builder.Services.AddAuth0AuthenticationClient(config =>
+{
+    config.Domain = builder.Configuration["Auth0:Authority"];
+    config.ClientId = builder.Configuration["Auth0:ClientId"];
+    config.ClientSecret = builder.Configuration["Auth0:ClientSecret"];
+});
+
+builder.Services.AddAuth0ManagementClient().AddManagementAccessToken();
 
 builder.Services.AddHttpClient();
 

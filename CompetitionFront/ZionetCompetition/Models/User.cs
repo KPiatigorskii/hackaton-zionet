@@ -28,6 +28,8 @@
 
         public int StatusId { get; set; }
 
+        public string? TwitterUserId { get; set; }
+
         public virtual Role Role { get; set; } = null!;
 
         public virtual Status Status { get; set; } = null!;
