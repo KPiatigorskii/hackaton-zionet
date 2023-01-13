@@ -35,8 +35,8 @@ router.use((req, res, next) => {
 
 // /** Routes */
 router.use('/CronSchedule', cronRoutes.router);
-router.use('/twitter/', twitterRoutes.router);
-router.use('/mssqlAccessor/',mssqlAccessorRoutes.router )
+router.use('/twitter', twitterRoutes.router);
+router.use('/mssqlAccessor',mssqlAccessorRoutes.router )
 
 /** Error handling */
 router.use((req, res, next) => {

@@ -14,4 +14,13 @@ const getTweets = async (req: Request, res: Response, next: NextFunction) => {
 		})
 };
 
-export { getTweets }
+const sendTweets = async (req: Request, res: Response, next: NextFunction) => {
+	twitterService.sendTweet(req.body.tweetString)
+		.then((result: any) => {
+			return res.status(200).json({
+				message: result
+			});
+		})
+};
+
+export { getTweets, sendTweets }

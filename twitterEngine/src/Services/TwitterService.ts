@@ -11,7 +11,12 @@ export class TwitterService {
 
 	constructor() {
 		this.apiHelper = new ApiHelper();
-		this.twitterClient = new TwitterApi(String(process.env.BEARER_TOKEN) || '',);
+        this.twitterClient = new TwitterApi({
+            appKey: String(process.env.TWITTER_API_KEY) || '',
+            appSecret: String(process.env.TWITTER_API_SECRET) || '',
+            accessToken: String(process.env.TWITTER_ACCESS_TOKEN) || '',
+            accessSecret: String(process.env.TWITTER_ACCESS_TOKEN_SECRET) || '',
+          });
 		if (this.twitterClient == null) {
 			throw new Error("Can't authorize in twitter");
 
@@ -51,6 +56,17 @@ export class TwitterService {
 					console.log(error);
 					reject(error)
 				});
+		});
+	}
+
+	public sendTweet(tweetString: string){
+		return new Promise<any>((resolve, reject) => {
+			this.twitterClient.v1.tweet('This tweet was written by a bot').then((val) => {
+				console.log(val)
+				console.log("success")
+			}).catch((err) => {
+				console.log(err)
+			})
 		});
 	}
 }
