@@ -13,6 +13,9 @@
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
 @inject IConfiguration Configuration
 @inject ZionetCompetition.Services.TwitterService TwitterService
+@inject ZionetCompetition.Services.TwitterEngineService TwitterEngineService
+@inject ZionetCompetition.Services.TokenService TokenService
+@inject ZionetCompetition.Controllers.GenClientController<ZionetCompetition.Models.User> UserController
 
 
 @if (twitterIsConnected)
@@ -43,8 +46,19 @@ else
     private string accessToken;
     private string accessTokenSecret;
 
+    private ZionetCompetition.Models.User message = new ZionetCompetition.Models.User { };
+    private string? userInput;
+    private int? userId;
+
     protected override async Task OnInitializedAsync()
     {
+        await UserController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
+        await UserController.StartConnection();
+        await UserController.Get(2);  // TODO receive REAL id of user
+
+        message = UserController.message;
+        //StateHasChanged();
+
         twitterUserName = await localStorage.GetItemAsync<string>("TwitterUserName");
         accessToken = await localStorage.GetItemAsync<string>("TwitterRequestToken");
         accessTokenSecret = await localStorage.GetItemAsync<string>("TwitterRequestTokenSecret");
@@ -67,9 +81,11 @@ else
     private async Task ConfirmPinCode()
     {
         tokens = TwitterService.getTokensByPIN(twitterSession, pinCodeModel.PINCode);
-        TwitterService.setTokensToStorage(tokens);
+        await TwitterService.setTokensToStorage(tokens);
         twitterUserName = tokens.ScreenName;
         twitterIsConnected = true;
-        StateHasChanged();
+        StateHasChanged(); //tokens.UserId
+        await TwitterEngineService.runTweetSearchAsync(1, "teamName", 2, "eventName");
+
     }
 }
