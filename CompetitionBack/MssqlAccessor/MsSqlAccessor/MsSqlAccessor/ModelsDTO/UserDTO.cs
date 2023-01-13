@@ -23,6 +23,8 @@ public partial class UserDTO : IdModel
 
     public int RoleId { get; set; }
 
+    public string? TwitterUserId { get; set; }
+
     public DateTime CreateDate { get; set; }
 
     public DateTime UpdateDate { get; set; }

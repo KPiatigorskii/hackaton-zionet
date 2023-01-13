@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MsSqlAccessor;
 using MsSqlAccessor.Enums;
 using MsSqlAccessor.Helpers;
 using MsSqlAccessor.Hubs;
@@ -55,7 +56,7 @@ namespace MsSqlAccessor.DbControllers
 
         public async Task<TmodelDTO> Update(int id, TmodelDTO dtoItem, string userEmail)
         {
-            int userId = await GetUserIdByEmail(userEmail);
+            int userId = await GetUserIdByEmail(userEmail, false);
 
             if (id != dtoItem.Id)
             {
@@ -99,7 +100,7 @@ namespace MsSqlAccessor.DbControllers
 
         public async Task<TmodelDTO> Create(TmodelDTO dtoItem, string userEmail)
         {
-            int userId = await GetUserIdByEmail(userEmail);
+            int userId = await GetUserIdByEmail(userEmail, typeof(TmodelDTO).Name == "UserDTO");
 
             Tmodel dbItem = dtoItem.ConvertFromDto<Tmodel, TmodelDTO>();
 
@@ -133,7 +134,7 @@ namespace MsSqlAccessor.DbControllers
 
         public async Task<TmodelDTO> Delete(int id, string userEmail)
         {
-            int userId = await GetUserIdByEmail(userEmail);
+            int userId = await GetUserIdByEmail(userEmail, false);
 
             var dbItem = await _context.Set<Tmodel>().FindAsync(id);
             if (dbItem == null)
@@ -164,7 +165,7 @@ namespace MsSqlAccessor.DbControllers
 
         public async Task<TmodelDTO> ForceDelete(int id, string userEmail)
         {
-            int userId = await GetUserIdByEmail(userEmail);
+            int userId = await GetUserIdByEmail(userEmail, false);
 
             var dbItem = await _context.Set<Tmodel>().FindAsync(id);
             if (dbItem == null)
@@ -185,12 +186,16 @@ namespace MsSqlAccessor.DbControllers
             return new TmodelDTO();
         }
 
-        private async Task<int> GetUserIdByEmail(string userEmail)
+        private async Task<int> GetUserIdByEmail(string userEmail, bool creatingUser)
         {
             var user = await _context.Users.FirstOrDefaultAsync(e => e.Email == userEmail);
             if (user == null)
-            {
-                throw new Exception(Errors.NotAuthorizedOnServer);
+            {   
+                if(creatingUser)
+                {
+                    return Constants.systemUser.Id;
+                } else
+                throw new Exception(Errors.NotAuthorizedOnServer );
             }
             return user.Id;
         }

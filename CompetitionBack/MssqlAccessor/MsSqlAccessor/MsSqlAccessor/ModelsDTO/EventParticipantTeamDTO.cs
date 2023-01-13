@@ -12,9 +12,11 @@ public partial class EventParticipantTeamDTO : IdModel
 
     public int EventId { get; set; }
 
-    public int TeamId { get; set; }
+    public int? TeamId { get; set; }
 
     public bool? IsLeader { get; set; }
+
+    public bool? IsTwitt { get; set; }
 
     public int StatusId { get; set; }
 
@@ -24,5 +26,5 @@ public partial class EventParticipantTeamDTO : IdModel
 
     public virtual Status Status { get; set; } = null!;
 
-    public virtual Team Team { get; set; } = null!;
+    public virtual Team? Team { get; set; }
 }

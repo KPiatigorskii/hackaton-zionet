@@ -12,6 +12,8 @@ public partial class TaskStatus : IdModel
 
     public int StatusId { get; set; }
 
+    public virtual Status Status { get; set; } = null!;
+
     [JsonIgnore]
     public virtual ICollection<TeamTask> TeamTasks { get; } = new List<TeamTask>();
 }

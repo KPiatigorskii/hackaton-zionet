@@ -40,6 +40,9 @@ public partial class Status : IdModel
     public virtual ICollection<TaskParticipant> TaskParticipants { get; } = new List<TaskParticipant>();
 
     [JsonIgnore]
+    public virtual ICollection<TaskStatus> TaskStatuses { get; } = new List<TaskStatus>();
+
+    [JsonIgnore]
     public virtual ICollection<Task> Tasks { get; } = new List<Task>();
 
     [JsonIgnore]
