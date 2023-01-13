@@ -11,8 +11,9 @@
 @using Blazorise
 @using System.Linq
 
-@inject ZionetCompetition.Controllers.GenClientController<EventParticipantTeam> UserEventTeamController
 @inject ZionetCompetition.Controllers.GenClientController<Event> EventController
+@inject ZionetCompetition.Controllers.GenClientController<EventParticipantTeam> UserEventTeamController
+@inject ZionetCompetition.Controllers.GenClientController<Team> TeamController
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @inject NavigationManager Navigation
 @inject ZionetCompetition.Services.TokenService TokenService
@@ -29,8 +30,8 @@ else
     <Tabs SelectedTab="@selectedTab" SelectedTabChanged="@OnSelectedTabChanged">
         
         <Items>
-            <Tab Name="Info">Info</Tab>
-            <Tab Name="Teams">Teams</Tab>
+            <Tab Name="Info">Event Info</Tab>
+            <Tab Name="Distribution">Distribution</Tab>
             <Tab Name="Tasks">Tasks</Tab>
             <Tab Name="Managers">Managers</Tab>
         </Items>
@@ -52,23 +53,32 @@ else
                     </div>
                 </tbody>
             </TabPanel>
-            
-            <TabPanel Name="Teams">
 
-                <DropContainer TItem="EventParticipantTeam" Items="@eventParticipantTeamMessages" ItemsFilter="@((item, dropZone) => item.Team.Title == dropZone)" ItemDropped="@ItemDropped" Flex="Flex.Wrap.Grow.Is1">
+            <TabPanel Name="Distribution">
+
+                <DropContainer TItem="EventParticipantTeam" Items="@eventParticipantTeams" ItemsFilter="@((item, dropZone) => item.TeamId.ToString() == dropZone)" ItemDropped="@ItemDropped" Flex="Flex.Wrap.Grow.Is1">
                     <ChildContent>
-                        @foreach (var teamString in teamNames)
-                        {
-                            var dropzone = teamString;
-
                             <Card>
                                 <CardBody>
                                     <ListGroup>
-                                        <Heading Size="HeadingSize.Is4" Margin="Margin.Is3.FromBottom">@dropzone</Heading>
+                                        <Heading Size="HeadingSize.Is4" Margin="Margin.Is3.FromBottom">Unalocated</Heading>
+                                        <DropZone TItem="EventParticipantTeam" Name="@null" AllowReorder Padding="Padding.Is3" Margin="Margin.Is3" Flex="Flex.Grow.Is1" />
+                                    </ListGroup>
+                                </CardBody>
+                                <Button Color="Color.Primary">Add Participant to the Event</Button>
+                            </Card>
+                        @foreach (var team in eventTeams)
+                        {
+                            var dropzone = team.Id;
+                            var dropTitle = team.Title;
+                            <Card>
+                                <CardBody>
+                                    <ListGroup>
+                                        <Heading Size="HeadingSize.Is4" Margin="Margin.Is3.FromBottom">@dropTitle</Heading>
                                         <DropZone TItem="EventParticipantTeam" Name="@dropzone.ToString()" AllowReorder Padding="Padding.Is3" Margin="Margin.Is3" Flex="Flex.Grow.Is1" />
                                     </ListGroup>
                                 </CardBody>
-                                <Button Color="Color.Primary">Add Participant to team @dropzone</Button>
+                                <Button Color="Color.Primary">Add Participant to team @dropTitle</Button>
                             </Card>
                         }
                     </ChildContent>
@@ -287,16 +297,19 @@ else
         }
     };
 
-    private HubConnection? hubConnection;
-    private Event selectedEvent = new Event { };
+
     private List<User> teamList;
     private string? userInput;
     private int? userId;
     private string? messageInput;
     private bool loaded = false;
 
-    public EventParticipantTeam eventParticipantTeamMessage = new EventParticipantTeam { };
-    public List<EventParticipantTeam> eventParticipantTeamMessages = new List<EventParticipantTeam> { };
+    private Event selectedEvent = new Event { };
+    private List<EventParticipantTeam> allEventParticipantTeams = new List<EventParticipantTeam> { };
+    private List<EventParticipantTeam> eventParticipantTeams = new List<EventParticipantTeam> { };
+    private List<Team> allTeams = new List<Team> { };
+    private List<Team> eventTeams = new List<Team> { };
+
 
     private Task OnSelectedTabChanged(string name)
     {
@@ -306,23 +319,28 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        await EventController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
+        var token = TokenService.GetToken(HttpContextAccessor);
+
+        await EventController.ConfigureHub(token);
         await EventController.StartConnection();
         await EventController.Get(id);
         selectedEvent = EventController.message;
 
-        await UserEventTeamController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
+        await UserEventTeamController.ConfigureHub(token);
         await UserEventTeamController.StartConnection();
         await UserEventTeamController.GetAll();
-        eventParticipantTeamMessages = UserEventTeamController.messages.ToList();
-        loaded = true;
+        allEventParticipantTeams = UserEventTeamController.messages.ToList();
+        eventParticipantTeams = allEventParticipantTeams.Where(t => t.EventId == id).ToList();
+
+        await TeamController.ConfigureHub(token);
+        await TeamController.StartConnection();
+        await TeamController.GetAll();
+        allTeams = TeamController.messages.ToList();
+        eventTeams = allTeams.Where(t => t.EventId == id).ToList();
 
         loaded = true;
         StateHasChanged();
     }
-
-    public bool IsConnected =>
-        hubConnection?.State == HubConnectionState.Connected;
 
     //private void Edit()
     //{
@@ -358,26 +376,16 @@ else
 
     private async Task ItemDropped(DraggableDroppedEventArgs<EventParticipantTeam> dropItem)
     {
-        var newTeam = teams.FirstOrDefault(e => e.Title == dropItem.DropZoneName);
-        var changedTeamMember = eventParticipantTeamMessages.FirstOrDefault(e => e.Participant.Id == dropItem.Item.Participant.Id);
+        dropItem.Item.TeamId = Convert.ToInt32(dropItem.DropZoneName);
 
-        dropItem.Item.TeamId = newTeam.Id;
-        dropItem.Item.Team.Title = newTeam.Title;// send update requset to DB
-
-        changedTeamMember.Team = newTeam;
-        changedTeamMember.TeamId = newTeam.Id;
+        var changedTeamMember = dropItem.Item;
+        if (changedTeamMember.TeamId == 0) changedTeamMember.TeamId = null;
         await UserEventTeamController.Update(changedTeamMember.Id, changedTeamMember);
-        return ;// Task<EventParticipantTeam>.CompletedTask;
+
+        return;
 
     }
 
-    //public async ValueTask DisposeAsync()
-    //{
-    //    if (hubConnection is not null)
-    //    {
-    //        await hubConnection.DisposeAsync();
-    //    }
-    //}
     public async ValueTask DisposeAsync()
     {
         await UserEventTeamController.DisposeAsync();

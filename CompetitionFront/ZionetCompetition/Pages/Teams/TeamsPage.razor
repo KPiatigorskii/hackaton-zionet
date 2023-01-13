@@ -1,0 +1,120 @@
+﻿@page "/events/{eventId:int}/teams"
+
+@using System;
+@using System.Globalization;
+@using System.Reflection;
+@using Microsoft.AspNetCore.SignalR.Client
+@using ZionetCompetition.Models
+@using Blazorise.DataGrid
+
+@inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
+@inject ZionetCompetition.Controllers.GenClientController<Team> TeamController
+@inject ZionetCompetition.Controllers.GenClientController<EventParticipantTeam> UserEventTeamController
+@inject NavigationManager Navigation
+@inject ZionetCompetition.Services.TokenService TokenService
+
+
+@implements IAsyncDisposable
+
+@if (!loaded)
+{
+	<SpinKit Type="SpinKitType.Plane" Color="SlateBlue" Centered />
+}
+else
+{
+	<h3>Teams</h3>
+
+	<DataGrid TItem="Team"
+		  Data="@eventTeams"
+		  @bind-SelectedRow="@selectedTeam"
+		  RowInserted="@Create"
+		  RowUpdated = "@Update"
+		  Editable
+		  Responsive
+		  ShowPager
+		  CommandMode="DataGridCommandMode.ButtonRow"
+		  EditMode="DataGridEditMode.Popup">
+		<DataGridColumns>
+			<DataGridCommandColumn NewCommandAllowed="false" EditCommandAllowed="false" DeleteCommandAllowed="false">
+				<SaveCommandTemplate>
+					<Button ElementId="btnSave" Type="ButtonType.Submit" PreventDefaultOnSubmit Color="Color.Primary" Clicked="@context.Clicked">@context.LocalizationString</Button>
+				</SaveCommandTemplate>
+				<CancelCommandTemplate>
+					<Button ElementId="btnCancel" Color="Color.Secondary" Clicked="@context.Clicked">@context.LocalizationString</Button>
+				</CancelCommandTemplate>
+			</DataGridCommandColumn>
+			<DataGridColumn Field="@nameof(Team.Id)" Caption="#" Sortable="false" />
+			<DataGridColumn Field="@nameof(Team.Title)" Caption="Title" Editable />
+			<DataGridColumn Field="@nameof(Team.UpdateDate)" Caption="Update Date" />
+			<DataGridColumn Field="@nameof(Team.Id)" Caption="Members count">
+				<DisplayTemplate>
+					@participantsCount(context.Id, eventParticipantTeams)
+				</DisplayTemplate>
+			</DataGridColumn>
+
+		</DataGridColumns>
+		<ButtonRowTemplate>
+			<Button Color="Color.Success" Clicked="context.NewCommand.Clicked">New</Button>
+			<Button Color="Color.Primary" Disabled="(selectedTeam is null)" Clicked="context.EditCommand.Clicked">Edit</Button>
+			<Button Color="Color.Danger" Disabled="(selectedTeam is null || participantsCount(selectedTeam.Id, eventParticipantTeams) != 0)" Clicked="context.DeleteCommand.Clicked">Delete</Button>
+			<Button Color="Color.Link" Clicked="context.ClearFilterCommand.Clicked">Clear Filter</Button>
+		</ButtonRowTemplate>
+	</DataGrid>
+}
+
+@code {
+	[Parameter]
+	public int eventId { get; set; }
+	public Team selectedTeam;
+	private List<Team> allTeams = new List<Team> { };
+	private List<Team> eventTeams = new List<Team> { };
+	private List<EventParticipantTeam> allEventParticipantTeams = new List<EventParticipantTeam> { };
+	private List<EventParticipantTeam> eventParticipantTeams = new List<EventParticipantTeam> { };
+	private bool loaded = false;
+
+
+	protected override async Task OnInitializedAsync()
+	{
+		var token = TokenService.GetToken(HttpContextAccessor);
+
+		await TeamController.ConfigureHub(token);
+		await TeamController.StartConnection();
+		await TeamController.GetAll();
+		allTeams = TeamController.messages.ToList();
+		eventTeams = allTeams.Where(t => t.EventId == eventId).ToList();
+
+		await UserEventTeamController.ConfigureHub(token);
+		await UserEventTeamController.StartConnection();
+		await UserEventTeamController.GetAll();
+		allEventParticipantTeams = UserEventTeamController.messages.ToList();
+		eventParticipantTeams = allEventParticipantTeams.Where(t => t.EventId == eventId).ToList();
+
+		loaded = true;
+		StateHasChanged();
+		await base.OnInitializedAsync();
+	}
+
+	private async void Create(SavedRowItem<Team, Dictionary<string, object>> rowInserted)
+	{
+		var newTeam = rowInserted.Item;
+		newTeam.EventId = eventId;
+		await TeamController.Create(newTeam);
+	}
+
+	private async void Update(SavedRowItem<Team, Dictionary<string, object>> rowUpdated)
+	{
+		var chengedTeam = rowUpdated.Item;
+		await TeamController.Update(chengedTeam.Id, chengedTeam);
+	}
+
+	private int participantsCount(int teamId, List<EventParticipantTeam> eventParticipantTeams)
+	{
+		int result = eventParticipantTeams.Count(p => p.TeamId == teamId);
+		return result;
+	}
+
+	public async ValueTask DisposeAsync()
+	{
+		await TeamController.DisposeAsync();
+	}
+}

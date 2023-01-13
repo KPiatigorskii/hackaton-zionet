@@ -77,7 +77,7 @@ else
                 <InputText @bind-Value="@newEvent.Hashcode" />
             </Column>
         </Row>
-        <Row HorizontalGutter="32" VerticalGutter="16">
+@*        <Row HorizontalGutter="32" VerticalGutter="16">
             <Column ColumnSize="ColumnSize.Is2" Class="col-md-2 col-sm-4">
                 <b>Event status: </b>
             </Column>
@@ -101,7 +101,7 @@ else
             <Column ColumnSize="ColumnSize.Is10" Class="col-md-10 col-sm-8">
                 <Blazorise.Switch TValue="bool" @bind-Checked="@newEvent.IsEnable"></Blazorise.Switch>
             </Column>
-        </Row>
+        </Row>*@
         <Blazorise.Bootstrap.Button Color="Color.Primary" Type="Blazorise.ButtonType.Submit">Save</Blazorise.Bootstrap.Button>
     </EditForm>
 }

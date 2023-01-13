@@ -12,4 +12,6 @@ public partial class TaskStatus
 
     public int StatusId { get; set; }
 
+    public virtual Status Status { get; set; } = null!;
+
 }
