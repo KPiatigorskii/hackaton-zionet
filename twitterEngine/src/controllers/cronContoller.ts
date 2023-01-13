@@ -8,7 +8,7 @@ const twitterService = new TwitterService()
 
 const startCron = (req: Request, res: Response) => {
 	console.log("starting cron job with query " + req.body.eventName + " " + req.body.teamName)
-	const result = CronService.startCron(twitterService, req.body.eventName, req.body.teamName, req.body.userId as number, req.body.userTwitterId as number);
+	const result = CronService.startCron(twitterService, req.body.eventName, req.body.teamName, req.body.userId as number, req.body.authorId as number);
 	return res.status(200).json({
 		message: result
 	});
