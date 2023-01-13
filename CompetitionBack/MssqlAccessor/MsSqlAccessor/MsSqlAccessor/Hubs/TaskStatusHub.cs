@@ -111,7 +111,7 @@ namespace MsSqlAccessor.Hubs
                 }
                 if (ex.Message == Errors.ConflictData)
                 {
-                    throw new HubException(Errors.ItemNotFound);
+                    throw new HubException(Errors.ConflictData);
                 }
                 else
                 {
@@ -142,7 +142,7 @@ namespace MsSqlAccessor.Hubs
                 }
                 if (ex.Message == Errors.ConflictData)
                 {
-                    throw new HubException(Errors.ItemNotFound);
+                    throw new HubException(Errors.ConflictData);
                 }
                 else
                 {
@@ -173,7 +173,7 @@ namespace MsSqlAccessor.Hubs
                 }
                 if (ex.Message == Errors.ConflictData)
                 {
-                    throw new HubException(Errors.ItemNotFound);
+                    throw new HubException(Errors.ConflictData);
                 }
                 else
                 {

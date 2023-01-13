@@ -56,7 +56,7 @@ namespace MsSqlAccessor.DbControllers
 
         public async Task<TmodelDTO> Update(int id, TmodelDTO dtoItem, string userEmail)
         {
-            int userId = await GetUserIdByEmail(userEmail, false);
+            int userId = await GetUserIdByEmail(userEmail);
 
             if (id != dtoItem.Id)
             {
@@ -100,7 +100,7 @@ namespace MsSqlAccessor.DbControllers
 
         public async Task<TmodelDTO> Create(TmodelDTO dtoItem, string userEmail)
         {
-            int userId = await GetUserIdByEmail(userEmail, typeof(TmodelDTO).Name == "UserDTO");
+            int userId = await GetUserIdByEmail(userEmail);
 
             Tmodel dbItem = dtoItem.ConvertFromDto<Tmodel, TmodelDTO>();
 
@@ -134,7 +134,7 @@ namespace MsSqlAccessor.DbControllers
 
         public async Task<TmodelDTO> Delete(int id, string userEmail)
         {
-            int userId = await GetUserIdByEmail(userEmail, false);
+            int userId = await GetUserIdByEmail(userEmail);
 
             var dbItem = await _context.Set<Tmodel>().FindAsync(id);
             if (dbItem == null)
@@ -165,7 +165,7 @@ namespace MsSqlAccessor.DbControllers
 
         public async Task<TmodelDTO> ForceDelete(int id, string userEmail)
         {
-            int userId = await GetUserIdByEmail(userEmail, false);
+            int userId = await GetUserIdByEmail(userEmail);
 
             var dbItem = await _context.Set<Tmodel>().FindAsync(id);
             if (dbItem == null)
@@ -186,15 +186,11 @@ namespace MsSqlAccessor.DbControllers
             return new TmodelDTO();
         }
 
-        private async Task<int> GetUserIdByEmail(string userEmail, bool creatingUser)
+        private async Task<int> GetUserIdByEmail(string userEmail)
         {
             var user = await _context.Users.FirstOrDefaultAsync(e => e.Email == userEmail);
             if (user == null)
             {   
-                if(creatingUser) //TODO Better create another Hub for registration new User 
-                {
-                    return Constants.systemUser.Id;
-                } else
                 throw new Exception(Errors.NotAuthorizedOnServer );
             }
             return user.Id;
