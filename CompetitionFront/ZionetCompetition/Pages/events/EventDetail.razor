@@ -13,12 +13,20 @@
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @inject NavigationManager Navigation
 @inject ZionetCompetition.Services.TokenService TokenService
+@inject ZionetCompetition.Services.TwitterService TwitterService
 
 
 @implements IAsyncDisposable
 
 
-<h3>Event Details</h3>
+
+<div>
+    <h3>Event @message.Title</h3>
+    <Button Color="Color.Primary" Clicked="@StartEvent">Start Event</Button>
+    <Button Color="Color.Primary" Clicked="@StopEvent">Stop Event</Button>
+
+
+</div>
             @if (loaded)
             {
     <Tabs SelectedTab="@selectedTab" SelectedTabChanged="@OnSelectedTabChanged">
@@ -304,13 +312,14 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await UserEventTeamController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
+        var token = TokenService.GetToken(HttpContextAccessor);
+        await UserEventTeamController.ConfigureHub(token);
         await UserEventTeamController.StartConnection();
         await UserEventTeamController.GetAll();
         eventParticipantTeamMessages = UserEventTeamController.messages.ToList();
         loaded = true;
 
-        await EventController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
+        await EventController.ConfigureHub(token);
         await EventController.StartConnection();
         await EventController.Get(id);
         message = EventController.message;
@@ -340,6 +349,23 @@
             await hubConnection.SendAsync("ForceDeleteOne", id);
             Navigation.NavigateTo("/events/");
         }
+    }
+
+    private async Task StartEvent()
+    {
+        if (await TwitterService.isTwitterAuthorized())
+        {
+            TwitterService.getTokens(await TwitterService.getTwitterRequestToken(), 
+                                                    await TwitterService.getTwitterRequestTokenSecret());
+            TwitterService.startEventTweet(message.Title);
+        }
+    }
+
+    private async Task StopEvent()
+    {
+        TwitterService.getTokens(await TwitterService.getTwitterRequestToken(),
+                                        await TwitterService.getTwitterRequestTokenSecret());
+        TwitterService.stopEventTweet(message.Title);
     }
 
     private async Task EditEvent()

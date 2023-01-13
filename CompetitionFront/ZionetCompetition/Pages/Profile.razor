@@ -4,22 +4,27 @@
 @using Microsoft.AspNetCore.Authentication.OAuth
 @using Microsoft.AspNetCore.Components.Forms
 @using ZionetCompetition.Services
+@using System.Security.Claims
+@using ZionetCompetition.Models
+
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 @inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
-
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
 @inject IConfiguration Configuration
+@inject ZionetCompetition.Services.TwitterService TwitterService
+
 
 @if (twitterIsConnected)
 {
-    <div> You successfully connect to twitter with id @twitterUserId</div>
+    <div> Twitter Account: @twitterUserName</div>
 }
 else
 {
     <Button Color="Color.Primary" Clicked=@BeginLogin hidden="@(!twitFormHidden)">Connect Twitter</Button>
 
-    <EditForm Model="@exampleModel" OnSubmit="@ConfirmPinCode" hidden="@twitFormHidden">
-        <InputText id="PINCode" @bind-Value="exampleModel.PINCode" />
+    <EditForm Model="@pinCodeModel" OnSubmit="@ConfirmPinCode" hidden="@twitFormHidden">
+        <InputText id="PINCode" @bind-Value="pinCodeModel.PINCode" />
 
         <Button Color="Color.Primary" Type="ButtonType.Submit" >Confirm PINcode</Button>
     </EditForm>
@@ -27,50 +32,44 @@ else
 
 
 @code{
-
-    public class ExampleModel
-    {
-        public string? PINCode { get; set; }
-    }
-
     public string redirectUrl;
     private string strValue;
     private bool twitFormHidden = true;
     private CoreTweet.OAuth.OAuthSession twitterSession;
-    public ExampleModel exampleModel = new();
+    private CoreTweet.Tokens tokens;
+    public PinCodeModel pinCodeModel = new();
     private bool twitterIsConnected = false;
-    private long twitterUserId = 0;
+    private string twitterUserName;
+    private string accessToken;
+    private string accessTokenSecret;
 
     protected override async Task OnInitializedAsync()
     {
-        twitterIsConnected = HttpContextAccessor.HttpContext.User.Claims.FirstOrDefault(e => e.Type == "twitter") != null;
-        if (!twitterIsConnected) // add authentication condition
+        twitterUserName = await localStorage.GetItemAsync<string>("TwitterUserName");
+        accessToken = await localStorage.GetItemAsync<string>("TwitterRequestToken");
+        accessTokenSecret = await localStorage.GetItemAsync<string>("TwitterRequestTokenSecret");
+        if (!string.IsNullOrEmpty(twitterUserName) && !string.IsNullOrEmpty(accessToken) && !string.IsNullOrEmpty(accessTokenSecret))
         {
-            twitterSession = OAuth.Authorize(Configuration.GetSection("Twitter:TWITTER_API_KEY").Value,
-                                        Configuration.GetSection("Twitter:TWITTER_API_SECRET").Value);
-            redirectUrl = twitterSession.AuthorizeUri.AbsoluteUri;
+            twitterIsConnected = true;
+            tokens = TwitterService.getTokens(accessToken, accessTokenSecret);
         }
     }
 
     private async Task BeginLogin()
     {
+        twitterSession = TwitterService.getTwitterSession();
+        redirectUrl = twitterSession.AuthorizeUri.AbsoluteUri;
         twitFormHidden = false;
         StateHasChanged();
         await JSRuntime.InvokeVoidAsync("open", redirectUrl, "_blank");
-        //Navigation.NavigateTo(redirectUrl);
     }
 
     private async Task ConfirmPinCode()
     {
-        var tokens = OAuth.GetTokens(twitterSession, exampleModel.PINCode);
-        twitterUserId = tokens.UserId; //  put this id to db
-        if (twitterUserId != 0) // put this id to db 
-        {
-            twitterIsConnected = true;
-            StateHasChanged();
-        }
-
+        tokens = TwitterService.getTokensByPIN(twitterSession, pinCodeModel.PINCode);
+        TwitterService.setTokensToStorage(tokens);
+        twitterUserName = tokens.ScreenName;
+        twitterIsConnected = true;
+        StateHasChanged();
     }
-
-
 }
