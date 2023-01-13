@@ -34,7 +34,7 @@ namespace ZionetCompetition.Services
             return tokens = OAuth.GetTokens(twitterSession, PINCode);
         }
 
-        public async void setTokensToStorage(CoreTweet.Tokens tokensToStorage) 
+        public async Task setTokensToStorage(CoreTweet.Tokens tokensToStorage) 
         {
             await _localStorage.SetItemAsync("TwitterUserName", tokensToStorage.ScreenName);//  put this id to db
             await _localStorage.SetItemAsync("TwitterRequestToken", tokensToStorage.AccessToken);
