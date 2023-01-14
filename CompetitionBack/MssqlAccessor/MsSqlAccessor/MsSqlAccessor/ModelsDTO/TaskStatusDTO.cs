@@ -11,4 +11,6 @@ public partial class TaskStatusDTO : IdModel
     public string Title { get; set; } = null!;
 
     public int StatusId { get; set; }
+
+    public virtual Status Status { get; set; } = null!;
 }

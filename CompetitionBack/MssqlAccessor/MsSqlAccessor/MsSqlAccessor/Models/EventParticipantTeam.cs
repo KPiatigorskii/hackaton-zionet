@@ -12,9 +12,11 @@ public partial class EventParticipantTeam : IdModel
 
     public int EventId { get; set; }
 
-    public int TeamId { get; set; }
+    public int? TeamId { get; set; }
 
     public bool? IsLeader { get; set; }
+
+    public bool? IsTwitt { get; set; }
 
     public int StatusId { get; set; }
 
@@ -27,5 +29,5 @@ public partial class EventParticipantTeam : IdModel
     [JsonIgnore]
     public virtual ICollection<TaskParticipant> TaskParticipants { get; } = new List<TaskParticipant>();
 
-    public virtual Team Team { get; set; } = null!;
+    public virtual Team? Team { get; set; }
 }

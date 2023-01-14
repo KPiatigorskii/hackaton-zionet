@@ -144,6 +144,7 @@ public partial class CompetitionBdTestContext : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.EventId).HasColumnName("event_id");
             entity.Property(e => e.IsLeader).HasColumnName("is_leader");
+            entity.Property(e => e.IsTwitt).HasColumnName("is_twitt");
             entity.Property(e => e.ParticipantId).HasColumnName("participant_id");
             entity.Property(e => e.StatusId).HasColumnName("status_id");
             entity.Property(e => e.TeamId).HasColumnName("team_id");
@@ -165,7 +166,6 @@ public partial class CompetitionBdTestContext : DbContext
 
             entity.HasOne(d => d.Team).WithMany(p => p.EventParticipantTeams)
                 .HasForeignKey(d => d.TeamId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_team-participant_team");
         });
 
@@ -393,6 +393,11 @@ public partial class CompetitionBdTestContext : DbContext
             entity.Property(e => e.Title)
                 .HasMaxLength(50)
                 .HasColumnName("title");
+
+            entity.HasOne(d => d.Status).WithMany(p => p.TaskStatuses)
+                .HasForeignKey(d => d.StatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_task_status_status");
         });
 
         modelBuilder.Entity<Team>(entity =>
@@ -504,6 +509,9 @@ public partial class CompetitionBdTestContext : DbContext
                 .HasColumnName("password");
             entity.Property(e => e.RoleId).HasColumnName("role_id");
             entity.Property(e => e.StatusId).HasColumnName("status_id");
+            entity.Property(e => e.TwitterUserId)
+                .HasMaxLength(50)
+                .HasColumnName("twitter_user_id");
             entity.Property(e => e.UpdateDate)
                 .HasColumnType("datetime")
                 .HasColumnName("update_date");

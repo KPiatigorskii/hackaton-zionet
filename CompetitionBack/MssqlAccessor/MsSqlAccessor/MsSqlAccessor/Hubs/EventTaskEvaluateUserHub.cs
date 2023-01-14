@@ -8,8 +8,8 @@ namespace MsSqlAccessor.Hubs
 {
     public class EventTaskEvaluateUserHub<Tmodel, TmodelDTO> : Hub where Tmodel : class, IdModel, new() where TmodelDTO : class, IdModel, new()
     {
-        private const string GetAllRoles = "admin,manager,paritcipant";
-        private const string GetOneRoles = "admin,manager,paritcipant";
+        private const string GetAllRoles = "admin,manager,participant";
+        private const string GetOneRoles = "admin,manager,participant";
         private const string UpdateRoles = "admin";
         private const string CreateRoles = "admin";
         private const string DeleteRoles = "admin";
@@ -70,9 +70,9 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.NotAuthorizedOnServer)
+                if (ex.Message == Errors.NotAuthorizedByEmail)
                 {
-                    throw new HubException(Errors.NotAuthorizedOnServer);
+                    throw new HubException(Errors.NotAuthorizedByEmail);
                 }
                 if (ex.Message == Errors.ItemNotFound)
                 {
@@ -105,13 +105,13 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.NotAuthorizedOnServer)
+                if (ex.Message == Errors.NotAuthorizedByEmail)
                 {
-                    throw new HubException(Errors.NotAuthorizedOnServer);
+                    throw new HubException(Errors.NotAuthorizedByEmail);
                 }
                 if (ex.Message == Errors.ConflictData)
                 {
-                    throw new HubException(Errors.ItemNotFound);
+                    throw new HubException(Errors.ConflictData);
                 }
                 else
                 {
@@ -136,13 +136,13 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.NotAuthorizedOnServer)
+                if (ex.Message == Errors.NotAuthorizedByEmail)
                 {
-                    throw new HubException(Errors.NotAuthorizedOnServer);
+                    throw new HubException(Errors.NotAuthorizedByEmail);
                 }
                 if (ex.Message == Errors.ConflictData)
                 {
-                    throw new HubException(Errors.ItemNotFound);
+                    throw new HubException(Errors.ConflictData);
                 }
                 else
                 {
@@ -167,13 +167,13 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.NotAuthorizedOnServer)
+                if (ex.Message == Errors.NotAuthorizedByEmail)
                 {
-                    throw new HubException(Errors.NotAuthorizedOnServer);
+                    throw new HubException(Errors.NotAuthorizedByEmail);
                 }
                 if (ex.Message == Errors.ConflictData)
                 {
-                    throw new HubException(Errors.ItemNotFound);
+                    throw new HubException(Errors.ConflictData);
                 }
                 else
                 {

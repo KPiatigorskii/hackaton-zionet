@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MsSqlAccessor;
 using MsSqlAccessor.Enums;
 using MsSqlAccessor.Helpers;
 using MsSqlAccessor.Hubs;
@@ -189,8 +190,8 @@ namespace MsSqlAccessor.DbControllers
         {
             var user = await _context.Users.FirstOrDefaultAsync(e => e.Email == userEmail);
             if (user == null)
-            {
-                throw new Exception(Errors.NotAuthorizedOnServer);
+            {   
+                throw new Exception(Errors.NotAuthorizedByEmail );
             }
             return user.Id;
         }
