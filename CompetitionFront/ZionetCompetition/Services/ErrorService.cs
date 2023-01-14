@@ -34,12 +34,16 @@ namespace ZionetCompetition.Services
                     GeneralErr(Errors.Errors.ConflictData);
                     break;
 
-                case string s when s.Contains(Errors.Errors.NotAuthorizedOnClient):
-                    Unauthorized(Errors.Errors.NotAuthorizedOnClient);
+                case string s when s.Contains(Errors.Errors.NotAuthorized):
+                    Forbidden(Errors.Errors.NotAuthorized);
                     break;
 
-                case string s when s.Contains(Errors.Errors.NotAuthorizedOnServer):
-                    Unauthorized(Errors.Errors.NotAuthorizedOnServer);
+                case string s when s.Contains(Errors.Errors.NotAuthorizedByEmail):
+                    Unauthorized(Errors.Errors.NotAuthorizedByEmail);
+                    break;
+
+                case string s when s.Contains(Errors.Errors.Forbidden):
+                    Forbidden(Errors.Errors.Forbidden);
                     break;
 
                 default:
@@ -52,6 +56,11 @@ namespace ZionetCompetition.Services
         private void Unauthorized(string errorMessage)
         {
             _navigationManager.NavigateTo($"/401/{errorMessage}");
+        }
+
+        private void Forbidden(string errorMessage)
+        {
+            _navigationManager.NavigateTo($"/403/{errorMessage}");
         }
 
         private void NotFoundPage(string errorMessage)

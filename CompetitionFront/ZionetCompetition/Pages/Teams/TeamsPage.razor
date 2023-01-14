@@ -100,17 +100,20 @@ else
 		var newTeam = rowInserted.Item;
 		newTeam.EventId = eventId;
 		await TeamController.Create(newTeam);
+		StateHasChanged();
 	}
 
 	private async void Update(SavedRowItem<Team, Dictionary<string, object>> rowUpdated)
 	{
 		var chengedTeam = rowUpdated.Item;
 		await TeamController.Update(chengedTeam.Id, chengedTeam);
+		StateHasChanged();
 	}
 
 	private async void Delet(Team rowRemoved)
 	{
 		await TeamController.Delete(rowRemoved.Id);
+		StateHasChanged();
 	}
 
 	private int participantsCount(int teamId, List<EventParticipantTeam> eventParticipantTeams)
@@ -122,5 +125,6 @@ else
 	public async ValueTask DisposeAsync()
 	{
 		await TeamController.DisposeAsync();
+		await UserEventTeamController.DisposeAsync();
 	}
 }

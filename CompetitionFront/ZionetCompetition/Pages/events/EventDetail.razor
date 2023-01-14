@@ -27,7 +27,7 @@
 }
 else
 {
-        <h3>Event Details</h3>
+        <h3>Event Details </h3> @counter
     <Tabs SelectedTab="@selectedTab" RenderMode="TabsRenderMode.LazyReload" SelectedTabChanged="@OnSelectedTabChanged">
         
         <Items>
@@ -345,6 +345,7 @@ else
         eventTeams = allTeams.Where(t => t.EventId == id).ToList();
 
         loaded = true;
+        Counter();
         StateHasChanged();
     }
 
@@ -396,5 +397,16 @@ else
         await UserEventTeamController.DisposeAsync();
         await EventController.DisposeAsync();
         
+    }
+
+    private int counter = 0;
+    private async Task Counter()
+    {
+        while (true)
+        {
+            await Task.Delay(100);
+            counter++;
+            StateHasChanged();
+        }
     }
 }
