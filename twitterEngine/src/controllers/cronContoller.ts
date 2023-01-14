@@ -6,7 +6,7 @@ import { Team } from '../entities';
 
 const twitterService = new TwitterService()
 
-const startCron = (req: Request, res: Response) => {
+const startCron = (req: Request, res: Response, next: NextFunction) => {
 	console.log("starting cron job with query " + req.body.eventName + " " + req.body.teamName)
 	const result = CronService.startCron(twitterService, req.body.eventName, req.body.teamName, req.body.userId as number, req.body.authorId as number);
 	return res.status(200).json({
@@ -14,7 +14,7 @@ const startCron = (req: Request, res: Response) => {
 	});
 };
 
-const stopCron = async (req: Request, res: Response) => {
+const stopCron = async (req: Request, res: Response, next: NextFunction) => {
 	const result = CronService.stopCron(req.body.team_id);
 	return res.status(200).json({
 		message: result
