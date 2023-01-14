@@ -22,21 +22,23 @@
 else
 {
 	<DataGrid TItem="TaskModel"
-		  Data="@tasksList"
+		  Data="@allTasks"
+		  @bind-SelectedRow=selectedTask
+		  RowInserted="@Create"
+		  RowUpdated="@Update"
+		  RowRemoved="@Delete"
 		  Filterable="true"
 		  FilterMethod="DataGridFilterMethod.Contains"
+		  Striped="true"
+		  Editable="false"
+		  Hoverable="true"
+		  Responsive="true"
 		  ShowPager="true"
 		  ShowPageSizes="true"
-		  EditMode="DataGridEditMode.Popup"
-		  CommandMode="DataGridCommandMode.ButtonRow"
-		  Editable="false"
-		  Striped="true"
-		  Hoverable="true"
 		  SelectionMode="DataGridSelectionMode.Single"
-		  Responsive="true"
-		  @bind-SelectedRow=selectedTask>
+		  CommandMode="DataGridCommandMode.ButtonRow">
 		<ChildContent>
-			<DataGridCommandColumn TItem="TaskModel" NewCommandAllowed="false" EditCommandAllowed="false" DeleteCommandAllowed="false">
+			<DataGridCommandColumn NewCommandAllowed="false" EditCommandAllowed="false" DeleteCommandAllowed="false">
 				<SaveCommandTemplate>
 					<Button ElementId="btnSave" Type="ButtonType.Submit" PreventDefaultOnSubmit Color="Color.Primary" Clicked="@context.Clicked">@context.LocalizationString</Button>
 				</SaveCommandTemplate>
@@ -44,11 +46,16 @@ else
 					<Button ElementId="btnCancel" Color="Color.Secondary" Clicked="@context.Clicked">@context.LocalizationString</Button>
 				</CancelCommandTemplate>
 			</DataGridCommandColumn>
-			<DataGridColumn TItem="TaskModel" Field="Id" Caption="Id" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="TaskModel" Field="Title" Caption="Title" Sortable="false" Displayable="true" Editable />
-			<DataGridDateColumn TItem="TaskModel" Field="Language" Caption="Language" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="TaskModel" Field="Platform" Caption="Platform" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="TaskModel" Field="Duration" Caption="Duration" Sortable="true" Displayable="true" Editable />
+			<DataGridColumn TItem="Task" Field="Id" Caption="Id" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="Task" Field="Title" Caption="Title" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="Task" Field="TaskCategory.Title" Caption="Category" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="Task" Field="Language" Caption="Language" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="Task" Field="Platform" Caption="Platform" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="Task" Field="Duration" Caption="Duration" Sortable="true" Displayable="true" Editable />
+			<DataGridColumn TItem="Task" Field="Points" Caption="Points" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="Task" Field="HasBonus" Caption="HasBonus" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="Task" Field="BonusExtraTime" Caption="BonusExtraTime" Sortable="true" Displayable="true" Editable />
+			<DataGridColumn TItem="Task" Field="BonusPoints" Caption="BonusPoints" Sortable="false" Displayable="true" Editable />
 		</ChildContent>
 
 		<EmptyTemplate>
@@ -56,43 +63,28 @@ else
 				No records were found.
 			</div>
 		</EmptyTemplate>
+
 		<LoadingTemplate>
 			<div class="box">
 				<progress class="progress is-small is-primary" max="100" />
 			</div>
 		</LoadingTemplate>
+
 		<ButtonRowTemplate>
 			<Button Color="Color.Success" Clicked="context.NewCommand.Clicked">New</Button>
+			<Button Color="Color.Primary" Disabled="(selectedTask is null)" Clicked="context.EditCommand.Clicked">Edit</Button>
 			<Button Color="Color.Danger" Disabled="(selectedTask is null)" Clicked="context.DeleteCommand.Clicked">Delete</Button>
-			<Button Color="Color.Primary" Disabled="(selectedTask is null)">Duplicate</Button>
-			<Button Color="Color.Danger" Disabled="(selectedTask is null)" Clicked="context.EditCommand.Clicked">Edit</Button>
+			<Button Color="Color.Link" Clicked="context.ClearFilterCommand.Clicked">Clear Filter</Button>
 		</ButtonRowTemplate>
 	</DataGrid>
 }
 
 @code {
-	public List<TaskModel> tasksList = new List<TaskModel>
-{
-	new TaskModel { Id = 1, Title = "Task 1", TaskBody = "Body of task 1", CategoryId = 1, Language = "C#", Platform = "Windows", Duration = 60, Points = 10, HasBonus = false },
-	new TaskModel { Id = 2, Title = "Task 2", TaskBody = "Body of task 2", CategoryId = 1, Language = "C#", Platform = "Windows", Duration = 60, Points = 10, HasBonus = false },
-	new TaskModel { Id = 3, Title = "Task 3", TaskBody = "Body of task 3", CategoryId = 2, Language = "Java", Platform = "Android", Duration = 90, Points = 15, HasBonus = true },
-	new TaskModel { Id = 4, Title = "Task 4", TaskBody = "Body of task 4", CategoryId = 2, Language = "Java", Platform = "Android", Duration = 90, Points = 15, HasBonus = true },
-	new TaskModel { Id = 5, Title = "Task 5", TaskBody = "Body of task 5", CategoryId = 3, Language = "Python", Platform = "Linux", Duration = 120, Points = 20, HasBonus = false },
-	new TaskModel { Id = 6, Title = "Task 6", TaskBody = "Body of task 6", CategoryId = 3, Language = "Python", Platform = "Linux", Duration = 120, Points = 20, HasBonus = false },
-	new TaskModel { Id = 7, Title = "Task 7", TaskBody = "Body of task 7", CategoryId = 4, Language = "JavaScript", Platform = "Web", Duration = 150, Points = 25, HasBonus = true },
-	new TaskModel { Id = 8, Title = "Task 8", TaskBody = "Body of task 8", CategoryId = 4, Language = "JavaScript", Platform = "Web", Duration = 150, Points = 25, HasBonus = true },
-	new TaskModel { Id = 9, Title = "Task 9", TaskBody = "Body of task 9", CategoryId = 5, Language = "C++", Platform = "Windows", Duration = 180, Points = 30, HasBonus = false },
-	new TaskModel { Id = 10, Title = "Task 10", TaskBody = "Body of task 10", CategoryId = 5, Language = "C++", Platform = "Windows", Duration = 180, Points = 30, HasBonus = false }
-};
-	public TaskModel selectedTask;
 
 	[Parameter]
 	public int eventId { get; set; }
-	public Team selectedTeam;
-	private List<Team> allTeams = new List<Team> { };
-	private List<Team> eventTeams = new List<Team> { };
-	private List<EventParticipantTeam> allEventParticipantTeams = new List<EventParticipantTeam> { };
-	private List<EventParticipantTeam> eventParticipantTeams = new List<EventParticipantTeam> { };
+	private TaskModel selectedTask;
+	private List<TaskModel> allTasks = new List<TaskModel> { };
 	private bool loaded = false;
 
 
@@ -100,53 +92,38 @@ else
 	{
 		var token =await TokenService.GetToken();
 
-		await TeamController.ConfigureHub(token);
-		await TeamController.StartConnection();
-		await TeamController.GetAll();
-		allTeams = TeamController.messages.ToList();
-		eventTeams = allTeams.Where(t => t.EventId == eventId).ToList();
-
-		await UserEventTeamController.ConfigureHub(token);
-		await UserEventTeamController.StartConnection();
-		await UserEventTeamController.GetAll();
-		allEventParticipantTeams = UserEventTeamController.messages.ToList();
-		eventParticipantTeams = allEventParticipantTeams.Where(t => t.EventId == eventId).ToList();
+		await TaskController.ConfigureHub(token);
+		await TaskController.StartConnection();
+		await TaskController.GetAll();
+		allTasks = TaskController.messages.ToList();
 
 		loaded = true;
 		StateHasChanged();
 		await base.OnInitializedAsync();
 	}
 
-	private async void Create(SavedRowItem<Team, Dictionary<string, object>> rowInserted)
+	private async void Create(SavedRowItem<TaskModel, Dictionary<string, object>> rowInserted)
 	{
-		var newTeam = rowInserted.Item;
-		newTeam.EventId = eventId;
-		await TeamController.Create(newTeam);
+		var newItem = rowInserted.Item;
+		await TaskController.Create(newItem);
 		StateHasChanged();
 	}
 
-	private async void Update(SavedRowItem<Team, Dictionary<string, object>> rowUpdated)
+	private async void Update(SavedRowItem<TaskModel, Dictionary<string, object>> rowUpdated)
 	{
-		var chengedTeam = rowUpdated.Item;
-		await TeamController.Update(chengedTeam.Id, chengedTeam);
+		var chengedItem = rowUpdated.Item;
+		await TaskController.Update(chengedItem.Id, chengedItem);
 		StateHasChanged();
 	}
 
-	private async void Delet(Team rowRemoved)
+	private async void Delete(TaskModel rowRemoved)
 	{
-		await TeamController.Delete(rowRemoved.Id);
+		await TaskController.Delete(rowRemoved.Id);
 		StateHasChanged();
-	}
-
-	private int participantsCount(int teamId, List<EventParticipantTeam> eventParticipantTeams)
-	{
-		int result = eventParticipantTeams.Count(p => p.TeamId == teamId);
-		return result;
 	}
 
 	public async ValueTask DisposeAsync()
 	{
-		await TeamController.DisposeAsync();
-		await UserEventTeamController.DisposeAsync();
+		await TaskController.DisposeAsync();
 	}
 }
