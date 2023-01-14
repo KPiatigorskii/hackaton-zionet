@@ -2,62 +2,65 @@
 import { HubConnection, HubConnectionBuilder, HubConnectionState, IHttpConnectionOptions, HttpTransportType } from '@microsoft/signalr';
 
 export class SignalRHelper {
-
-
+	signalR = require("@microsoft/signalr");
 	private hubConnection!: HubConnection;
 	baseUrl: string;
+	connection: any;
 
 	constructor(baseUrl: string) {
 		this.baseUrl = baseUrl;
 	}
 
-	async connect(url: string, withToken: boolean, tokenString: string = ''): Promise<void> {
+	async connect(tokenString: string = ''): Promise<void> {
 
-		const builder = new HubConnectionBuilder();
-		if (!withToken) {
-			builder.withUrl(url, {
+		this.connection = new this.signalR.HubConnectionBuilder()
+			.configureLogging(this.signalR.LogLevel.Debug)
+			.withUrl(`${this.baseUrl}`, {
+				headers: {"Authorization": "Bearer " + tokenString },
 				skipNegotiation: true,
-				transport: HttpTransportType.WebSockets
+				transport: this.signalR.HttpTransportType.WebSockets
+			})
+			.build();
+
+			this.connection.on("ReceiveGetOne", (data: any) => {
+				return data;
 			});
-		} else {
-			builder.withUrl(url, {
-				accessTokenFactory: () => { tokenString },
-				skipNegotiation: true,
-				transport: HttpTransportType.WebSockets
-			} as IHttpConnectionOptions);
-		}
-		this.hubConnection = builder.withAutomaticReconnect().build();
+			this.connection.on("ReceiveGetAll", (data: any[]) => {
+				return data;
+			});
 
-		return this.hubConnection.start()
+		
+
+		return this.connection.start()
 			.then(() => {
 				if (this.isConnected()) {
-					console.log('SignalR: Connected to the server: ' + url);
+					console.log('SignalR: Connected to the server: ' + this.baseUrl);
 				}
 			})
-			.catch(err => {
+			.catch((err: any) => {
 				console.error('SignalR: Failed to start with error: ' + err.toString());
-			});
+			})
 	}
 
 	async define(methodName: string, newMethod: (...args: any[]) => void): Promise<void> {
-		if (this.hubConnection) {
-			this.hubConnection.on(methodName, newMethod);
+		if (this.connection) {
+			this.connection.on(methodName, newMethod);
 		}
 	}
 
 	async invoke(methodName: string, ...args: any[]): Promise<any> {
 		if (this.isConnected()) {
-			return this.hubConnection.invoke(methodName, ...args);
+			return this.connection.invoke(methodName, ...args);
 		}
 	}
 
 	disconnect(): void {
 		if (this.isConnected()) {
-			this.hubConnection.stop();
+			this.connection.stop();
 		}
 	}
 
 	isConnected(): boolean {
-		return this.hubConnection && this.hubConnection.state === HubConnectionState.Connected;
+		return this.connection && this.connection.state === HubConnectionState.Connected;
 	}
 }
