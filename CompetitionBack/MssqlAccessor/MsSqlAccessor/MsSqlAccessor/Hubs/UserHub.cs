@@ -71,14 +71,7 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.ItemNotFound)
-                {
-                    throw new HubException(Errors.ItemNotFound);
-                }
-                else
-                {
-                    throw new HubException(Errors.General);
-                }
+                throw new HubException(Errors.General);
             }
             //await Task.Delay(1000);
             await Clients.Caller.SendAsync("ReceiveGetOneByEmail", dtoItem);

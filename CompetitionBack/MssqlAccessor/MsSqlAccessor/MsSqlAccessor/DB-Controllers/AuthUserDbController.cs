@@ -22,11 +22,6 @@ namespace MsSqlAccessor.DbControllers
                 .Where(e => e.StatusId == (int)StatusEnm.Active)
                 .FirstOrDefaultAsync(e => e.Email == Email);
 
-            if (dbItem == null)
-            {
-                throw new Exception(Errors.ItemNotFound);
-            }
-
             var dtoItem = dbItem.ConvertToDto<User, UserDTO>();
 
             return dtoItem;
