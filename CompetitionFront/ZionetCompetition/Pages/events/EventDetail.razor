@@ -11,6 +11,7 @@
 @using Blazorise
 @using System.Linq
 @using ZionetCompetition.Pages.Participants
+@using ZionetCompetition.Pages.Tasks
 @using ZionetCompetition.Pages.Teams
 
 @inject ZionetCompetition.Controllers.GenClientController<Event> EventController
@@ -73,53 +74,7 @@ else
             </TabPanel>
             
             <TabPanel Name="Tasks">
-                <DataGrid TItem="TaskModel"
-                          Data="@tasksList"
-                          Filterable="true"
-                          FilterMethod="DataGridFilterMethod.Contains"
-                          ShowPager="true"
-                          ShowPageSizes="true"
-                          EditMode="DataGridEditMode.Popup"
-                          CommandMode="DataGridCommandMode.ButtonRow"
-                          Editable="false"
-                          Striped="true"
-                          Hoverable="true"
-                          SelectionMode="DataGridSelectionMode.Single"
-                          Responsive="true"
-                          @bind-SelectedRow=selectedTask>
-                    <ChildContent>
-                        <DataGridCommandColumn TItem="TaskModel" NewCommandAllowed="false" EditCommandAllowed="false" DeleteCommandAllowed="false">
-                            <SaveCommandTemplate>
-                                <Button ElementId="btnSave" Type="ButtonType.Submit" PreventDefaultOnSubmit Color="Color.Primary" Clicked="@context.Clicked">@context.LocalizationString</Button>
-                            </SaveCommandTemplate>
-                            <CancelCommandTemplate>
-                                <Button ElementId="btnCancel" Color="Color.Secondary" Clicked="@context.Clicked">@context.LocalizationString</Button>
-                            </CancelCommandTemplate>
-                        </DataGridCommandColumn>
-                        <DataGridColumn TItem="TaskModel" Field="Id" Caption="Id" Sortable="false" Displayable="true" Editable />
-                        <DataGridColumn TItem="TaskModel" Field="Title" Caption="Title" Sortable="false" Displayable="true" Editable />
-                        <DataGridDateColumn TItem="TaskModel" Field="Language" Caption="Language" Sortable="false" Displayable="true" Editable />
-                        <DataGridColumn TItem="TaskModel" Field="Platform" Caption="Platform" Sortable="false" Displayable="true" Editable  />
-                        <DataGridColumn TItem="TaskModel" Field="Duration" Caption="Duration" Sortable="true" Displayable="true" Editable />
-                    </ChildContent>
-
-                    <EmptyTemplate>
-                        <div class="box">
-                            No records were found.
-                        </div>
-                    </EmptyTemplate>
-                    <LoadingTemplate>
-                        <div class="box">
-                            <progress class="progress is-small is-primary" max="100" />
-                        </div>
-                    </LoadingTemplate>
-                    <ButtonRowTemplate>
-                        <Button Color="Color.Success" Clicked="context.NewCommand.Clicked">New</Button>
-                        <Button Color="Color.Danger" Disabled="(selectedTask is null)" Clicked="context.DeleteCommand.Clicked">Delete</Button>
-                        <Button Color="Color.Primary" Disabled="(selectedTask is null)">Duplicate</Button>
-                        <Button Color="Color.Danger" Disabled="(selectedTask is null)" Clicked="context.EditCommand.Clicked">Edit</Button>
-                    </ButtonRowTemplate>
-                </DataGrid>
+                <EventTasksPage eventId="@id" />
             </TabPanel>
 
             <TabPanel Name="Managers">
@@ -205,20 +160,8 @@ else
     
 
     //public IEnumerable<string> teamNames = new List<String> { "DreamTeam", "DreamTeam2", "DreamTeam3", "undefined" };
-    public List<TaskModel> tasksList = new List<TaskModel>
-{
-    new TaskModel { Id = 1, Title = "Task 1", TaskBody = "Body of task 1", CategoryId = 1, Language = "C#", Platform = "Windows", Duration = 60, Points = 10, HasBonus = false },
-    new TaskModel { Id = 2, Title = "Task 2", TaskBody = "Body of task 2", CategoryId = 1, Language = "C#", Platform = "Windows", Duration = 60, Points = 10, HasBonus = false },
-    new TaskModel { Id = 3, Title = "Task 3", TaskBody = "Body of task 3", CategoryId = 2, Language = "Java", Platform = "Android", Duration = 90, Points = 15, HasBonus = true },
-    new TaskModel { Id = 4, Title = "Task 4", TaskBody = "Body of task 4", CategoryId = 2, Language = "Java", Platform = "Android", Duration = 90, Points = 15, HasBonus = true },
-    new TaskModel { Id = 5, Title = "Task 5", TaskBody = "Body of task 5", CategoryId = 3, Language = "Python", Platform = "Linux", Duration = 120, Points = 20, HasBonus = false },
-    new TaskModel { Id = 6, Title = "Task 6", TaskBody = "Body of task 6", CategoryId = 3, Language = "Python", Platform = "Linux", Duration = 120, Points = 20, HasBonus = false },
-    new TaskModel { Id = 7, Title = "Task 7", TaskBody = "Body of task 7", CategoryId = 4, Language = "JavaScript", Platform = "Web", Duration = 150, Points = 25, HasBonus = true },
-    new TaskModel { Id = 8, Title = "Task 8", TaskBody = "Body of task 8", CategoryId = 4, Language = "JavaScript", Platform = "Web", Duration = 150, Points = 25, HasBonus = true },
-    new TaskModel { Id = 9, Title = "Task 9", TaskBody = "Body of task 9", CategoryId = 5, Language = "C++", Platform = "Windows", Duration = 180, Points = 30, HasBonus = false },
-    new TaskModel { Id = 10, Title = "Task 10", TaskBody = "Body of task 10", CategoryId = 5, Language = "C++", Platform = "Windows", Duration = 180, Points = 30, HasBonus = false }
-};
     public TaskModel selectedTask;
+
     public List<User> teamUsers = new List<User>
         {
                 new User { Id = 1, Email = "email1@example.com", Github = "team1", FirstName = "FirstName1", LastName = "LastName1", Login = "login1",      RoleId = 1, CreateDate = new DateTime(2020, 1, 1), UpdateDate = new DateTime(2020, 2, 1), CreateUserId = 1, UpdateUserId = 1, StatusId = 1 },

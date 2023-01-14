@@ -1,0 +1,220 @@
+﻿@using System;
+@using System.Globalization;
+@using System.Reflection;
+@using Microsoft.AspNetCore.SignalR.Client
+@using ZionetCompetition.Models
+@using Blazorise.DataGrid
+
+@inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
+@inject ZionetCompetition.Controllers.GenClientController<Task> TaskController
+@inject ZionetCompetition.Controllers.GenClientController<EventTask> EventTaskController
+@inject ZionetCompetition.Controllers.GenClientController<EventManager> EventManagerController
+@inject ZionetCompetition.Controllers.GenClientController<EventTaskEvaluateUser> EventTaskEvaluateUserController
+@inject NavigationManager Navigation
+@inject ZionetCompetition.Services.TokenService TokenService
+
+
+@implements IAsyncDisposable
+
+@if (!loaded)
+{
+	<SpinKit Type="SpinKitType.Plane" Color="SlateBlue" Centered />
+}
+else
+{
+	<DataGrid TItem="EventTask"
+		  Data="@eventTasks"
+		  @bind-SelectedRow=selectedTask
+		  RowInserted="@Create"
+		  RowRemoved="@Delete"
+		  Filterable="true"
+		  FilterMethod="DataGridFilterMethod.Contains"
+		  Striped="true"
+		  Editable="false"
+		  Hoverable="true"
+		  Responsive="true"
+		  ShowPager="true"
+		  ShowPageSizes="true"
+		  SelectionMode="DataGridSelectionMode.Single" 
+		  CommandMode="DataGridCommandMode.ButtonRow">
+		<ChildContent>
+			<DataGridCommandColumn NewCommandAllowed="false" EditCommandAllowed="false" DeleteCommandAllowed="false">
+				<SaveCommandTemplate>
+					<Button ElementId="btnSave" Type="ButtonType.Submit" PreventDefaultOnSubmit Color="Color.Primary" Clicked="@context.Clicked">@context.LocalizationString</Button>
+				</SaveCommandTemplate>
+				<CancelCommandTemplate>
+					<Button ElementId="btnCancel" Color="Color.Secondary" Clicked="@context.Clicked">@context.LocalizationString</Button>
+				</CancelCommandTemplate>
+			</DataGridCommandColumn>
+			<DataGridColumn TItem="EventTask" Field="Task.Id" Caption="Id" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="EventTask" Field="Task.Title" Caption="Title" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="EventTask" Field="Task.TaskCategory.Title" Caption="Category" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="EventTask" Field="Task.Language" Caption="Language" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="EventTask" Field="Task.Platform" Caption="Platform" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="EventTask" Field="Task.Duration" Caption="Duration" Sortable="true" Displayable="true" Editable />
+			<DataGridColumn TItem="EventTask" Field="Task.Points" Caption="Points" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="EventTask" Field="Task.HasBonus" Caption="HasBonus" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="EventTask" Field="Task.BonusExtraTime" Caption="BonusExtraTime" Sortable="true" Displayable="true" Editable />
+			<DataGridColumn TItem="EventTask" Field="Task.BonusPoints" Caption="BonusPoints" Sortable="false" Displayable="true" Editable />
+		</ChildContent>
+
+		<EmptyTemplate>
+			<div class="box">
+				No records were found.
+			</div>
+		</EmptyTemplate>
+
+		<LoadingTemplate>
+			<div class="box">
+				<progress class="progress is-small is-primary" max="100" />
+			</div>
+		</LoadingTemplate>
+
+		<ButtonRowTemplate>
+			<Button Color="Color.Success" Clicked="@ShowModal">Add</Button>
+			<Button Color="Color.Danger" Disabled="(selectedTask is null)" Clicked="context.DeleteCommand.Clicked">Delete</Button>
+		</ButtonRowTemplate>
+	</DataGrid>
+
+	<Modal @ref="modalRef">
+		<ModalContent Centered>
+			<ModalHeader>
+				<ModalTitle>Tasks pool</ModalTitle>
+				<CloseButton />
+			</ModalHeader>
+			<ModalBody>
+				<DataGrid TItem="Task"
+					  Data="@allTasks"
+					  @bind-SelectedRow=selectedTaskInPool
+					  Filterable="true"
+					  FilterMethod="DataGridFilterMethod.Contains"
+					  Striped="true"
+					  Editable="false"
+					  Hoverable="true"
+					  Responsive="true"
+					  ShowPager="true"
+					  ShowPageSizes="true"
+					  SelectionMode="DataGridSelectionMode.Single"
+					  CommandMode="DataGridCommandMode.ButtonRow">
+					<ChildContent>
+						<DataGridColumn TItem="Task" Field="Id" Caption="Id" Sortable="true" Displayable="true" Editable />
+						<DataGridColumn TItem="Task" Field="Title" Caption="Title" Sortable="true" Displayable="true" Editable />
+						<DataGridColumn TItem="Task" Field="TaskCategory.Title" Caption="Category" Sortable="true" Displayable="true" Editable />
+						<DataGridColumn TItem="Task" Field="Language" Caption="Language" Sortable="true" Displayable="true" Editable />
+						<DataGridColumn TItem="Task" Field="Platform" Caption="Platform" Sortable="true" Displayable="true" Editable />
+						<DataGridColumn TItem="Task" Field="Duration" Caption="Duration" Sortable="true" Displayable="true" Editable />
+						<DataGridColumn TItem="Task" Field="Points" Caption="Points" Sortable="true" Displayable="true" Editable />
+						<DataGridColumn TItem="Task" Field="HasBonus" Caption="HasBonus" Sortable="true" Displayable="true" Editable />
+						<DataGridColumn TItem="Task" Field="BonusExtraTime" Caption="BonusExtraTime" Sortable="true" Displayable="true" Editable />
+						<DataGridColumn TItem="Task" Field="BonusPoints" Caption="BonusPoints" Sortable="true" Displayable="true" Editable />
+					</ChildContent>
+
+					<EmptyTemplate>
+						<div class="box">
+							No records were found.
+						</div>
+					</EmptyTemplate>
+
+					<LoadingTemplate>
+						<div class="box">
+							<progress class="progress is-small is-primary" max="100" />
+						</div>
+					</LoadingTemplate>
+				</DataGrid>
+			</ModalBody>
+			<ModalFooter>
+				<Button Color="Color.Secondary" Clicked="@HideModal">Close</Button>
+				<Button Color="Color.Primary" Disabled="(selectedTaskInPool is null)" Clicked="@AddTaskModal">Add</Button>
+			</ModalFooter>
+		</ModalContent>
+	</Modal>
+}
+
+@code {
+	[Parameter]
+	public int eventId { get; set; }
+	private Modal modalRef;
+	private EventTask selectedTask;
+	private Task selectedTaskInPool;
+	private List<Task> allTasks = new List<Task> { };
+	private List<EventTask> allEventTasks = new List<EventTask> { };
+	private List<EventTask> eventTasks = new List<EventTask> { };
+	private List<EventManager> allEventManagers = new List<EventManager> { };
+	private List<EventManager> eventManagers = new List<EventManager> { };
+	private List<EventTaskEvaluateUser> allEventTaskEvaluateUsers = new List<EventTaskEvaluateUser> { };
+	private List<EventTaskEvaluateUser> eventTaskEvaluateUsers = new List<EventTaskEvaluateUser> { };
+	private bool loaded = false;
+
+	protected override async Task OnInitializedAsync()
+	{
+		var token = await TokenService.GetToken();
+
+		await TaskController.ConfigureHub(token);
+		await TaskController.StartConnection();
+		await TaskController.GetAll();
+		allTasks = TaskController.messages.ToList();
+
+		await EventTaskController.ConfigureHub(token);
+		await EventTaskController.StartConnection();
+		await EventTaskController.GetAll();
+		allEventTasks = EventTaskController.messages.ToList();
+		eventTasks = allEventTasks.Where(t => t.EventId == eventId).ToList();
+
+		await EventManagerController.ConfigureHub(token);
+		await EventManagerController.StartConnection();
+		await EventManagerController.GetAll();
+		allEventManagers = EventManagerController.messages.ToList();
+		eventManagers = allEventManagers.Where(t => t.EventId == eventId).ToList();
+
+		await EventTaskEvaluateUserController.ConfigureHub(token);
+		await EventTaskEvaluateUserController.StartConnection();
+		await EventTaskEvaluateUserController.GetAll();
+		allEventTaskEvaluateUsers = EventTaskEvaluateUserController.messages.ToList();
+		eventTaskEvaluateUsers = allEventTaskEvaluateUsers.Where(t => t.EventTask.EventId == eventId).ToList();
+
+		loaded = true;
+		StateHasChanged();
+		await base.OnInitializedAsync();
+	}
+
+	private Task ShowModal()
+	{
+		return modalRef.Show();
+	}
+
+	private Task HideModal()
+	{
+		return modalRef.Hide();
+	}
+
+	private async Task AddTaskModal()
+	{
+		EventTask newTask = new EventTask() { };
+		newTask.EventId = eventId;
+		newTask.TaskId = selectedTaskInPool.Id;
+		return; // modalRef.Show();
+	}
+
+	private async void Create(SavedRowItem<EventTask, Dictionary<string, object>> rowInserted)
+	{
+		var newTeam = rowInserted.Item;
+		newTeam.EventId = eventId;
+		await EventTaskController.Create(newTeam);
+		StateHasChanged();
+	}
+
+	private async void Delete(EventTask rowRemoved)
+	{
+		await EventTaskController.Delete(rowRemoved.Id);
+		StateHasChanged();
+	}
+
+	public async ValueTask DisposeAsync()
+	{
+		await TaskController.DisposeAsync(); 
+		await EventTaskController.DisposeAsync();			
+		await EventManagerController.DisposeAsync();
+		await EventTaskEvaluateUserController.DisposeAsync();
+	}
+	
+}	

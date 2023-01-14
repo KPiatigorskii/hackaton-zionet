@@ -1,0 +1,152 @@
+﻿@*@page "/events/{eventId:int}/teams"*@
+
+@using System;
+@using System.Globalization;
+@using System.Reflection;
+@using Microsoft.AspNetCore.SignalR.Client
+@using ZionetCompetition.Models
+@using Blazorise.DataGrid
+
+@inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
+@inject ZionetCompetition.Controllers.GenClientController<TaskModel> TaskController
+@inject NavigationManager Navigation
+@inject ZionetCompetition.Services.TokenService TokenService
+
+
+@implements IAsyncDisposable
+
+@if (!loaded)
+{
+	<SpinKit Type="SpinKitType.Plane" Color="SlateBlue" Centered />
+}
+else
+{
+	<DataGrid TItem="TaskModel"
+		  Data="@tasksList"
+		  Filterable="true"
+		  FilterMethod="DataGridFilterMethod.Contains"
+		  ShowPager="true"
+		  ShowPageSizes="true"
+		  EditMode="DataGridEditMode.Popup"
+		  CommandMode="DataGridCommandMode.ButtonRow"
+		  Editable="false"
+		  Striped="true"
+		  Hoverable="true"
+		  SelectionMode="DataGridSelectionMode.Single"
+		  Responsive="true"
+		  @bind-SelectedRow=selectedTask>
+		<ChildContent>
+			<DataGridCommandColumn TItem="TaskModel" NewCommandAllowed="false" EditCommandAllowed="false" DeleteCommandAllowed="false">
+				<SaveCommandTemplate>
+					<Button ElementId="btnSave" Type="ButtonType.Submit" PreventDefaultOnSubmit Color="Color.Primary" Clicked="@context.Clicked">@context.LocalizationString</Button>
+				</SaveCommandTemplate>
+				<CancelCommandTemplate>
+					<Button ElementId="btnCancel" Color="Color.Secondary" Clicked="@context.Clicked">@context.LocalizationString</Button>
+				</CancelCommandTemplate>
+			</DataGridCommandColumn>
+			<DataGridColumn TItem="TaskModel" Field="Id" Caption="Id" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="TaskModel" Field="Title" Caption="Title" Sortable="false" Displayable="true" Editable />
+			<DataGridDateColumn TItem="TaskModel" Field="Language" Caption="Language" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="TaskModel" Field="Platform" Caption="Platform" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="TaskModel" Field="Duration" Caption="Duration" Sortable="true" Displayable="true" Editable />
+		</ChildContent>
+
+		<EmptyTemplate>
+			<div class="box">
+				No records were found.
+			</div>
+		</EmptyTemplate>
+		<LoadingTemplate>
+			<div class="box">
+				<progress class="progress is-small is-primary" max="100" />
+			</div>
+		</LoadingTemplate>
+		<ButtonRowTemplate>
+			<Button Color="Color.Success" Clicked="context.NewCommand.Clicked">New</Button>
+			<Button Color="Color.Danger" Disabled="(selectedTask is null)" Clicked="context.DeleteCommand.Clicked">Delete</Button>
+			<Button Color="Color.Primary" Disabled="(selectedTask is null)">Duplicate</Button>
+			<Button Color="Color.Danger" Disabled="(selectedTask is null)" Clicked="context.EditCommand.Clicked">Edit</Button>
+		</ButtonRowTemplate>
+	</DataGrid>
+}
+
+@code {
+	public List<TaskModel> tasksList = new List<TaskModel>
+{
+	new TaskModel { Id = 1, Title = "Task 1", TaskBody = "Body of task 1", CategoryId = 1, Language = "C#", Platform = "Windows", Duration = 60, Points = 10, HasBonus = false },
+	new TaskModel { Id = 2, Title = "Task 2", TaskBody = "Body of task 2", CategoryId = 1, Language = "C#", Platform = "Windows", Duration = 60, Points = 10, HasBonus = false },
+	new TaskModel { Id = 3, Title = "Task 3", TaskBody = "Body of task 3", CategoryId = 2, Language = "Java", Platform = "Android", Duration = 90, Points = 15, HasBonus = true },
+	new TaskModel { Id = 4, Title = "Task 4", TaskBody = "Body of task 4", CategoryId = 2, Language = "Java", Platform = "Android", Duration = 90, Points = 15, HasBonus = true },
+	new TaskModel { Id = 5, Title = "Task 5", TaskBody = "Body of task 5", CategoryId = 3, Language = "Python", Platform = "Linux", Duration = 120, Points = 20, HasBonus = false },
+	new TaskModel { Id = 6, Title = "Task 6", TaskBody = "Body of task 6", CategoryId = 3, Language = "Python", Platform = "Linux", Duration = 120, Points = 20, HasBonus = false },
+	new TaskModel { Id = 7, Title = "Task 7", TaskBody = "Body of task 7", CategoryId = 4, Language = "JavaScript", Platform = "Web", Duration = 150, Points = 25, HasBonus = true },
+	new TaskModel { Id = 8, Title = "Task 8", TaskBody = "Body of task 8", CategoryId = 4, Language = "JavaScript", Platform = "Web", Duration = 150, Points = 25, HasBonus = true },
+	new TaskModel { Id = 9, Title = "Task 9", TaskBody = "Body of task 9", CategoryId = 5, Language = "C++", Platform = "Windows", Duration = 180, Points = 30, HasBonus = false },
+	new TaskModel { Id = 10, Title = "Task 10", TaskBody = "Body of task 10", CategoryId = 5, Language = "C++", Platform = "Windows", Duration = 180, Points = 30, HasBonus = false }
+};
+	public TaskModel selectedTask;
+
+	[Parameter]
+	public int eventId { get; set; }
+	public Team selectedTeam;
+	private List<Team> allTeams = new List<Team> { };
+	private List<Team> eventTeams = new List<Team> { };
+	private List<EventParticipantTeam> allEventParticipantTeams = new List<EventParticipantTeam> { };
+	private List<EventParticipantTeam> eventParticipantTeams = new List<EventParticipantTeam> { };
+	private bool loaded = false;
+
+
+	protected override async Task OnInitializedAsync()
+	{
+		var token =await TokenService.GetToken();
+
+		await TeamController.ConfigureHub(token);
+		await TeamController.StartConnection();
+		await TeamController.GetAll();
+		allTeams = TeamController.messages.ToList();
+		eventTeams = allTeams.Where(t => t.EventId == eventId).ToList();
+
+		await UserEventTeamController.ConfigureHub(token);
+		await UserEventTeamController.StartConnection();
+		await UserEventTeamController.GetAll();
+		allEventParticipantTeams = UserEventTeamController.messages.ToList();
+		eventParticipantTeams = allEventParticipantTeams.Where(t => t.EventId == eventId).ToList();
+
+		loaded = true;
+		StateHasChanged();
+		await base.OnInitializedAsync();
+	}
+
+	private async void Create(SavedRowItem<Team, Dictionary<string, object>> rowInserted)
+	{
+		var newTeam = rowInserted.Item;
+		newTeam.EventId = eventId;
+		await TeamController.Create(newTeam);
+		StateHasChanged();
+	}
+
+	private async void Update(SavedRowItem<Team, Dictionary<string, object>> rowUpdated)
+	{
+		var chengedTeam = rowUpdated.Item;
+		await TeamController.Update(chengedTeam.Id, chengedTeam);
+		StateHasChanged();
+	}
+
+	private async void Delet(Team rowRemoved)
+	{
+		await TeamController.Delete(rowRemoved.Id);
+		StateHasChanged();
+	}
+
+	private int participantsCount(int teamId, List<EventParticipantTeam> eventParticipantTeams)
+	{
+		int result = eventParticipantTeams.Count(p => p.TeamId == teamId);
+		return result;
+	}
+
+	public async ValueTask DisposeAsync()
+	{
+		await TeamController.DisposeAsync();
+		await UserEventTeamController.DisposeAsync();
+	}
+}
