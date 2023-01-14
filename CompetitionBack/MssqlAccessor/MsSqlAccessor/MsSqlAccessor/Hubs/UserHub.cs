@@ -61,7 +61,7 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("GetOneByEmail")]
-        [Authorize(Roles = GetOneRoles)]
+        [Authorize(Roles = GetUserByEmail)]
         public async Task GetOneByEmail(string Email)
         {
             UserDTO dtoItem;
@@ -144,7 +144,7 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("Register")]
-        [Authorize(Roles = CreateRoles)]
+        [Authorize(Roles = RegistrationRoles)]
         public async Task Register(UserDTO dtoItem)
         {
             var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
