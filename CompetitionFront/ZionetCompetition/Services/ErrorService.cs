@@ -46,6 +46,10 @@ namespace ZionetCompetition.Services
                     Forbidden(Errors.Errors.Forbidden);
                     break;
 
+                case string s when s.Contains(Errors.Errors.NotLogin):
+                    Unauthorized(Errors.Errors.NotLogin);
+                    break;
+
                 default:
                     GeneralErr(error); 
                     break;

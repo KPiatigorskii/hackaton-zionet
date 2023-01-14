@@ -27,7 +27,7 @@ namespace ZionetCompetition.Services
             _token = _httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(e => e.Type == "jwt_token")?.Value;
             if (_token == null)
             {
-                _errorService.Redirect(Errors.Errors.NotAuthorizedOnClient);
+                _errorService.Redirect(Errors.Errors.NotLogin);
             }
 
             return _token;
