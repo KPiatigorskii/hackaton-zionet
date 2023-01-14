@@ -34,16 +34,24 @@ namespace ZionetCompetition.Services
                     GeneralErr(Errors.Errors.ConflictData);
                     break;
 
-                case string s when s.Contains(Errors.Errors.NotAuthorizedOnClient):
-                    Unauthorized(Errors.Errors.NotAuthorizedOnClient);
+                case string s when s.Contains(Errors.Errors.NotAuthorized):
+                    Forbidden(Errors.Errors.NotAuthorized);
                     break;
 
-                case string s when s.Contains(Errors.Errors.NotAuthorizedOnServer):
-                    Unauthorized(Errors.Errors.NotAuthorizedOnServer);
+                case string s when s.Contains(Errors.Errors.NotAuthorizedByEmail):
+                    Unauthorized(Errors.Errors.NotAuthorizedByEmail);
+                    break;
+
+                case string s when s.Contains(Errors.Errors.Forbidden):
+                    Forbidden(Errors.Errors.Forbidden);
+                    break;
+
+                case string s when s.Contains(Errors.Errors.NotLogin):
+                    Unauthorized(Errors.Errors.NotLogin);
                     break;
 
                 default:
-                    GeneralErr(Errors.Errors.General); 
+                    GeneralErr(error); 
                     break;
 
             }
@@ -54,11 +62,21 @@ namespace ZionetCompetition.Services
             _navigationManager.NavigateTo($"/401/{errorMessage}");
         }
 
+        private void Forbidden(string errorMessage)
+        {
+            _navigationManager.NavigateTo($"/403/{errorMessage}");
+        }
+
         private void NotFoundPage(string errorMessage)
         {
            // errorMessage = "asdf";
             _navigationManager.NavigateTo($"/404/{errorMessage}");
         }
+
+        //private void GeneralErr(string errorMessage)
+        //{
+        //    _navigationManager.NavigateTo($"/500/{errorMessage}");
+        //}
 
         private void GeneralErr(string errorMessage)
         {

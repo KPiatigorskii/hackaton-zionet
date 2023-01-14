@@ -67,14 +67,15 @@ else
 }
 
 @code {
-    private HubConnection? hubConnection;
+    //private HubConnection? hubConnection;
     private User selectedUser;
     private IEnumerable<User> messages = new List<User> { };
     private bool loaded = false;
 
     protected override async Task OnInitializedAsync()
     {
-        await UserController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
+        var token = await TokenService.GetToken();
+        await UserController.ConfigureHub(token);
         await UserController.StartConnection();
         await UserController.GetAll();
         messages = UserController.messages;
@@ -84,9 +85,6 @@ else
 
     public async ValueTask DisposeAsync()
     {
-        if (hubConnection is not null)
-        {
-            await hubConnection.DisposeAsync();
-        }
+        await UserController.DisposeAsync();
     }
 }

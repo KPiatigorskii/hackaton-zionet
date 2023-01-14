@@ -15,6 +15,9 @@ namespace ZionetCompetition.Controllers
         public Tmodel message;
         private bool isLoaded = false;
 
+        public bool IsConnected =>
+    hubConnection?.State == HubConnectionState.Connected;
+
         public GenClientController(ErrorService errorService) {
             _errorService = errorService;
         }
@@ -28,6 +31,15 @@ namespace ZionetCompetition.Controllers
         {
             await hubConnection.StopAsync();
         }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (hubConnection is not null)
+            {
+                await hubConnection.DisposeAsync();
+            }
+        }
+
         public async Task ConfigureHub(string tokenString)
         {
             hubConnection = new HubConnectionBuilder()

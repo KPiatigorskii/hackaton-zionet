@@ -28,6 +28,14 @@ namespace ZionetCompetition.Controllers
         {
             await hubConnection.StopAsync();
         }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (hubConnection is not null)
+            {
+                await hubConnection.DisposeAsync();
+            }
+        }
         public async Task ConfigureHub(string tokenString)
         {
             hubConnection = new HubConnectionBuilder()

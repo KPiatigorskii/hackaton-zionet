@@ -15,6 +15,8 @@ using ZionetCompetition.Services;
 using ZionetCompetition.Models;
 using Autofac.Core;
 using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Mvc;
+using TaskStatus = ZionetCompetition.Models.TaskStatus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,7 +52,9 @@ builder.Services.AddTransient<GenClientController<Team>>();
 builder.Services.AddTransient<GenClientController<TeamParticipant>>();
 builder.Services.AddTransient<GenClientController<TeamTask>>();
 builder.Services.AddTransient<GenClientController<User>>();
-
+builder.Services.AddTransient<GenClientController<EventStatus>>();
+builder.Services.AddTransient<GenClientController<TaskStatus>>();
+builder.Services.AddTransient<AuthClientController<User>>();
 
 
 builder.Services
@@ -77,10 +81,15 @@ builder.Services
         options.ClientSecret = builder.Configuration["Auth0:ClientSecret"];
         options.OpenIdConnectEvents = new OpenIdConnectEvents
         {
-            OnTokenValidated = (context) =>
+            OnTokenValidated = async (context) =>
             {
+
+
                 var token = context.SecurityToken.RawHeader+ "." + 
                 context.SecurityToken.RawPayload + "." + context.SecurityToken.RawSignature;
+                var email = context.Principal.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
+
+
                 var claims = new List<Claim>
                     {
                         new Claim("jwt_token", token)
@@ -94,7 +103,32 @@ builder.Services
                     SameSite = SameSiteMode.Strict
                 });
 
-                return Task.CompletedTask;
+
+                var AuthenticationController = context.HttpContext.RequestServices.GetRequiredService<AuthClientController<User>>();
+                AuthenticationController.ConfigureHub(token);
+
+                await AuthenticationController.StartConnection();
+                await AuthenticationController.Get(email);
+                var existedUser = AuthenticationController.message;
+                if (existedUser.Id == 0) 
+                {
+                    var user = new User
+                    {
+
+                        Email = email,
+                        CreateDate = DateTime.Now,
+                        UpdateDate = DateTime.Now,
+                        RoleId = 1,
+                        Login = context.Principal.Claims.FirstOrDefault(e => e.Type == "name").Value,
+                        CreateUserId = 1,
+                        UpdateUserId = 1,
+                        StatusId = 1,
+                        FirstName = context.Principal.Claims.FirstOrDefault(e => e.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname").Value,
+                        LastName = context.Principal.Claims.FirstOrDefault(e => e.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname").Value,
+
+                    };
+                    await AuthenticationController.Register(user);
+                } 
             },
 
             OnTicketReceived = notification =>
@@ -120,6 +154,15 @@ builder.Services
         options.Audience = builder.Configuration["Auth0:Audience"];
         options.UseRefreshTokens = true;
     });
+
+builder.Services.AddAuth0AuthenticationClient(config =>
+{
+    config.Domain = builder.Configuration["Auth0:Authority"];
+    config.ClientId = builder.Configuration["Auth0:ClientId"];
+    config.ClientSecret = builder.Configuration["Auth0:ClientSecret"];
+});
+
+builder.Services.AddAuth0ManagementClient().AddManagementAccessToken();
 
 builder.Services.AddHttpClient();
 

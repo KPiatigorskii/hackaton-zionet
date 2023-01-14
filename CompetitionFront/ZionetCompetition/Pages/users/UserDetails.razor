@@ -11,96 +11,102 @@
 @inject NavigationManager Navigation
 @inject ZionetCompetition.Services.TokenService TokenService
 
+@implements IAsyncDisposable
 
-@if(!loaded)
+@if (!loaded)
 {
-    <SpinKit Type="SpinKitType.Plane" Color="SlateBlue" Centered />
+	<SpinKit Type="SpinKitType.Plane" Color="SlateBlue" Centered />
 }
 else
 {
-    <Card Margin="Margin.Is4.OnY">
-        <CardImage Source="@userIcon" Alt="Placeholder image" Style="width:30%;height:30%;">
-    </CardImage>
-    <CardBody>
-            <CardTitle Size="5"> <h3>User Details</h3></CardTitle>
-        <CardText>
-            <TableBody>
-                    <TableRow>
-                        <TableRowHeader>FirstName:</TableRowHeader>
-                        <TableRowCell style="padding-left: 20px">@message.FirstName</TableRowCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableRowHeader>LastName:</TableRowHeader>
-                        <TableRowCell style="padding-left: 20px">@message.LastName</TableRowCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableRowHeader>RoleId:</TableRowHeader>
-                        <TableRowCell style="padding-left: 20px">@message.Role.Title</TableRowCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableRowHeader>Email:</TableRowHeader>
-                        <TableRowCell style="padding-left: 20px">@message.Email</TableRowCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableRowHeader>Github:</TableRowHeader>
-                        <TableRowCell style="padding-left: 20px">@message.Github</TableRowCell>
-                    </TableRow>
-            </TableBody>
-        </CardText>
-            <div style="margin-top: 20px">
-                <Button Color="Color.Primary" @onclick="Edit">Edit</Button>
-                <Button Color="Color.Primary" @onclick="Delete">Delete</Button>
-            </div>
-    </CardBody>
-    </Card>
+	<Card Margin="Margin.Is4.OnY">
+		<CardImage Source="@userIcon" Alt="Placeholder image" Style="width:30%;height:30%;">
+		</CardImage>
+		<CardBody>
+			<CardTitle Size="5"> <h3>User Details</h3></CardTitle>
+			<CardText>
+				<TableBody>
+					<TableRow>
+						<TableRowHeader>FirstName:</TableRowHeader>
+						<TableRowCell style="padding-left: 20px">@message.FirstName</TableRowCell>
+					</TableRow>
+					<TableRow>
+						<TableRowHeader>LastName:</TableRowHeader>
+						<TableRowCell style="padding-left: 20px">@message.LastName</TableRowCell>
+					</TableRow>
+					<TableRow>
+						<TableRowHeader>RoleId:</TableRowHeader>
+						<TableRowCell style="padding-left: 20px">@message.Role.Title</TableRowCell>
+					</TableRow>
+					<TableRow>
+						<TableRowHeader>Email:</TableRowHeader>
+						<TableRowCell style="padding-left: 20px">@message.Email</TableRowCell>
+					</TableRow>
+					<TableRow>
+						<TableRowHeader>Github:</TableRowHeader>
+						<TableRowCell style="padding-left: 20px">@message.Github</TableRowCell>
+					</TableRow>
+				</TableBody>
+			</CardText>
+			<div style="margin-top: 20px">
+				<Button Color="Color.Primary" @onclick="Edit">Edit</Button>
+				<Button Color="Color.Primary" @onclick="Delete">Delete</Button>
+			</div>
+		</CardBody>
+	</Card>
 
 }
 
 
 @code {
-    [Parameter]
-    public int id { get; set; }
+	[Parameter]
+	public int id { get; set; }
 
-    string userIcon = ImagesBase64.userImg;
+	string userIcon = ImagesBase64.userImg;
 
-    private HubConnection? hubConnection;
-    private User message = new User { };
-    private string? userInput;
-    private int? userId;
-    private string? messageInput;
-    private bool loaded = false;
+	//private HubConnection? hubConnection;
+	private User message = new User { };
+	private string? userInput;
+	private int? userId;
+	private string? messageInput;
+	private bool loaded = false;
 
-    protected override async Task OnInitializedAsync()
-    {
-        await UserController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
-        await UserController.StartConnection();
-        await UserController.Get(id);
+	protected override async Task OnInitializedAsync()
+	{
+		var token = await TokenService.GetToken();
+		await UserController.ConfigureHub(token);
+		await UserController.StartConnection();
+		await UserController.Get(id);
 
-        message = UserController.message;
-        loaded = true;
-        StateHasChanged();
-    }
+		message = UserController.message;
+		loaded = true;
+		StateHasChanged();
+	}
 
-    public bool IsConnected =>
-        hubConnection?.State == HubConnectionState.Connected;
+	//public bool IsConnected =>
+	//    hubConnection?.State == HubConnectionState.Connected;
 
-    private async Task Create()
-    {
-        if (hubConnection is not null)
-        {
-            await hubConnection.SendAsync("Create");
-        }
-    }
+	//private async Task Create()
+	//{
+	//    if (hubConnection is not null)
+	//    {
+	//        await hubConnection.SendAsync("Create");
+	//    }
+	//}
 
-    private void Edit()
-    {
-        Navigation.NavigateTo("/Users/" + id + "/Edit");
-    }
+	private void Edit()
+	{
+		Navigation.NavigateTo("/Users/" + id + "/Edit");
+	}
 
-    private async Task Delete()
-    {
-        UserController.Delete(id);
-        UriHelper.NavigateTo("/Users/");
-    }
+	private async Task Delete()
+	{
+		await UserController.Delete(id);
+		UriHelper.NavigateTo("/Users/");
+	}
 
+	public async ValueTask DisposeAsync()
+	{
+		await UserController.DisposeAsync();
+	}
 }

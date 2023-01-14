@@ -5,11 +5,13 @@
 @using ZionetCompetition.Models
 
 @inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
-@inject ZionetCompetition.Controllers.UserController UserController
 @inject NavigationManager Navigation
 @inject ZionetCompetition.Services.TokenService TokenService
+@inject ZionetCompetition.Controllers.GenClientController<Role> RoleController
 @inject ZionetCompetition.Controllers.GenClientController<User> UserController
 @inject NavigationManager UriHelper
+
+@implements IAsyncDisposable
 
 @if (!loaded)
 {
@@ -19,43 +21,55 @@ else
 {
     <EditForm Model="@message" OnValidSubmit="@Save" OnInvalidSubmit=@InvalidFormSubmitted>
         <DataAnnotationsValidator />
-        <div>
-            <label>FirstName
+        <Row HorizontalGutter="32" VerticalGutter="16">
+            <Column ColumnSize="ColumnSize.Is2" Class="col-md-2 col-sm-4">
+                <b>FirstName: </b>
+            </Column>
+            <Column ColumnSize="ColumnSize.Is10" Class="col-md-10 col-sm-8">
                 <InputText @bind-Value="@message.FirstName" />
-            </label>
-        </div>
-        <div>
-            <label>
-                LastName
+            </Column>
+        </Row>
+        <Row HorizontalGutter="32" VerticalGutter="16">
+            <Column ColumnSize="ColumnSize.Is2" Class="col-md-2 col-sm-4">
+                <b>LastName: </b>
+            </Column>
+            <Column ColumnSize="ColumnSize.Is10" Class="col-md-10 col-sm-8">
                 <InputText @bind-Value="@message.LastName" />
-            </label>
-        </div>
-        <div>
-            <label>
-                Email
+            </Column>
+        </Row>
+        <Row HorizontalGutter="32" VerticalGutter="16">
+            <Column ColumnSize="ColumnSize.Is2" Class="col-md-2 col-sm-4">
+                <b>Email: </b>
+            </Column>
+            <Column ColumnSize="ColumnSize.Is10" Class="col-md-10 col-sm-8">
                 <InputText @bind-Value="@message.Email" />
-            </label>
-        </div>
-         <div>
-            <label>
-                Github
+            </Column>
+        </Row>
+        <Row HorizontalGutter="32" VerticalGutter="16"> 
+            <Column ColumnSize="ColumnSize.Is2" Class="col-md-2 col-sm-4">
+                <b>Github: </b>
+            </Column>
+            <Column ColumnSize="ColumnSize.Is10" Class="col-md-10 col-sm-8">
                 <InputText @bind-Value="@message.Github" />
-            </label>
-        </div>
-        <div>
-            <label>
-                Role
+            </Column>
+        </Row>
+        <Row HorizontalGutter="32" VerticalGutter="16">
+            <Column ColumnSize="ColumnSize.Is2" Class="col-md-2 col-sm-4">
+                <b>Role: </b>
+            </Column>
+            <Column ColumnSize="ColumnSize.Is10" Class="col-md-10 col-sm-8">
                 <RadioGroup TValue="int"
                         Name="roles"
                         CheckedValue="@checkedRole"
-                        CheckedValueChanged="@OnCheckedValueChanged">
-                    <Radio Value="@(1)">Admin</Radio>
-                    <Radio Value="@(2)">Manager</Radio>
-                    <Radio Value="@(3)">Partic</Radio>
+                        CheckedValueChanged="@OnCheckedValueChanged"
+                        Buttons>
+                    @foreach (Role role in Roles)
+                    {
+                        <Radio Value="@(role.Id)">@role.Title</Radio>
+                    }
                 </RadioGroup>
-                <InputText @bind-Value="@message.Role.Title" />
-            </label>
-        </div>
+            </Column>
+        </Row>
         <Blazorise.Bootstrap.Button Color="Color.Primary" Type="Blazorise.ButtonType.Submit">Save</Blazorise.Bootstrap.Button>
     </EditForm>
 
@@ -63,36 +77,37 @@ else
 
 
 @code {
-
-}
-
-@code {
     [Parameter]
     public int id { get; set; }
 
 
-    private HubConnection? hubConnection;
+    //private HubConnection? hubConnection;
     private User UserFields;
-    private User message, user;
+    private User message;
     private string? userInput;
     private int? userId;
     private string? messageInput;
+    private IEnumerable<Role> Roles = new List<Role> { };
     private int checkedRole;
     private bool loaded = false;
 
     protected override async Task OnInitializedAsync()
     {
-        await UserController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
-        await UserController.StartConnection();
+        var token =await TokenService.GetToken();
+        await RoleController.ConfigureHub(token);
+        await RoleController.StartConnection();
+        await RoleController.GetAll();
+        Roles = RoleController.messages;
 
+        await UserController.ConfigureHub(token);
+        await UserController.StartConnection();
         await UserController.Get(id);
         message = UserController.message;
         checkedRole = message.RoleId;
-        loaded = true;
-    }
 
-    public bool IsConnected =>
-        hubConnection?.State == HubConnectionState.Connected;
+        loaded = true;
+        StateHasChanged();
+    }
 
     private async Task Save(EditContext editContext)
     {
@@ -100,16 +115,20 @@ else
         UriHelper.NavigateTo("/Users/" + id);
     }
 
-    
+
 
     Task OnCheckedValueChanged(int value)
     {
         checkedRole = value;
-
+        message.RoleId = checkedRole;
         return Task.CompletedTask;
     }
 
     private void InvalidFormSubmitted(){}
 
-
+    public async ValueTask DisposeAsync()
+    {
+        await RoleController.DisposeAsync();
+        await UserController.DisposeAsync();
+    }
 }
