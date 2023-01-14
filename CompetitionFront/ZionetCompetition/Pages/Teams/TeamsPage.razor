@@ -1,4 +1,4 @@
-﻿@page "/events/{eventId:int}/teams"
+﻿@*@page "/events/{eventId:int}/teams"*@
 
 @using System;
 @using System.Globalization;
@@ -46,13 +46,12 @@ else
 			</DataGridCommandColumn>
 			<DataGridColumn Field="@nameof(Team.Id)" Caption="#" Sortable="false" />
 			<DataGridColumn Field="@nameof(Team.Title)" Caption="Title" Editable />
-			<DataGridColumn Field="@nameof(Team.UpdateDate)" Caption="Update Date" />
-			<DataGridColumn Field="@nameof(Team.Id)" Caption="Members count">
+			<DataGridColumn Field="@nameof(Team.Id)" Caption="Curent number participant">
 				<DisplayTemplate>
 					@participantsCount(context.Id, eventParticipantTeams)
 				</DisplayTemplate>
 			</DataGridColumn>
-
+			<DataGridColumn Field="@nameof(Team.UpdateDate)" Caption="Update Date" />
 		</DataGridColumns>
 		<ButtonRowTemplate>
 			<Button Color="Color.Success" Clicked="context.NewCommand.Clicked">New</Button>

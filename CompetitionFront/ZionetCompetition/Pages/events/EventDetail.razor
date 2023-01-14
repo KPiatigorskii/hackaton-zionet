@@ -10,6 +10,7 @@
 @using ZionetCompetition.Data
 @using Blazorise
 @using System.Linq
+@using ZionetCompetition.Pages.Participants
 @using ZionetCompetition.Pages.Teams
 
 @inject ZionetCompetition.Controllers.GenClientController<Event> EventController
@@ -68,44 +69,7 @@ else
             </TabPanel>
 
             <TabPanel Name="Participants">
-
-                <DropContainer TItem="EventParticipantTeam" Items="@eventParticipantTeams" ItemsFilter="@((item, dropZone) => item.TeamId.ToString() == dropZone)" ItemDropped="@ItemDropped" Flex="Flex.Wrap.Grow.Is1">
-                    <ChildContent>
-                            <Card>
-                                <CardBody>
-                                    <ListGroup>
-                                        <Heading Size="HeadingSize.Is4" Margin="Margin.Is3.FromBottom">Unalocated</Heading>
-                                        <DropZone TItem="EventParticipantTeam" Name="@null" AllowReorder Padding="Padding.Is3" Margin="Margin.Is3" Flex="Flex.Grow.Is1" />
-                                    </ListGroup>
-                                </CardBody>
-                                <Button Color="Color.Primary">Add Participant to the Event</Button>
-                            </Card>
-                        @foreach (var team in eventTeams)
-                        {
-                            var dropzone = team.Id;
-                            var dropTitle = team.Title;
-                            <Card>
-                                <CardBody>
-                                    <ListGroup>
-                                        <Heading Size="HeadingSize.Is4" Margin="Margin.Is3.FromBottom">@dropTitle</Heading>
-                                        <DropZone TItem="EventParticipantTeam" Name="@dropzone.ToString()" AllowReorder Padding="Padding.Is3" Margin="Margin.Is3" Flex="Flex.Grow.Is1" />
-                                    </ListGroup>
-                                </CardBody>
-                                <Button Color="Color.Primary">Add Participant to team @dropTitle</Button>
-                            </Card>
-                        }
-                    </ChildContent>
-                    <ItemTemplate>
-                        <Card Shadow="Shadow.Default" Margin="Margin.Is3.OnY">
-                            <CardBody>
-                                <div>
-                                    <p>user @context.Participant.FirstName     @context.Participant.LastName   <a href="/"> <Icon Name="IconName.Ban" IconSize=IconSize.Small /></a></p>
-                                </div>
-                            </CardBody>
-                        </Card>
-                    </ItemTemplate>
-                </DropContainer>
-        
+                <ParticipantsPage eventId="@id" />
             </TabPanel>
             
             <TabPanel Name="Tasks">
@@ -238,10 +202,9 @@ else
 
 
 @code {
-    [Parameter]
-    public int id { get; set; }
+    
 
-    public IEnumerable<string> teamNames = new List<String> { "DreamTeam", "DreamTeam2", "DreamTeam3", "undefined" };
+    //public IEnumerable<string> teamNames = new List<String> { "DreamTeam", "DreamTeam2", "DreamTeam3", "undefined" };
     public List<TaskModel> tasksList = new List<TaskModel>
 {
     new TaskModel { Id = 1, Title = "Task 1", TaskBody = "Body of task 1", CategoryId = 1, Language = "C#", Platform = "Windows", Duration = 60, Points = 10, HasBonus = false },
@@ -273,43 +236,47 @@ else
                 new User { Id = 14, Email = "email14@example.com", Github = "team3", FirstName = "FirstName14", LastName = "LastName14", Login = "login14", RoleId = 2, CreateDate = new DateTime(2020, 1, 14), UpdateDate = new DateTime(2020, 2, 14), CreateUserId = 14, UpdateUserId = 14, StatusId = 3 }
 
         };
+
+
+    //private List<Team> teams = new List<Team>
+    //{
+    //    new Team(){
+    //        Id = 1,
+    //        Title = "DreamTeam",
+    //        EventId = 1,
+    //        CreateDate = new DateTime(2020, 1, 1),
+    //        UpdateDate = new DateTime(2020, 1, 1),
+    //        CreateUserId = 1,
+    //        UpdateUserId = 1,
+    //        StatusId = 1,
+    //    },
+    //    new Team(){
+    //        Id = 2,
+    //        Title = "DreamTeam2",
+    //        EventId = 1,
+    //        CreateDate = new DateTime(2020, 1, 2),
+    //        UpdateDate = new DateTime(2020, 1, 2),
+    //        CreateUserId = 2,
+    //        UpdateUserId = 2,
+    //        StatusId = 1
+    //    },
+    //    new Team(){
+    //        Id = 3,
+    //        Title = "DreamTeam3",
+    //        EventId = 1,
+    //        CreateDate = new DateTime(2020, 1, 3),
+    //        UpdateDate = new DateTime(2020, 1, 3),
+    //        CreateUserId = 3,
+    //        UpdateUserId = 3,
+    //        StatusId = 1
+    //    }
+    //};
+
+    [Parameter]
+    public int id { get; set; }
+
     public User selectedUser;
     string selectedTab = "Info";
-
-    private List<Team> teams = new List<Team>
-    {
-        new Team(){
-            Id = 1,
-            Title = "DreamTeam",
-            EventId = 1,
-            CreateDate = new DateTime(2020, 1, 1),
-            UpdateDate = new DateTime(2020, 1, 1),
-            CreateUserId = 1,
-            UpdateUserId = 1,
-            StatusId = 1,
-        },
-        new Team(){
-            Id = 2,
-            Title = "DreamTeam2",
-            EventId = 1,
-            CreateDate = new DateTime(2020, 1, 2),
-            UpdateDate = new DateTime(2020, 1, 2),
-            CreateUserId = 2,
-            UpdateUserId = 2,
-            StatusId = 1
-        },
-        new Team(){
-            Id = 3,
-            Title = "DreamTeam3",
-            EventId = 1,
-            CreateDate = new DateTime(2020, 1, 3),
-            UpdateDate = new DateTime(2020, 1, 3),
-            CreateUserId = 3,
-            UpdateUserId = 3,
-            StatusId = 1
-        }
-    };
-
 
     private List<User> teamList;
     private string? userInput;
@@ -322,13 +289,6 @@ else
     private List<EventParticipantTeam> eventParticipantTeams = new List<EventParticipantTeam> { };
     private List<Team> allTeams = new List<Team> { };
     private List<Team> eventTeams = new List<Team> { };
-
-
-    private Task OnSelectedTabChanged(string name)
-    {
-        selectedTab = name;
-        return Task.CompletedTask;
-    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -354,6 +314,12 @@ else
         loaded = true;
         Counter();
         StateHasChanged();
+    }
+
+    private Task OnSelectedTabChanged(string name)
+    {
+        selectedTab = name;
+        return Task.CompletedTask;
     }
 
     private async Task StartEvent()
@@ -393,16 +359,6 @@ else
 
     //}
 
-    private async Task ItemDropped(DraggableDroppedEventArgs<EventParticipantTeam> dropItem)
-    {
-        dropItem.Item.TeamId = Convert.ToInt32(dropItem.DropZoneName);
-
-        var changedTeamMember = dropItem.Item;
-        if (changedTeamMember.TeamId == 0) changedTeamMember.TeamId = null;
-        await UserEventTeamController.Update(changedTeamMember.Id, changedTeamMember);
-        StateHasChanged();
-        return;
-    }
 
     public async ValueTask DisposeAsync()
     {

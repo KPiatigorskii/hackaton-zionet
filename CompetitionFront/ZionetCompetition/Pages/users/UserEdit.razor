@@ -113,6 +113,7 @@ else
     {
         UserController.Update(id, message);
         UriHelper.NavigateTo("/Users/" + id);
+        StateHasChanged();
     }
 
 
