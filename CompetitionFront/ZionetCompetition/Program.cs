@@ -108,9 +108,10 @@ builder.Services
                 AuthenticationController.ConfigureHub(token);
 
                 await AuthenticationController.StartConnection();
-                //var id = await UserController.Get(email);
-/*                if (!id) 
-                {*/
+                await AuthenticationController.Get(email);
+                var existedUser = AuthenticationController.message;
+                if (existedUser.Id == 0) 
+                {
                     var user = new User
                     {
 
@@ -127,7 +128,7 @@ builder.Services
 
                     };
                     await AuthenticationController.Register(user);
-             //   } 
+                } 
 
 
 
