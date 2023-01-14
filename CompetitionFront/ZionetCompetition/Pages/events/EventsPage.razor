@@ -78,15 +78,16 @@ else
 	private bool loaded = false;
 
 
-	protected override async Task OnInitializedAsync()
-	{
-		await EventController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
-		await EventController.StartConnection();
-		await EventController.GetAll();
-		messages = EventController.messages;
+    protected override async Task OnInitializedAsync()
+    {
+        var token =await  TokenService.GetToken();
+        await EventController.ConfigureHub(token);
+        await EventController.StartConnection();
+        await EventController.GetAll();
+        messages = EventController.messages;
 		loaded = true;
-		StateHasChanged();
-	}
+        StateHasChanged();
+    }
 
 
 	private void Create()

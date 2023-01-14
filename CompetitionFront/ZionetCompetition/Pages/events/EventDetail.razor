@@ -18,6 +18,7 @@
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @inject NavigationManager Navigation
 @inject ZionetCompetition.Services.TokenService TokenService
+@inject ZionetCompetition.Services.TwitterEngineService TwitterEngineService
 
 @implements IAsyncDisposable
 
@@ -27,7 +28,13 @@
 }
 else
 {
-        <h3>Event Details </h3> @counter
+    <div>
+        <h3>Event @selectedEvent.Title</h3>
+    <Button Color="Color.Primary" Clicked="@StartEvent">Start Event</Button>
+    <Button Color="Color.Primary" Clicked="@StopEvent">Stop Event</Button>
+    @counter
+
+</div>
     <Tabs SelectedTab="@selectedTab" RenderMode="TabsRenderMode.LazyReload" SelectedTabChanged="@OnSelectedTabChanged">
         
         <Items>
@@ -325,7 +332,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var token = TokenService.GetToken(HttpContextAccessor);
+        var token =await TokenService.GetToken();
 
         await EventController.ConfigureHub(token);
         await EventController.StartConnection();
@@ -349,10 +356,15 @@ else
         StateHasChanged();
     }
 
-    //private void Edit()
-    //{
-    //    Navigation.NavigateTo("/events/" + id + "/Edit");
-    //}
+    private async Task StartEvent()
+    {
+        TwitterEngineService.SendTweet($"Competition {selectedEvent.Title} starting! All bets are off");
+    }
+
+    private async Task StopEvent()
+    {
+        TwitterEngineService.SendTweet($"Competition {selectedEvent.Title} was stopped");
+    }
 
     private void EditEvent()
     {
