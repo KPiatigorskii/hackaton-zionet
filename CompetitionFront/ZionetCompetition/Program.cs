@@ -104,10 +104,10 @@ builder.Services
                 });
 
 
-                var UserController = context.HttpContext.RequestServices.GetRequiredService<GenClientController<User>>();
-                UserController.ConfigureHub(token);
+                var AuthenticationController = context.HttpContext.RequestServices.GetRequiredService<AuthClientController<User>>();
+                AuthenticationController.ConfigureHub(token);
 
-                await UserController.StartConnection();
+                await AuthenticationController.StartConnection();
                 //var id = await UserController.Get(email);
 /*                if (!id) 
                 {*/
@@ -126,7 +126,7 @@ builder.Services
                         LastName = context.Principal.Claims.FirstOrDefault(e => e.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname").Value,
 
                     };
-                    await UserController.Create(user);
+                    await AuthenticationController.Register(user);
              //   } 
 
 

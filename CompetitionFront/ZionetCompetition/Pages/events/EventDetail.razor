@@ -30,16 +30,13 @@
 else
 {
     <div>
-    <h3>Event @message.Title</h3>
+        <h3>Event @selectedEvent.Title</h3>
     <Button Color="Color.Primary" Clicked="@StartEvent">Start Event</Button>
     <Button Color="Color.Primary" Clicked="@StopEvent">Stop Event</Button>
 
 
 </div>
     <Tabs SelectedTab="@selectedTab" RenderMode="TabsRenderMode.LazyReload" SelectedTabChanged="@OnSelectedTabChanged">
-
-
-    <Tabs SelectedTab="@selectedTab" SelectedTabChanged="@OnSelectedTabChanged">
         
         <Items>
             <Tab Name="Info">Event Info</Tab>
@@ -359,23 +356,14 @@ else
         StateHasChanged();
     }
 
-    private async Task Delete()
-    {
-        if (hubConnection is not null)
-        {
-            await hubConnection.SendAsync("ForceDeleteOne", id);
-            Navigation.NavigateTo("/events/");
-        }
-    }
-
     private async Task StartEvent()
     {
-        TwitterEngineService.SendTweet($"Competition {message.Title} starting! All bets are off");
+        TwitterEngineService.SendTweet($"Competition {selectedEvent.Title} starting! All bets are off");
     }
 
     private async Task StopEvent()
     {
-        TwitterEngineService.SendTweet($"Competition {message.Title} was stopped");
+        TwitterEngineService.SendTweet($"Competition {selectedEvent.Title} was stopped");
     }
 
     private void EditEvent()
