@@ -70,9 +70,9 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.NotAuthorizedOnServer)
+                if (ex.Message == Errors.NotAuthorizedByEmail)
                 {
-                    throw new HubException(Errors.NotAuthorizedOnServer);
+                    throw new HubException(Errors.NotAuthorizedByEmail);
                 }
                 if (ex.Message == Errors.ItemNotFound)
                 {
@@ -105,9 +105,9 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.NotAuthorizedOnServer)
+                if (ex.Message == Errors.NotAuthorizedByEmail)
                 {
-                    throw new HubException(Errors.NotAuthorizedOnServer);
+                    throw new HubException(Errors.NotAuthorizedByEmail);
                 }
                 if (ex.Message == Errors.ConflictData)
                 {
@@ -136,9 +136,9 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.NotAuthorizedOnServer)
+                if (ex.Message == Errors.NotAuthorizedByEmail)
                 {
-                    throw new HubException(Errors.NotAuthorizedOnServer);
+                    throw new HubException(Errors.NotAuthorizedByEmail);
                 }
                 if (ex.Message == Errors.ConflictData)
                 {
@@ -167,9 +167,9 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.NotAuthorizedOnServer)
+                if (ex.Message == Errors.NotAuthorizedByEmail)
                 {
-                    throw new HubException(Errors.NotAuthorizedOnServer);
+                    throw new HubException(Errors.NotAuthorizedByEmail);
                 }
                 if (ex.Message == Errors.ConflictData)
                 {

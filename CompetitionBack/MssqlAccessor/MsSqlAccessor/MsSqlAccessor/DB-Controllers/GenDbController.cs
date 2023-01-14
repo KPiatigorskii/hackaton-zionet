@@ -191,7 +191,7 @@ namespace MsSqlAccessor.DbControllers
             var user = await _context.Users.FirstOrDefaultAsync(e => e.Email == userEmail);
             if (user == null)
             {   
-                throw new Exception(Errors.NotAuthorizedOnServer );
+                throw new Exception(Errors.NotAuthorizedByEmail );
             }
             return user.Id;
         }
