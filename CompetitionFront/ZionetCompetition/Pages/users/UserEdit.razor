@@ -93,12 +93,13 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        await RoleController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
+        var token =await TokenService.GetToken();
+        await RoleController.ConfigureHub(token);
         await RoleController.StartConnection();
         await RoleController.GetAll();
         Roles = RoleController.messages;
 
-        await UserController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
+        await UserController.ConfigureHub(token);
         await UserController.StartConnection();
         await UserController.Get(id);
         message = UserController.message;

@@ -114,12 +114,13 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        await EventStatusController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
+        var token =await TokenService.GetToken();
+        await EventStatusController.ConfigureHub(token);
         await EventStatusController.StartConnection();
         await EventStatusController.GetAll();
         eventStatuses = EventStatusController.messages;
 
-        await EventController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
+        await EventController.ConfigureHub(token);
         await EventController.StartConnection();
         checkedEventStatus = (int)EnentStatusEnm.Preparation;
         newEvent.IsEnable = true;

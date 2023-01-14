@@ -73,7 +73,8 @@ else
 
 	protected override async Task OnInitializedAsync()
 	{
-		await UserController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
+		var token = await TokenService.GetToken();
+		await UserController.ConfigureHub(token);
 		await UserController.StartConnection();
 		await UserController.Get(id);
 

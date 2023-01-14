@@ -76,7 +76,7 @@ else
 
 	protected override async Task OnInitializedAsync()
 	{
-		var token = TokenService.GetToken(HttpContextAccessor);
+		var token =await TokenService.GetToken();
 
 		await TeamController.ConfigureHub(token);
 		await TeamController.StartConnection();

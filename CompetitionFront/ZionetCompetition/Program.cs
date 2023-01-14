@@ -129,9 +129,6 @@ builder.Services
                     };
                     await AuthenticationController.Register(user);
                 } 
-
-
-
             },
 
             OnTicketReceived = notification =>
