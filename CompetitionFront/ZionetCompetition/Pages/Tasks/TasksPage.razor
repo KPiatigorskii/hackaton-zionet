@@ -22,6 +22,14 @@
 }
 else
 {
+	<SelectList TItem="TaskCategory"
+			TValue="int"
+			Data="@allTaskCategoryes"
+			TextField="@((item)=>item.Title)"
+			ValueField="@((item)=>item.Id)"
+			@bind-SelectedValue="@selectedCategoryId"
+			DefaultItemText="Choose category" />
+
 	<DataGrid TItem="TaskModel"
 		  Data="@allTasks"
 		  @bind-SelectedRow=selectedTask
@@ -48,16 +56,59 @@ else
 					<Button ElementId="btnCancel" Color="Color.Secondary" Clicked="@context.Clicked">@context.LocalizationString</Button>
 				</CancelCommandTemplate>
 			</DataGridCommandColumn>
-			<DataGridColumn TItem="TaskModel" Field="Id" Caption="Id" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="TaskModel" Field="Title" Caption="Title" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="TaskModel" Field="Category.Title" Caption="Category" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="TaskModel" Field="Language" Caption="Language" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="TaskModel" Field="Platform" Caption="Platform" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="TaskModel" Field="Duration" Caption="Duration" Sortable="true" Displayable="true" Editable />
-			<DataGridColumn TItem="TaskModel" Field="Points" Caption="Points" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="TaskModel" Field="HasBonus" Caption="HasBonus" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="TaskModel" Field="BonusExtraTime" Caption="BonusExtraTime" Sortable="true" Displayable="true" Editable />
-			<DataGridColumn TItem="TaskModel" Field="BonusPoints" Caption="BonusPoints" Sortable="false" Displayable="true" Editable />
+			<DataGridNumericColumn TItem="TaskModel" Field="Id" Caption="Id" Sortable="false" Displayable="true" />
+			<DataGridColumn TItem="TaskModel" Field="Title" Caption="Title" Sortable="true" Displayable="true" Editable />
+@*			<DataGridColumn TItem="TaskModel" Field="Category.Title" Caption="Category" Sortable="true" Displayable="true" Editable />*@
+			<DataGridNumericColumn TItem="TaskModel" Field="CategoryId" Caption="Category" Sortable="false" Displayable="true" Editable>
+				<DisplayTemplate>
+					@(allTaskCategoryes.Find(c => c.Id == (int)context.CategoryId)?.Title??"")
+				</DisplayTemplate>
+				<EditTemplate>
+					@*<NumericEdit TValue="int" Value="@((int)context.CellValue)" ValueChanged="@( v => context.CellValue = v)" />*@
+					<SelectList TItem="TaskCategory"
+							TValue="int"
+							Data="@allTaskCategoryes"
+							TextField="@((item)=>item.Title)"
+							ValueField="@((item)=>item.Id)"
+							SelectedValue="@((int)context.CellValue)"
+							SelectedValueChanged="@( v => context.CellValue = v)" />
+					@*@bind-SelectedValue="@context.Item.CategoryId"*@
+				</EditTemplate>
+			</DataGridNumericColumn>
+			<DataGridColumn TItem="TaskModel" Field="Language" Caption="Language" Sortable="true" Displayable="true" Editable />
+			<DataGridColumn TItem="TaskModel" Field="Platform" Caption="Platform" Sortable="true" Displayable="true" Editable />
+			<DataGridNumericColumn TItem="TaskModel" Field="Duration" Caption="Duration" Sortable="true" Displayable="true" Editable />
+			<DataGridNumericColumn TItem="TaskModel" Field="Points" Caption="Points" Sortable="true" Displayable="true" Editable />
+			<DataGridCheckColumn TItem="TaskModel" Field="HasBonus" Caption="HasBonus" Sortable="true" Displayable="true" Editable />
+			<DataGridNumericColumn TItem="TaskModel" Field="BonusExtraTime" Caption="BonusExtraTime" Sortable="true" Displayable="true" Editable >
+				<DisplayTemplate>
+					@if ((bool)context.HasBonus)
+					{
+						@context.BonusExtraTime
+					}
+				</DisplayTemplate>
+@*				<EditTemplate>
+					@if ((bool)context.Item.HasBonus)
+					{
+						<NumericEdit TValue="int" Value="@((int)context.CellValue)" ValueChanged="@( v => context.CellValue = v)" />
+					}
+				</EditTemplate>*@
+			</DataGridNumericColumn>
+			<DataGridNumericColumn TItem="TaskModel" Field="BonusPoints" Caption="BonusPoints" Sortable="true" Displayable="true" Editable >
+				<DisplayTemplate>
+					@if ((bool)context.HasBonus)
+					{
+						@context.BonusPoints
+					}
+				</DisplayTemplate>
+@*				<EditTemplate>
+					@if ((bool)context.Item.HasBonus)
+					{
+						<NumericEdit TValue="int" Value="@((int)context.CellValue)" ValueChanged="@( v => context.CellValue = v)" />
+					}
+				</EditTemplate>*@
+			</DataGridNumericColumn>
+
 		</ChildContent>
 
 		<EmptyTemplate>
@@ -83,7 +134,7 @@ else
 
 @code {
 	private TaskModel selectedTask;
-	private TaskModel selectedTaskCategory;
+	private int selectedCategoryId;
 	private List<TaskModel> allTasks = new List<TaskModel> { };
 	private List<TaskCategory> allTaskCategoryes = new List<TaskCategory> { };
 	private bool loaded = false;
@@ -91,7 +142,7 @@ else
 
 	protected override async Task OnInitializedAsync()
 	{
-		var token =await TokenService.GetToken();
+		var token = await TokenService.GetToken();
 
 		await TaskController.ConfigureHub(token);
 		await TaskController.StartConnection();
@@ -106,6 +157,12 @@ else
 		loaded = true;
 		StateHasChanged();
 		await base.OnInitializedAsync();
+	}
+
+	private string CategoryTitleById(List<TaskCategory> allTaskCategoryes, int id)
+	{
+		string result = allTaskCategoryes.Find(c => c.Id == id)?.Title??"";
+		return result;
 	}
 
 	private async void Create(SavedRowItem<TaskModel, Dictionary<string, object>> rowInserted)
