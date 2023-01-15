@@ -49,7 +49,6 @@ builder.Services.AddTransient<GenClientController<TaskCategory>>();
 builder.Services.AddTransient<GenClientController<TaskModel>>();
 builder.Services.AddTransient<GenClientController<TaskParticipant>>();
 builder.Services.AddTransient<GenClientController<Team>>();
-builder.Services.AddTransient<GenClientController<TeamParticipant>>();
 builder.Services.AddTransient<GenClientController<TeamTask>>();
 builder.Services.AddTransient<GenClientController<User>>();
 builder.Services.AddTransient<GenClientController<EventStatus>>();

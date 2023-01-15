@@ -16,8 +16,7 @@ public partial class EventTask
 
     public virtual Event Event { get; set; } = null!;
 
-    public virtual TaskModel Task { get; set; } = null!;
+    public virtual Status Status { get; set; } = null!;
 
-    [JsonIgnore]
-    public virtual ICollection<EventTaskEvaluateUser> EventTaskEvaluateUsers { get; } = new List<EventTaskEvaluateUser>();
+    public virtual TaskModel Task { get; set; } = null!;
 }

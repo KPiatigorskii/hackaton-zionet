@@ -1,4 +1,4 @@
-﻿@*@page "/events/{eventId:int}/teams"*@
+﻿@page "/Tasks"
 
 @using System;
 @using System.Globalization;
@@ -30,7 +30,8 @@ else
 		  Filterable="true"
 		  FilterMethod="DataGridFilterMethod.Contains"
 		  Striped="true"
-		  Editable="false"
+		  Editable="true"
+		  EditMode="DataGridEditMode.Popup"
 		  Hoverable="true"
 		  Responsive="true"
 		  ShowPager="true"
@@ -46,16 +47,16 @@ else
 					<Button ElementId="btnCancel" Color="Color.Secondary" Clicked="@context.Clicked">@context.LocalizationString</Button>
 				</CancelCommandTemplate>
 			</DataGridCommandColumn>
-			<DataGridColumn TItem="Task" Field="Id" Caption="Id" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="Task" Field="Title" Caption="Title" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="Task" Field="TaskCategory.Title" Caption="Category" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="Task" Field="Language" Caption="Language" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="Task" Field="Platform" Caption="Platform" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="Task" Field="Duration" Caption="Duration" Sortable="true" Displayable="true" Editable />
-			<DataGridColumn TItem="Task" Field="Points" Caption="Points" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="Task" Field="HasBonus" Caption="HasBonus" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="Task" Field="BonusExtraTime" Caption="BonusExtraTime" Sortable="true" Displayable="true" Editable />
-			<DataGridColumn TItem="Task" Field="BonusPoints" Caption="BonusPoints" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="TaskModel" Field="Id" Caption="Id" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="TaskModel" Field="Title" Caption="Title" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="TaskModel" Field="Category.Title" Caption="Category" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="TaskModel" Field="Language" Caption="Language" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="TaskModel" Field="Platform" Caption="Platform" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="TaskModel" Field="Duration" Caption="Duration" Sortable="true" Displayable="true" Editable />
+			<DataGridColumn TItem="TaskModel" Field="Points" Caption="Points" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="TaskModel" Field="HasBonus" Caption="HasBonus" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="TaskModel" Field="BonusExtraTime" Caption="BonusExtraTime" Sortable="true" Displayable="true" Editable />
+			<DataGridColumn TItem="TaskModel" Field="BonusPoints" Caption="BonusPoints" Sortable="false" Displayable="true" Editable />
 		</ChildContent>
 
 		<EmptyTemplate>
