@@ -169,6 +169,8 @@ else
 	{
 		var newItem = rowInserted.Item;
 		await TaskController.Create(newItem);
+		allTasks.RemoveAt(allTasks.Count - 1);
+		allTasks.Add(TaskController.message);
 		StateHasChanged();
 	}
 

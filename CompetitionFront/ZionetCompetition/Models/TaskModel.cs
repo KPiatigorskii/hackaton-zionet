@@ -22,7 +22,7 @@ public partial class TaskModel
 
     public int? Points { get; set; }
 
-    public bool? HasBonus { get; set; }
+    public bool? HasBonus { get; set; } = false!;
 
     public int? BonusExtraTime { get; set; }
 
