@@ -9,6 +9,7 @@
 
 @inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
 @inject ZionetCompetition.Controllers.GenClientController<TaskModel> TaskController
+@inject ZionetCompetition.Controllers.GenClientController<TaskCategory> TaskCategoryController
 @inject NavigationManager Navigation
 @inject ZionetCompetition.Services.TokenService TokenService
 
@@ -81,11 +82,10 @@ else
 }
 
 @code {
-
-	[Parameter]
-	public int eventId { get; set; }
 	private TaskModel selectedTask;
+	private TaskModel selectedTaskCategory;
 	private List<TaskModel> allTasks = new List<TaskModel> { };
+	private List<TaskCategory> allTaskCategoryes = new List<TaskCategory> { };
 	private bool loaded = false;
 
 
@@ -97,6 +97,11 @@ else
 		await TaskController.StartConnection();
 		await TaskController.GetAll();
 		allTasks = TaskController.messages.ToList();
+
+		await TaskCategoryController.ConfigureHub(token);
+		await TaskCategoryController.StartConnection();
+		await TaskCategoryController.GetAll();
+		allTaskCategoryes = TaskCategoryController.messages.ToList();
 
 		loaded = true;
 		StateHasChanged();
