@@ -22,14 +22,6 @@
 }
 else
 {
-	<SelectList TItem="TaskCategory"
-			TValue="int"
-			Data="@allTaskCategoryes"
-			TextField="@((item)=>item.Title)"
-			ValueField="@((item)=>item.Id)"
-			@bind-SelectedValue="@selectedCategoryId"
-			DefaultItemText="Choose category" />
-
 	<DataGrid TItem="TaskModel"
 		  Data="@allTasks"
 		  @bind-SelectedRow=selectedTask
