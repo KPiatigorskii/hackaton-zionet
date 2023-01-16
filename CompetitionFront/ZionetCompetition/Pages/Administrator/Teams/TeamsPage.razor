@@ -1,4 +1,4 @@
-﻿@page "/events/{eventId:int}/teams"
+﻿@*@page "/events/{eventId:int}/teams"*@
 
 @using System;
 @using System.Globalization;
@@ -22,19 +22,18 @@
 }
 else
 {
-	<h3>Teams</h3>
-
 	<DataGrid TItem="Team"
 		  Data="@eventTeams"
 		  @bind-SelectedRow="@selectedTeam"
 		  RowInserted="@Create"
 		  RowUpdated="@Update"
-		  RowRemoved="@Delet"
+		  RowRemoved="@Delete"
 		  Editable
+		  Hoverable
 		  Responsive
 		  ShowPager
-		  CommandMode="DataGridCommandMode.ButtonRow"
-		  EditMode="DataGridEditMode.Popup">
+		  EditMode="DataGridEditMode.Popup"
+		  CommandMode="DataGridCommandMode.ButtonRow">
 		<DataGridColumns>
 			<DataGridCommandColumn NewCommandAllowed="false" EditCommandAllowed="false" DeleteCommandAllowed="false">
 				<SaveCommandTemplate>
@@ -46,13 +45,12 @@ else
 			</DataGridCommandColumn>
 			<DataGridColumn Field="@nameof(Team.Id)" Caption="#" Sortable="false" />
 			<DataGridColumn Field="@nameof(Team.Title)" Caption="Title" Editable />
-			<DataGridColumn Field="@nameof(Team.UpdateDate)" Caption="Update Date" />
-			<DataGridColumn Field="@nameof(Team.Id)" Caption="Members count">
+			<DataGridColumn Field="@nameof(Team.Id)" Caption="Curent number participant">
 				<DisplayTemplate>
 					@participantsCount(context.Id, eventParticipantTeams)
 				</DisplayTemplate>
 			</DataGridColumn>
-
+			<DataGridColumn Field="@nameof(Team.UpdateDate)" Caption="Update Date" />
 		</DataGridColumns>
 		<ButtonRowTemplate>
 			<Button Color="Color.Success" Clicked="context.NewCommand.Clicked">New</Button>
@@ -110,7 +108,7 @@ else
 		StateHasChanged();
 	}
 
-	private async void Delet(Team rowRemoved)
+	private async void Delete(Team rowRemoved)
 	{
 		await TeamController.Delete(rowRemoved.Id);
 		StateHasChanged();

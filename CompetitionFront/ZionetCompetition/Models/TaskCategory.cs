@@ -10,7 +10,7 @@ public partial class TaskCategory
 
     public string Title { get; set; } = null!;
 
-    public string Color { get; set; } = null!;
+    public string? Color { get; set; }
 
     public DateTime CreateDate { get; set; }
 
@@ -27,7 +27,4 @@ public partial class TaskCategory
     public virtual Status Status { get; set; } = null!;
 
     public virtual User UpdateUser { get; set; } = null!;
-
-    [JsonIgnore]
-    public virtual ICollection<TaskModel> Tasks { get; } = new List<TaskModel>();
 }

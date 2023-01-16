@@ -10,19 +10,19 @@ public partial class TaskModel
 
     public string Title { get; set; } = null!;
 
-    public string TaskBody { get; set; } = null!;
+    public string? TaskBody { get; set; }
 
     public int CategoryId { get; set; }
 
-    public string Language { get; set; } = null!;
+    public string? Language { get; set; }
 
-    public string Platform { get; set; } = null!;
+    public string? Platform { get; set; }
 
-    public int Duration { get; set; }
+    public int? Duration { get; set; }
 
-    public int Points { get; set; }
+    public int? Points { get; set; }
 
-    public bool HasBonus { get; set; }
+    public bool? HasBonus { get; set; } = false!;
 
     public int? BonusExtraTime { get; set; }
 
@@ -46,10 +46,4 @@ public partial class TaskModel
 
     public virtual User UpdateUser { get; set; } = null!;
 
-    [JsonIgnore]
-    public virtual ICollection<EventTask> EventTasks { get; } = new List<EventTask>();
-
-    [JsonIgnore]
-    public virtual ICollection<TeamTask> TeamTasks { get; } = new List<TeamTask>();
-    
 }

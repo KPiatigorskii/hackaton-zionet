@@ -64,7 +64,6 @@ else
 
 	string userIcon = ImagesBase64.userImg;
 
-	//private HubConnection? hubConnection;
 	private User message = new User { };
 	private string? userInput;
 	private int? userId;
@@ -83,26 +82,17 @@ else
 		StateHasChanged();
 	}
 
-	//public bool IsConnected =>
-	//    hubConnection?.State == HubConnectionState.Connected;
-
-	//private async Task Create()
-	//{
-	//    if (hubConnection is not null)
-	//    {
-	//        await hubConnection.SendAsync("Create");
-	//    }
-	//}
-
 	private void Edit()
 	{
 		Navigation.NavigateTo("/Users/" + id + "/Edit");
+		StateHasChanged();
 	}
 
 	private async Task Delete()
 	{
 		await UserController.Delete(id);
 		UriHelper.NavigateTo("/Users/");
+		StateHasChanged();
 	}
 
 	public async ValueTask DisposeAsync()

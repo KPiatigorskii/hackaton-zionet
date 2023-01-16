@@ -1,0 +1,121 @@
+﻿
+@using System;
+@using System.Globalization;
+@using System.Reflection;
+@using Microsoft.AspNetCore.SignalR.Client
+@using ZionetCompetition.Models
+@using Blazorise.DataGrid
+
+@inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
+@inject ZionetCompetition.Controllers.GenClientController<Team> TeamController
+@inject ZionetCompetition.Controllers.GenClientController<EventParticipantTeam> UserEventTeamController
+@inject NavigationManager Navigation
+@inject ZionetCompetition.Services.TokenService TokenService
+
+
+@implements IAsyncDisposable
+
+@if (!loaded)
+{
+	<SpinKit Type="SpinKitType.Plane" Color="SlateBlue" Centered />
+}
+else
+{
+	<DropContainer TItem="EventParticipantTeam" 
+		Items="@eventParticipantTeams" 
+		ItemsFilter="@((item, dropZone) => item.TeamId.ToString() == dropZone)" 
+		ItemDropped="@ItemDropped" 
+		Flex="Flex.Wrap.Grow.Is1">
+		<ChildContent>
+			<Card Margin="Margin.Is3">
+				<CardBody>
+					<ListGroup>
+						<Heading Size="HeadingSize.Is4" Margin="Margin.Is3.FromBottom">Unalocated</Heading>
+						<DropZone TItem="EventParticipantTeam" Name="@null" AllowReorder Padding="Padding.Is3" Margin="Margin.Is3" Flex="Flex.Grow.Is1" />
+					</ListGroup>
+				</CardBody>
+				<Button Color="Color.Primary">Add Participant to the Event</Button>
+			</Card>
+			@foreach (var team in eventTeams)
+			{
+				var dropzone = team.Id;
+				var dropTitle = team.Title;
+				<Card Margin="Margin.Is3">
+					<CardBody>
+						<ListGroup>
+							<Heading Size="HeadingSize.Is4" Margin="Margin.Is5.FromBottom">@dropTitle</Heading>
+							<DropZone TItem="EventParticipantTeam" Name="@dropzone.ToString()" AllowReorder Padding="Padding.Is3" Margin="Margin.Is1" Flex="Flex.Grow.Is1"></DropZone>
+						</ListGroup>
+					</CardBody>
+					<Button Color="Color.Primary">Add Participant to team @dropTitle</Button>
+				</Card>
+			}
+		</ChildContent>
+		<ItemTemplate>
+			<Card Shadow="Shadow.Default" Margin="Margin.Is3.OnY">
+				<CardBody>
+					<div>
+						<p>user @context.Participant.FirstName     @context.Participant.LastName   <a href="/"> <Icon Name="IconName.Ban" IconSize=IconSize.Small /></a></p>
+					</div>
+				</CardBody>
+			</Card>
+		</ItemTemplate>
+	</DropContainer>
+}
+
+@code {
+	[Parameter]
+	public int eventId { get; set; }
+
+	public Team selectedTeam;
+	private List<Team> allTeams = new List<Team> { };
+	private List<Team> eventTeams = new List<Team> { };
+	private List<EventParticipantTeam> allEventParticipantTeams = new List<EventParticipantTeam> { };
+	private List<EventParticipantTeam> eventParticipantTeams = new List<EventParticipantTeam> { };
+	private bool loaded = false;
+
+
+	protected override async Task OnInitializedAsync()
+	{
+		var token =await TokenService.GetToken();
+
+		await TeamController.ConfigureHub(token);
+		await TeamController.StartConnection();
+		await TeamController.GetAll();
+		allTeams = TeamController.messages.ToList();
+		eventTeams = allTeams.Where(t => t.EventId == eventId).ToList();
+
+		await UserEventTeamController.ConfigureHub(token);
+		await UserEventTeamController.StartConnection();
+		await UserEventTeamController.GetAll();
+		allEventParticipantTeams = UserEventTeamController.messages.ToList();
+		eventParticipantTeams = allEventParticipantTeams.Where(t => t.EventId == eventId).ToList();
+
+		loaded = true;
+		StateHasChanged();
+		await base.OnInitializedAsync();
+	}
+
+	private async Task ItemDropped(DraggableDroppedEventArgs<EventParticipantTeam> dropItem)
+	{
+		dropItem.Item.TeamId = Convert.ToInt32(dropItem.DropZoneName);
+
+		var changedTeamMember = dropItem.Item;
+		if (changedTeamMember.TeamId == 0) changedTeamMember.TeamId = null;
+		await UserEventTeamController.Update(changedTeamMember.Id, changedTeamMember);
+		StateHasChanged();
+		return;
+	}
+
+	private int participantsCount(int teamId, List<EventParticipantTeam> eventParticipantTeams)
+	{
+		int result = eventParticipantTeams.Count(p => p.TeamId == teamId);
+		return result;
+	}
+
+	public async ValueTask DisposeAsync()
+	{
+		await TeamController.DisposeAsync();
+		await UserEventTeamController.DisposeAsync();
+	}
+}
