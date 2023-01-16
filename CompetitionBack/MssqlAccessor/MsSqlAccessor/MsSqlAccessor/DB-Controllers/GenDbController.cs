@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -14,6 +15,7 @@ using MsSqlAccessor.Hubs;
 using MsSqlAccessor.Models;
 using MsSqlAccessor.Services;
 using Newtonsoft.Json.Linq;
+using static NuGet.Packaging.PackagingConstants;
 
 namespace MsSqlAccessor.DbControllers
 {
@@ -37,7 +39,26 @@ namespace MsSqlAccessor.DbControllers
             return dtoItems;
         }
 
-        public async Task<TmodelDTO> GetOne(int id)
+		public async Task<IEnumerable<TmodelDTO>> GetAllWithConditions(Dictionary<string, object> filters)
+		{
+			Expression<Func<Tmodel, bool>> filter = x => true; // Initialize the filter with a "true" expression
+			foreach (var item in filters)
+			{
+				filter = Expression.Lambda<Func<Tmodel, bool>>(Expression.AndAlso(filter.Body, Expression.Equal(Expression.Property(filter.Parameters[0], item.Key), Expression.Constant(item.Value))), filter.Parameters);
+			}
+
+			var dtoItems = await _context.Set<Tmodel>()
+				.IncludeVirtualProperties(new Tmodel { })
+				.Where(e => e.StatusId == (int)StatusEnm.Active)
+				.Where(filter)
+				.Select(e => e.ConvertToDto<Tmodel, TmodelDTO>())
+
+				.ToListAsync();
+
+			return dtoItems;
+		}
+
+		public async Task<TmodelDTO> GetOne(int id)
         {
             var dbItem = await _context.Set<Tmodel>()
                 .IncludeVirtualProperties(new Tmodel { })
@@ -54,7 +75,29 @@ namespace MsSqlAccessor.DbControllers
             return dtoItem;
         }
 
-        public async Task<TmodelDTO> Update(int id, TmodelDTO dtoItem, string userEmail)
+		public async Task<TmodelDTO> GetOneWithConditions(Dictionary<string, object> filters)
+		{
+			Expression<Func<Tmodel, bool>> filter = x => true; // Initialize the filter with a "true" expression
+			foreach (var item in filters)
+			{
+				filter = Expression.Lambda<Func<Tmodel, bool>>(Expression.AndAlso(filter.Body, Expression.Equal(Expression.Property(filter.Parameters[0], item.Key), Expression.Constant(item.Value))), filter.Parameters);
+			}
+			var dbItem = await _context.Set<Tmodel>()
+				.IncludeVirtualProperties(new Tmodel { })
+				.Where(e => e.StatusId == (int)StatusEnm.Active)
+				.FirstOrDefaultAsync(filter);
+
+			if (dbItem == null)
+			{
+				throw new Exception(Errors.ItemNotFound);
+			}
+
+			var dtoItem = dbItem.ConvertToDto<Tmodel, TmodelDTO>();
+
+			return dtoItem;
+		}
+
+		public async Task<TmodelDTO> Update(int id, TmodelDTO dtoItem, string userEmail)
         {
             int userId = await GetUserIdByEmail(userEmail);
 
