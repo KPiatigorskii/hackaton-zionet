@@ -47,6 +47,7 @@ namespace ZionetCompetition.Controllers
                         {
                             options.AccessTokenProvider = () => Task.FromResult(tokenString);
                         })
+                .WithAutomaticReconnect()
                 .Build();
 
 

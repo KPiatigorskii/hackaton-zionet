@@ -11,7 +11,11 @@ public partial class EventTaskEvaluateUser
 
     public int EvaluateUserId { get; set; }
 
+    public int StatusId { get; set; }
+
     public virtual EventManager EvaluateUser { get; set; } = null!;
 
     public virtual EventTask EventTask { get; set; } = null!;
+
+    public virtual Status Status { get; set; } = null!;
 }

@@ -27,12 +27,13 @@ else
 		  @bind-SelectedRow="@selectedTeam"
 		  RowInserted="@Create"
 		  RowUpdated="@Update"
-		  RowRemoved="@Delet"
+		  RowRemoved="@Delete"
 		  Editable
+		  Hoverable
 		  Responsive
 		  ShowPager
-		  CommandMode="DataGridCommandMode.ButtonRow"
-		  EditMode="DataGridEditMode.Popup">
+		  EditMode="DataGridEditMode.Popup"
+		  CommandMode="DataGridCommandMode.ButtonRow">
 		<DataGridColumns>
 			<DataGridCommandColumn NewCommandAllowed="false" EditCommandAllowed="false" DeleteCommandAllowed="false">
 				<SaveCommandTemplate>
@@ -107,7 +108,7 @@ else
 		StateHasChanged();
 	}
 
-	private async void Delet(Team rowRemoved)
+	private async void Delete(Team rowRemoved)
 	{
 		await TeamController.Delete(rowRemoved.Id);
 		StateHasChanged();
