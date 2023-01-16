@@ -32,6 +32,15 @@ namespace MsSqlAccessor.Hubs
             await Clients.Caller.SendAsync("ReceiveGetAll", dtoItems);
         }
 
+        [HubMethodName("GetAllWithConditions")]
+        [Authorize(Roles = GetAllRoles)]
+        public async Task GetAllWithConditions(Dictionary<string, object> filters)
+        {
+            var dtoItems = await _dbController.GetAllWithConditions(filters);
+
+            await Clients.Caller.SendAsync("ReceiveGetAll", dtoItems);
+        }
+
         [HubMethodName("GetOne")]
         [Authorize(Roles = GetOneRoles)]
         public async Task GetOne(int id)

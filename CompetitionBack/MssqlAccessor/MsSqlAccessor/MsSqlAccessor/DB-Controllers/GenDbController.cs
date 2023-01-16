@@ -42,12 +42,30 @@ namespace MsSqlAccessor.DbControllers
 		public async Task<IEnumerable<TmodelDTO>> GetAllWithConditions(Dictionary<string, object> filters)
 		{
 			Expression<Func<Tmodel, bool>> filter = x => true; // Initialize the filter with a "true" expression
-			foreach (var item in filters)
+            foreach (var item in filters)  //Casting
+            {
+                var propertyInfo = typeof(Tmodel).GetProperty(item.Key);
+                var propertyType = propertyInfo.PropertyType;
+                switch (propertyType.Name) 
+                {
+                    case "Int32":
+                        filters[item.Key] = int.Parse(item.Value.ToString());
+                        break;
+                    case "String":
+                        filters[item.Key] = item.Value.ToString();
+                        break;
+                    case "DateTime":
+                        filters[item.Key] = DateTime.Parse(item.Value.ToString());
+                        break;
+                        // Add more cases for other types as needed
+                }
+            }
+            foreach (var item in filters) //Adding condition to filter
 			{
 				filter = Expression.Lambda<Func<Tmodel, bool>>(Expression.AndAlso(filter.Body, Expression.Equal(Expression.Property(filter.Parameters[0], item.Key), Expression.Constant(item.Value))), filter.Parameters);
 			}
 
-			var dtoItems = await _context.Set<Tmodel>()
+            var dtoItems = await _context.Set<Tmodel>()
 				.IncludeVirtualProperties(new Tmodel { })
 				.Where(e => e.StatusId == (int)StatusEnm.Active)
 				.Where(filter)
@@ -78,7 +96,25 @@ namespace MsSqlAccessor.DbControllers
 		public async Task<TmodelDTO> GetOneWithConditions(Dictionary<string, object> filters)
 		{
 			Expression<Func<Tmodel, bool>> filter = x => true; // Initialize the filter with a "true" expression
-			foreach (var item in filters)
+            foreach (var item in filters)  //Casting
+            {
+                var propertyInfo = typeof(Tmodel).GetProperty(item.Key);
+                var propertyType = propertyInfo.PropertyType;
+                switch (propertyType.Name)
+                {
+                    case "Int32":
+                        filters[item.Key] = int.Parse(item.Value.ToString());
+                        break;
+                    case "String":
+                        filters[item.Key] = item.Value.ToString();
+                        break;
+                    case "DateTime":
+                        filters[item.Key] = DateTime.Parse(item.Value.ToString());
+                        break;
+                        // Add more cases for other types as needed
+                }
+            }
+            foreach (var item in filters)
 			{
 				filter = Expression.Lambda<Func<Tmodel, bool>>(Expression.AndAlso(filter.Body, Expression.Equal(Expression.Property(filter.Parameters[0], item.Key), Expression.Constant(item.Value))), filter.Parameters);
 			}

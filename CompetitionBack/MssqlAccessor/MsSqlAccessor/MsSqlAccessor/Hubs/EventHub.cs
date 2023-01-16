@@ -67,12 +67,12 @@ namespace MsSqlAccessor.Hubs
 
 		[HubMethodName("GetOneWithConditions")]
 		[Authorize(Roles = GetOneRoles)]
-		public async Task GetOneWithConditions(int id, Dictionary<string, object> filters)
+		public async Task GetOneWithConditions(Dictionary<string, object> filters)
 		{
 			TmodelDTO dtoItem;
 			try
 			{
-				dtoItem = await _dbController.GetOneWithConditions(id, filters);
+				dtoItem = await _dbController.GetOneWithConditions(filters);
 			}
 			catch (Exception ex)
 			{
