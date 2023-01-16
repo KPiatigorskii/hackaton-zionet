@@ -10,6 +10,7 @@
 @using ZionetCompetition.Data
 @using Blazorise
 @using System.Linq
+@using ZionetCompetition.Pages.Administrator.Managers
 @using ZionetCompetition.Pages.Administrator.Participants
 @using ZionetCompetition.Pages.Administrator.Tasks
 @using ZionetCompetition.Pages.Administrator.Teams
@@ -71,13 +72,17 @@ else
 
             <TabPanel Name="Participants">
                 <ParticipantsPage eventId="@id" />
-            </TabPanel>
+            </TabPanel> 
             
             <TabPanel Name="Tasks">
                 <EventTasksPage eventId="@id" />
             </TabPanel>
 
             <TabPanel Name="Managers">
+                <EventManagersPage eventId="@id" />
+            </TabPanel>
+
+            <TabPanel Name="Managers1">
                 <DataGrid TItem="User"
                           Data="@teamUsers"
                           Filterable="true"
