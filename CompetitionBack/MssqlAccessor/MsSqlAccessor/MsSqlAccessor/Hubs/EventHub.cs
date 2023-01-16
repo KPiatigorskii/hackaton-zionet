@@ -72,7 +72,7 @@ namespace MsSqlAccessor.Hubs
 			TmodelDTO dtoItem;
 			try
 			{
-				dtoItem = await _dbController.GetOneWithConditions(id, filters);
+				dtoItem = await _dbController.GetOneWithConditions(filters);
 			}
 			catch (Exception ex)
 			{
