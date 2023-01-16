@@ -48,7 +48,10 @@ namespace MsSqlAccessor.DbControllers
                 var propertyType = propertyInfo.PropertyType;
                 switch (propertyType.Name) 
                 {
-                    case "Int32":
+					case "Boolean":
+						filters[item.Key] =  Boolean.Parse(item.Value.ToString());
+						break;
+					case "Int32":
                         filters[item.Key] = int.Parse(item.Value.ToString());
                         break;
                     case "String":
