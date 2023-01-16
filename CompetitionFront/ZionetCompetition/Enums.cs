@@ -5,7 +5,18 @@
         Active = 1,
         NotActive = 2
     }
-    public enum EnentStatusEnm
+	public static class Entities
+	{
+		public static Dictionary<string, string> Roles = new Dictionary<string, string>()
+		{
+			{"Admin", "Admin"},
+			{"Manager", "Manager" },
+			{"Participant", "Participant"}
+		};
+
+
+	}
+	public enum EnentStatusEnm
     {
         Preparation = 1,
         Disable = 2,
