@@ -6,7 +6,6 @@
 @using ZionetCompetition.Models
 @inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
 @inject IJSRuntime IJSRuntime
-@*@inject ZionetCompetition.Controllers.UserController UserController*@
 
 
 <AuthorizeView Roles="admin, Superuser">
@@ -32,23 +31,24 @@
 <h1>Index</h1>
 <!-- Page content goes here -->
 
+
 @code {
-    //private string userName;
-    //private string token;
-    //private HubConnection? hubConnection;
-    //private bool isLoaded;
-    //public IEnumerable<User> messages = new List<User> { };
+    private string userName;
+    private string token;
+    private HubConnection? hubConnection;
+    private bool isLoaded;
+    public IEnumerable<User> messages = new List<User> { };
 
-    //protected override async Task OnInitializedAsync()
-    //{
+    protected override async Task OnInitializedAsync()
+    {
         
-    //    //token = HttpContextAccessor.HttpContext.Request.Cookies["auth_token"];
-    //    //await UserController.ConfigureHub(token);
-    //    //await UserController.StartConnection();
-    //    //UserController.GetAll();
+        //token = HttpContextAccessor.HttpContext.Request.Cookies["auth_token"];
+        //await UserController.ConfigureHub(token);
+        //await UserController.StartConnection();
+        //UserController.GetAll();
 
-    //    //var token = HttpContextAccessor.HttpContext.Request;
-    //    //token = HttpContextAccessor.HttpContext.User.Claims.FirstOrDefault(e => e.Type == "jwt_token").Value;
-    //    //userName = HttpContextAccessor.HttpContext.User.Claims.FirstOrDefault(e => e.Type == "name").Value;
-    //}
+        var token = HttpContextAccessor.HttpContext.Request;
+        //token = HttpContextAccessor.HttpContext.User.Claims.FirstOrDefault(e => e.Type == "jwt_token")?Value;
+        //userName = HttpContextAccessor.HttpContext.User.Claims.FirstOrDefault(e => e.Type == "name").Value;
+    }
 }

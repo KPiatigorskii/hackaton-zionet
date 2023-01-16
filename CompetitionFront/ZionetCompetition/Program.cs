@@ -128,16 +128,20 @@ builder.Services
 					Dictionary<string, object> currentEventIdFilter = new Dictionary<string, object>() { { "ParticipantId", existedUser.Id }, { "IsActive", true } };
                     await EventParticipantTeamController.ConfigureHub(token);
                     await EventParticipantTeamController.StartConnection();
-                    await EventParticipantTeamController.GetOneWithConditions(currentEventIdFilter);
-                    var currentEventId = EventParticipantTeamController.message.EventId;
-                    var isLeader = EventParticipantTeamController.message.IsLeader;
-					var additionalClaims= new List<Claim>
-					{
-						new Claim("currentEventId", currentEventId.ToString()),
-						new Claim("isLeader", isLeader.ToString())
-					};
-					appIdentity = new ClaimsIdentity(additionalClaims, CookieAuthenticationDefaults.AuthenticationScheme);
-					context.Principal.AddIdentity(appIdentity);
+                    await EventParticipantTeamController.GetAllWithConditions(currentEventIdFilter);
+                    if (EventParticipantTeamController.messages.Count() > 0)
+                    {
+						var currentEventId = EventParticipantTeamController.messages.First().EventId;
+						var isLeader = EventParticipantTeamController.messages.First().IsLeader;
+						var additionalClaims = new List<Claim>
+					        {
+						        new Claim("currentEventId", currentEventId.ToString()),
+						        new Claim("isLeader", isLeader.ToString())
+					        };
+						appIdentity = new ClaimsIdentity(additionalClaims, CookieAuthenticationDefaults.AuthenticationScheme);
+						context.Principal.AddIdentity(appIdentity);
+					}
+
 				}
 			},
 
