@@ -157,7 +157,7 @@ else
 
 
 @code {
-    
+
 
     //public IEnumerable<string> teamNames = new List<String> { "DreamTeam", "DreamTeam2", "DreamTeam3", "undefined" };
     public TaskModel selectedTask;
@@ -235,18 +235,24 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        var filtersUET = new Dictionary<string, object>() { { "EventId", id } };
+        var filtersE = new Dictionary<string, object>() { { "Id", id } };
+
         var token =await TokenService.GetToken();
 
         await EventController.ConfigureHub(token);
         await EventController.StartConnection();
-        await EventController.Get(id);
+        //await EventController.Get(id);
+        await EventController.GetOneWithConditions(filtersE);
         selectedEvent = EventController.message;
 
         await UserEventTeamController.ConfigureHub(token);
         await UserEventTeamController.StartConnection();
-        await UserEventTeamController.GetAll();
-        allEventParticipantTeams = UserEventTeamController.messages.ToList();
-        eventParticipantTeams = allEventParticipantTeams.Where(t => t.EventId == id).ToList();
+        //await UserEventTeamController.GetAll();
+        await UserEventTeamController.GetAllWithConditions(filtersUET);
+        eventParticipantTeams = UserEventTeamController.messages.ToList();
+        //allEventParticipantTeams = UserEventTeamController.messages.ToList();
+        //eventParticipantTeams = allEventParticipantTeams.Where(t => t.EventId == id).ToList();
 
         await TeamController.ConfigureHub(token);
         await TeamController.StartConnection();
