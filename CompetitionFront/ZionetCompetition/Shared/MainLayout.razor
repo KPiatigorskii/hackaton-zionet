@@ -6,7 +6,13 @@
 
 <div class="page">
     <div class="sidebar">
-        <NavMenu />
+        <AuthorizeView Roles="admin, Superuser, manager">
+            <NavMenu />
+        </AuthorizeView>
+
+        <AuthorizeView Roles="participant">
+            <NavMenuParticipant />
+        </AuthorizeView>
     </div>
 
     <main>
