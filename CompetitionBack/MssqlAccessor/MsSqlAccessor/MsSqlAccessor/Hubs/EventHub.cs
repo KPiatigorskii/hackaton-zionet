@@ -52,14 +52,7 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.ItemNotFound)
-                {
-                    throw new HubException(Errors.ItemNotFound);
-                }
-                else
-                {
-                    throw new HubException(Errors.General);
-                }
+                throw new HubException(ex.Message);
             }
             //await Task.Delay(1000);
             await Clients.Caller.SendAsync("ReceiveGetOne", dtoItem);
@@ -76,15 +69,8 @@ namespace MsSqlAccessor.Hubs
 			}
 			catch (Exception ex)
 			{
-				if (ex.Message == Errors.ItemNotFound)
-				{
-					throw new HubException(Errors.ItemNotFound);
-				}
-				else
-				{
-					throw new HubException(Errors.General);
-				}
-			}
+                throw new HubException(ex.Message);
+            }
 			//await Task.Delay(1000);
 			await Clients.Caller.SendAsync("ReceiveGetOne", dtoItem);
 		}
@@ -103,22 +89,7 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.NotAuthorizedByEmail)
-                {
-                    throw new HubException(Errors.NotAuthorizedByEmail);
-                }
-                if (ex.Message == Errors.ItemNotFound)
-                {
-                    throw new HubException(Errors.ItemNotFound);
-                }
-                if (ex.Message == Errors.BadRequest)
-                {
-                    throw new HubException(Errors.BadRequest);
-                }
-                else
-                {
-                    throw new HubException(Errors.General);
-                }
+                throw new HubException(ex.Message);
             }
 
             await Clients.Caller.SendAsync("ReceiveUpdate", dtoItemResult);
@@ -138,18 +109,7 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.NotAuthorizedByEmail)
-                {
-                    throw new HubException(Errors.NotAuthorizedByEmail);
-                }
-                if (ex.Message == Errors.ConflictData)
-                {
-                    throw new HubException(Errors.ConflictData);
-                }
-                else
-                {
-                    throw new HubException(Errors.General);
-                }
+                throw new HubException(ex.Message);
             }
 
             await Clients.Caller.SendAsync("ReceiveCreate", dtoItemResult);
@@ -169,18 +129,7 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.NotAuthorizedByEmail)
-                {
-                    throw new HubException(Errors.NotAuthorizedByEmail);
-                }
-                if (ex.Message == Errors.ConflictData)
-                {
-                    throw new HubException(Errors.ConflictData);
-                }
-                else
-                {
-                    throw new HubException(Errors.General);
-                }
+                throw new HubException(ex.Message);
             }
 
             await Clients.Caller.SendAsync("ReceiveDelete", dtoItemResult);
@@ -200,18 +149,7 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.NotAuthorizedByEmail)
-                {
-                    throw new HubException(Errors.NotAuthorizedByEmail);
-                }
-                if (ex.Message == Errors.ConflictData)
-                {
-                    throw new HubException(Errors.ConflictData);
-                }
-                else
-                {
-                    throw new HubException(Errors.General);
-                }
+                throw new HubException(ex.Message);
             }
 
 
