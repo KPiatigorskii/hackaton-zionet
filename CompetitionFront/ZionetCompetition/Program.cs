@@ -133,11 +133,13 @@ builder.Services
                     {
 						var currentEventId = EventParticipantTeamController.messages.First().EventId;
 						var isLeader = EventParticipantTeamController.messages.First().IsLeader;
+                        var isActive = EventParticipantTeamController.messages.First().IsActive;
 						var additionalClaims = new List<Claim>
 					        {
 						        new Claim("currentEventId", currentEventId.ToString()),
-						        new Claim("isLeader", isLeader.ToString())
-					        };
+						        new Claim("isLeader", isLeader.ToString()),
+								new Claim("isActive", isActive.ToString())
+							};
 						appIdentity = new ClaimsIdentity(additionalClaims, CookieAuthenticationDefaults.AuthenticationScheme);
 						context.Principal.AddIdentity(appIdentity);
 					}
