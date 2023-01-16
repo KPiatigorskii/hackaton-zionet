@@ -57,7 +57,7 @@ namespace ZionetCompetition.Controllers
                 isLoaded = true;
             });
 
-            hubConnection.On<Tmodel>("ReceiveGetOne", (receiveObj) =>
+			hubConnection.On<Tmodel>("ReceiveGetOne", (receiveObj) =>
             {
                 message = receiveObj;
                 isLoaded = true;
@@ -96,7 +96,21 @@ namespace ZionetCompetition.Controllers
             }
         }
 
-        public async Task Get(int id)
+		public async Task GetAllWithConditions(Dictionary<string, object> filters)
+		{
+			try
+			{
+				await hubConnection.InvokeAsync("GetAllWithConditions", filters);
+				while (!isLoaded) { }
+				isLoaded = false;
+			}
+			catch (HubException ex)
+			{
+				_errorService.Redirect(ex.Message);
+			}
+		}
+
+		public async Task Get(int id)
         {
             try
             {
@@ -110,7 +124,21 @@ namespace ZionetCompetition.Controllers
             }
         }
 
-        public async Task Update(int id, Tmodel item)
+		public async Task GetOneWithConditions(Dictionary<string, object> filters)
+		{
+			try
+			{
+				await hubConnection.InvokeAsync("GetOneWithConditions", filters);
+				while (!isLoaded) { }
+				isLoaded = false;
+			}
+			catch (HubException ex)
+			{
+				_errorService.Redirect(ex.Message);
+			}
+		}
+
+		public async Task Update(int id, Tmodel item)
         {
             try
             {
