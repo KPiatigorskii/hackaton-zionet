@@ -36,6 +36,15 @@ namespace MsSqlAccessor.Hubs
             await Clients.Caller.SendAsync("ReceiveGetAll", dtoItems);
         }
 
+        [HubMethodName("GetAllWithConditions")]
+        [Authorize(Roles = GetAllRoles)]
+        public async Task GetAllWithConditions(Dictionary<string, object> filters)
+        {
+            var dtoItems = await _dbController.GetAllWithConditions(filters);
+
+            await Clients.Caller.SendAsync("ReceiveGetAll", dtoItems);
+        }
+
         [HubMethodName("GetOne")]
         [Authorize(Roles = GetOneRoles)]
         public async Task GetOne(int id)
@@ -55,6 +64,23 @@ namespace MsSqlAccessor.Hubs
                 {
                     throw new HubException(Errors.General);
                 }
+            }
+            //await Task.Delay(1000);
+            await Clients.Caller.SendAsync("ReceiveGetOne", dtoItem);
+        }
+
+        [HubMethodName("GetOneWithConditions")]
+        [Authorize(Roles = GetOneRoles)]
+        public async Task GetOneWithConditions(Dictionary<string, object> filters)
+        {
+            TmodelDTO dtoItem;
+            try
+            {
+                dtoItem = await _dbController.GetOneWithConditions(filters);
+            }
+            catch (Exception ex)
+            {
+                throw new HubException(ex.Message);
             }
             //await Task.Delay(1000);
             await Clients.Caller.SendAsync("ReceiveGetOne", dtoItem);
