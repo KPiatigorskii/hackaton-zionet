@@ -74,7 +74,7 @@ else
 	</DataGrid>
 
 	<Modal @ref="modalRef">
-		<ModalContent Size="ModalSize.Fullscreen">
+		<ModalContent Size="ModalSize.ExtraLarge">
 			<ModalHeader>
 				<ModalTitle>Tasks pool</ModalTitle>
 				<CloseButton />
@@ -122,16 +122,16 @@ else
 	[Parameter]
 	public int eventId { get; set; }
 	private Modal modalRef;
-	private EventTask selectedTask;
-	private TaskModel selectedTaskInPool;
-	private List<TaskModel> selectedTasksInPool;
-	private List<TaskModel> allTasks = new List<TaskModel> { };
-	private List<EventTask> allEventTasks = new List<EventTask> { };
-	private List<EventTask> eventTasks = new List<EventTask> { };
+	private EventManager selectedManager;
+
+	private User selectedManagerInPool;
+	private List<User> selectedManagersInPool;
+
+	private List<User> allUsers = new List<User> { };
+	private List<User> allManagers = new List<User> { };
+
 	private List<EventManager> allEventManagers = new List<EventManager> { };
 	private List<EventManager> eventManagers = new List<EventManager> { };
-	private List<EventTaskEvaluateUser> allEventTaskEvaluateUsers = new List<EventTaskEvaluateUser> { };
-	private List<EventTaskEvaluateUser> eventTaskEvaluateUsers = new List<EventTaskEvaluateUser> { };
 	private bool loaded = false;
 
 	protected override async Task OnInitializedAsync()
@@ -139,27 +139,16 @@ else
 		var token = await TokenService.GetToken();
 
 		await UserController.ConfigureHub(token);
-		await TaskController.StartConnection();
-		await TaskController.GetAll();
-		allTasks = TaskController.messages.ToList();
-
-		await EventTaskController.ConfigureHub(token);
-		await EventTaskController.StartConnection();
-		await EventTaskController.GetAll();
-		allEventTasks = EventTaskController.messages.ToList();
-		eventTasks = allEventTasks.Where(t => t.EventId == eventId).ToList();
+		await UserController.StartConnection();
+		await UserController.GetAll();
+		allUsers = UserController.messages.ToList();
+		allManagers = allUsers.Where(u => u.Role.Title == Entities.Roles["Manager"]).ToList();
 
 		await EventManagerController.ConfigureHub(token);
 		await EventManagerController.StartConnection();
 		await EventManagerController.GetAll();
 		allEventManagers = EventManagerController.messages.ToList();
 		eventManagers = allEventManagers.Where(t => t.EventId == eventId).ToList();
-
-		await EventTaskEvaluateUserController.ConfigureHub(token);
-		await EventTaskEvaluateUserController.StartConnection();
-		await EventTaskEvaluateUserController.GetAll();
-		allEventTaskEvaluateUsers = EventTaskEvaluateUserController.messages.ToList();
-		eventTaskEvaluateUsers = allEventTaskEvaluateUsers.Where(t => t.EventTask.EventId == eventId).ToList();
 
 		loaded = true;
 		StateHasChanged();
@@ -179,14 +168,14 @@ else
 
 	private async Task AddTasksModal()
 	{
-		foreach (TaskModel poolTask in selectedTasksInPool)
+		foreach (User poolItem in selectedManagersInPool)
 		{
-			EventTask newTask = new EventTask() { };
-			newTask.EventId = eventId;
-			newTask.TaskId = poolTask.Id;
-			await EventTaskController.Create(newTask);
+			EventManager newItem = new EventManager() { };
+			newItem.EventId = eventId;
+			newItem.UserId = poolItem.Id;
+			await EventManagerController.Create(newItem);
 		}
-		await EventTaskController.GetAll();
+		await EventManagerController.GetAll();
 		allEventTasks = EventTaskController.messages.ToList();
 		eventTasks = allEventTasks.Where(t => t.EventId == eventId).ToList();
 		StateHasChanged();
