@@ -148,8 +148,10 @@ public partial class CompetitionBdTestContext : DbContext
             entity.Property(e => e.ParticipantId).HasColumnName("participant_id");
             entity.Property(e => e.StatusId).HasColumnName("status_id");
             entity.Property(e => e.TeamId).HasColumnName("team_id");
+			entity.Property(e => e.IsActive).HasColumnName("is_active");
+			entity.Property(e => e.IsApplied).HasColumnName("is_applied");
 
-            entity.HasOne(d => d.Event).WithMany(p => p.EventParticipantTeams)
+			entity.HasOne(d => d.Event).WithMany(p => p.EventParticipantTeams)
                 .HasForeignKey(d => d.EventId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_team-participant_event");
@@ -507,7 +509,7 @@ public partial class CompetitionBdTestContext : DbContext
             entity.Property(e => e.Password)
                 .HasMaxLength(250)
                 .HasColumnName("password");
-            entity.Property(e => e.RoleId).HasColumnName("role_id");
+			entity.Property(e => e.RoleId).HasColumnName("role_id");
             entity.Property(e => e.StatusId).HasColumnName("status_id");
             entity.Property(e => e.TwitterUserId)
                 .HasMaxLength(50)

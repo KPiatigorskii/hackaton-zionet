@@ -10,9 +10,9 @@ namespace MsSqlAccessor.Hubs
     {
         private const string GetAllRoles = "admin,manager,participant";
         private const string GetOneRoles = "admin,manager,participant";
-        private const string UpdateRoles = "admin";
-        private const string CreateRoles = "admin";
-        private const string DeleteRoles = "admin";
+        private const string UpdateRoles = "admin,manager";
+        private const string CreateRoles = "admin,manager,participant";
+        private const string DeleteRoles = "admin,manager,participant";
         private const string ForceDeleteRoles = "admin";
 
 
@@ -32,6 +32,15 @@ namespace MsSqlAccessor.Hubs
             await Clients.Caller.SendAsync("ReceiveGetAll", dtoItems);
         }
 
+        [HubMethodName("GetAllWithConditions")]
+        [Authorize(Roles = GetAllRoles)]
+        public async Task GetAllWithConditions(Dictionary<string, object> filters)
+        {
+            var dtoItems = await _dbController.GetAllWithConditions(filters);
+
+            await Clients.Caller.SendAsync("ReceiveGetAll", dtoItems);
+        }
+
         [HubMethodName("GetOne")]
         [Authorize(Roles = GetOneRoles)]
         public async Task GetOne(int id)
@@ -43,14 +52,24 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.ItemNotFound)
-                {
-                    throw new HubException(Errors.ItemNotFound);
-                }
-                else
-                {
-                    throw new HubException(Errors.General);
-                }
+                throw new HubException(ex.Message);
+            }
+            //await Task.Delay(1000);
+            await Clients.Caller.SendAsync("ReceiveGetOne", dtoItem);
+        }
+
+        [HubMethodName("GetOneWithConditions")]
+        [Authorize(Roles = GetOneRoles)]
+        public async Task GetOneWithConditions(Dictionary<string, object> filters)
+        {
+            TmodelDTO dtoItem;
+            try
+            {
+                dtoItem = await _dbController.GetOneWithConditions(filters);
+            }
+            catch (Exception ex)
+            {
+                throw new HubException(ex.Message);
             }
             //await Task.Delay(1000);
             await Clients.Caller.SendAsync("ReceiveGetOne", dtoItem);
@@ -70,22 +89,7 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.NotAuthorizedByEmail)
-                {
-                    throw new HubException(Errors.NotAuthorizedByEmail);
-                }
-                if (ex.Message == Errors.ItemNotFound)
-                {
-                    throw new HubException(Errors.ItemNotFound);
-                }
-                if (ex.Message == Errors.BadRequest)
-                {
-                    throw new HubException(Errors.BadRequest);
-                }
-                else
-                {
-                    throw new HubException(Errors.General);
-                }
+                throw new HubException(ex.Message);
             }
 
             await Clients.Caller.SendAsync("ReceiveUpdate", dtoItemResult);
@@ -105,18 +109,7 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.NotAuthorizedByEmail)
-                {
-                    throw new HubException(Errors.NotAuthorizedByEmail);
-                }
-                if (ex.Message == Errors.ConflictData)
-                {
-                    throw new HubException(Errors.ConflictData);
-                }
-                else
-                {
-                    throw new HubException(Errors.General);
-                }
+                throw new HubException(ex.Message);
             }
 
             await Clients.Caller.SendAsync("ReceiveCreate", dtoItemResult);
@@ -136,18 +129,7 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.NotAuthorizedByEmail)
-                {
-                    throw new HubException(Errors.NotAuthorizedByEmail);
-                }
-                if (ex.Message == Errors.ConflictData)
-                {
-                    throw new HubException(Errors.ConflictData);
-                }
-                else
-                {
-                    throw new HubException(Errors.General);
-                }
+                throw new HubException(ex.Message);
             }
 
             await Clients.Caller.SendAsync("ReceiveDelete", dtoItemResult);
@@ -167,18 +149,7 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.NotAuthorizedByEmail)
-                {
-                    throw new HubException(Errors.NotAuthorizedByEmail);
-                }
-                if (ex.Message == Errors.ConflictData)
-                {
-                    throw new HubException(Errors.ConflictData);
-                }
-                else
-                {
-                    throw new HubException(Errors.General);
-                }
+                throw new HubException(ex.Message);
             }
 
 

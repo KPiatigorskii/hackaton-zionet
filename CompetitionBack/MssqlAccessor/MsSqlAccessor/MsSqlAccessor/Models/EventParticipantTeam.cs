@@ -20,7 +20,11 @@ public partial class EventParticipantTeam : IdModel
 
     public int StatusId { get; set; }
 
-    public virtual Event Event { get; set; } = null!;
+	public bool IsActive { get; set; } = false;
+
+	public bool IsApplied { get; set; } = false;
+
+	public virtual Event Event { get; set; } = null!;
 
     public virtual User Participant { get; set; } = null!;
 

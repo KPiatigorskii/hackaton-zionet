@@ -82,12 +82,9 @@ builder.Services
         {
             OnTokenValidated = async (context) =>
             {
-
-
                 var token = context.SecurityToken.RawHeader+ "." + 
                 context.SecurityToken.RawPayload + "." + context.SecurityToken.RawSignature;
                 var email = context.Principal.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
-
 
                 var claims = new List<Claim>
                     {
@@ -102,18 +99,15 @@ builder.Services
                     SameSite = SameSiteMode.Strict
                 });
 
-
                 var AuthenticationController = context.HttpContext.RequestServices.GetRequiredService<AuthClientController<User>>();
                 AuthenticationController.ConfigureHub(token);
-
                 await AuthenticationController.StartConnection();
                 await AuthenticationController.Get(email);
                 var existedUser = AuthenticationController.message;
-                if (existedUser.Id == 0) 
+                if (existedUser.Id == 0)
                 {
                     var user = new User
                     {
-
                         Email = email,
                         CreateDate = DateTime.Now,
                         UpdateDate = DateTime.Now,
@@ -127,8 +121,31 @@ builder.Services
 
                     };
                     await AuthenticationController.Register(user);
-                } 
-            },
+                }
+                else
+                {
+					var EventParticipantTeamController = context.HttpContext.RequestServices.GetRequiredService<GenClientController<EventParticipantTeam>>();
+					Dictionary<string, object> currentEventIdFilter = new Dictionary<string, object>() { { "ParticipantId", existedUser.Id }, { "IsActive", true } };
+                    await EventParticipantTeamController.ConfigureHub(token);
+                    await EventParticipantTeamController.StartConnection();
+                    await EventParticipantTeamController.GetAllWithConditions(currentEventIdFilter);
+                    if (EventParticipantTeamController.messages.Count() > 0)
+                    {
+						var currentEventId = EventParticipantTeamController.messages.First().EventId;
+						var isLeader = EventParticipantTeamController.messages.First().IsLeader;
+                        var isActive = EventParticipantTeamController.messages.First().IsActive;
+						var additionalClaims = new List<Claim>
+					        {
+						        new Claim("currentEventId", currentEventId.ToString()),
+						        new Claim("isLeader", isLeader.ToString()),
+								new Claim("isActive", isActive.ToString())
+							};
+						appIdentity = new ClaimsIdentity(additionalClaims, CookieAuthenticationDefaults.AuthenticationScheme);
+						context.Principal.AddIdentity(appIdentity);
+					}
+
+				}
+			},
 
             OnTicketReceived = notification =>
             {

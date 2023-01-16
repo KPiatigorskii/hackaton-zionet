@@ -47,4 +47,8 @@
     <PackageReference Include="TweetinviAPI.AspNetPlugin" Version="5.0.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Pages\Новая папка\" />
+  </ItemGroup>
+
 </Project>
