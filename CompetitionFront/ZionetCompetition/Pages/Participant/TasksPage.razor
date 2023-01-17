@@ -112,6 +112,14 @@ else
 						<DataGridColumn TItem="TeamTask" Field="Task.HasBonus" Caption="HasBonus" Sortable="false" Displayable="true" Editable />
 						<DataGridColumn TItem="TeamTask" Field="Task.BonusExtraTime" Caption="BonusExtraTime" Sortable="true" Displayable="true" Editable />
 						<DataGridColumn TItem="TeamTask" Field="Task.BonusPoints" Caption="BonusPoints" Sortable="false" Displayable="true" Editable />
+						<DataGridColumn TItem="TeamTask" Caption="Get help" Sortable="false" Displayable="true">
+							<DisplayTemplate>
+								@if (ParticipantTasks.Any(e => e.ParticipantUserId == userId && e.TeamTaskId == context.Id))
+								{
+									<Button Color="Color.Primary" @onclick="() => GetHelp(context.TaskId)">Get Help</Button>
+								}
+							</DisplayTemplate>
+						</DataGridColumn>
 						<DataGridColumn Caption="Join to Task" Sortable="false" Displayable="true">
 								<DisplayTemplate>
 								@if (!ParticipantTasks.Any(e => e.ParticipantUserId == userId && e.TeamTaskId == context.Id))
@@ -275,6 +283,11 @@ else
 		ParticipantTasks = TaskParticipantController.messages.ToList();
 		StateHasChanged();
 
+	}
+
+	public async void GetHelp(int taskId)
+	{
+		// HELP MEEEEE!!!
 	}
 
 	public void OnSelectedTabChanged()
