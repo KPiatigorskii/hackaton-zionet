@@ -24,7 +24,7 @@ public partial class TeamTask
 
     public virtual Status Status { get; set; } = null!;
 
-    public virtual Task Task { get; set; } = null!;
+    public virtual TaskModel Task { get; set; } = null!;
 
     public virtual TaskStatus TaskStatusNavigation { get; set; } = null!;
 
