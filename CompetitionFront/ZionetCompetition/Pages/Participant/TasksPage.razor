@@ -7,12 +7,12 @@
 @using Blazorise.DataGrid
 
 @inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
-@inject ZionetCompetition.Controllers.GenClientController<TaskModel> TaskController
-@inject ZionetCompetition.Controllers.GenClientController<EventTask> EventTaskController
 @inject ZionetCompetition.Controllers.AuthClientController<User> AuthController
-@inject ZionetCompetition.Controllers.GenClientController<EventManager> EventManagerController
-@inject ZionetCompetition.Controllers.GenClientController<EventTaskEvaluateUser> EventTaskEvaluateUserController
+@inject ZionetCompetition.Controllers.GenClientController<EventTask> EventTaskController
+@inject ZionetCompetition.Controllers.GenClientController<TeamTask> TeamTaskController
 @inject ZionetCompetition.Controllers.GenClientController<EventParticipantTeam> EventParticipantTeamController
+@inject ZionetCompetition.Controllers.GenClientController<TaskParticipant> TaskParticipantController
+@inject ZionetCompetition.Controllers.GenClientController<ZionetCompetition.Models.TaskStatus> TaskStatusController
 @inject NavigationManager Navigation
 @inject ZionetCompetition.Services.TokenService TokenService
 
@@ -25,99 +25,297 @@
 }
 else
 {
-	<DataGrid TItem="EventTask"
-		  Data="@eventTasks"
-		  @bind-SelectedRow=selectedTask
-		  Filterable="true"
-		  FilterMethod="DataGridFilterMethod.Contains"
-		  Striped="true"
-		  Editable="false"
-		  Hoverable="true"
-		  Responsive="true"
-		  ShowPager="true"
-		  ShowPageSizes="true"
-		  SelectionMode="DataGridSelectionMode.Single" >
-		<ChildContent>
-			<DataGridColumn TItem="EventTask" Field="Task.Id" Caption="Id" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="EventTask" Field="Task.Title" Caption="Title" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="EventTask" Field="Task.Category.Title" Caption="Category" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="EventTask" Field="Task.Language" Caption="Language" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="EventTask" Field="Task.Platform" Caption="Platform" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="EventTask" Field="Task.Duration" Caption="Duration" Sortable="true" Displayable="true" Editable />
-			<DataGridColumn TItem="EventTask" Field="Task.Points" Caption="Points" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="EventTask" Field="Task.HasBonus" Caption="HasBonus" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="EventTask" Field="Task.BonusExtraTime" Caption="BonusExtraTime" Sortable="true" Displayable="true" Editable />
-			<DataGridColumn TItem="EventTask" Field="Task.BonusPoints" Caption="BonusPoints" Sortable="false" Displayable="true" Editable />
-		</ChildContent>
+	<Tabs RenderMode="TabsRenderMode.LazyReload" SelectedTabChanged="@OnSelectedTabChanged">
 
-		<EmptyTemplate>
-			<div class="box">
-				No records were found.
-			</div>
-		</EmptyTemplate>
+		 <Items>
+            <Tab Name="All Tasks">All Tasks</Tab>
+            <Tab Name="Team Tasks">Team Tasks</Tab>
+        </Items>
+			<Content>
+			<TabPanel Name="All Tasks">
+				<DataGrid TItem="EventTask"
+					  Data="@allEventTasks"
+					  @bind-SelectedRow=selectedTask
+					  Filterable="true"
+					  FilterMethod="DataGridFilterMethod.Contains"
+					  Striped="true"
+					  Editable="false"
+					  Hoverable="true"
+					  Responsive="true"
+					  ShowPager="true"
+					  ShowPageSizes="true"
+					  SelectionMode="DataGridSelectionMode.Single">
+					<ChildContent>
+						<DataGridColumn TItem="EventTask" Field="Task.Id" Caption="Id" Sortable="false" Displayable="true" Editable />
+						<DataGridColumn TItem="EventTask" Field="Task.Title" Caption="Title" Sortable="false" Displayable="true" Editable />
+						<DataGridColumn TItem="EventTask" Field="Task.Category.Title" Caption="Category" Sortable="false" Displayable="true" Editable />
+						<DataGridColumn TItem="EventTask" Field="Task.Language" Caption="Language" Sortable="false" Displayable="true" Editable />
+						<DataGridColumn TItem="EventTask" Field="Task.Platform" Caption="Platform" Sortable="false" Displayable="true" Editable />
+						<DataGridColumn TItem="EventTask" Field="Task.Duration" Caption="Duration" Sortable="true" Displayable="true" Editable />
+						<DataGridColumn TItem="EventTask" Field="Task.Points" Caption="Points" Sortable="false" Displayable="true" Editable />
+						<DataGridColumn TItem="EventTask" Field="Task.HasBonus" Caption="HasBonus" Sortable="false" Displayable="true" Editable />
+						<DataGridColumn TItem="EventTask" Field="Task.BonusExtraTime" Caption="BonusExtraTime" Sortable="true" Displayable="true" Editable />
+						<DataGridColumn TItem="EventTask" Field="Task.BonusPoints" Caption="BonusPoints" Sortable="false" Displayable="true" Editable />
+						@if (isLeader)
+						{
+							<DataGridColumn Caption="Take a Task" Sortable="false" Displayable="true">
+								<DisplayTemplate>
+									@if (!allTeamTasks.Any(e => e.TaskId == @context.TaskId))
+									{
+										<Button Color="Color.Primary" @onclick="() => TakeTask(context.TaskId)" Displayable="() => ">Take a Task</Button>
+									}
+									else
+									{
+										<p>@context.Task.Status.Title</p>
+									}
 
-		<LoadingTemplate>
-			<div class="box">
-				<progress class="progress is-small is-primary" max="100" />
-			</div>
-		</LoadingTemplate>
-	</DataGrid>
+								</DisplayTemplate>
+							</DataGridColumn>
+						}
+
+
+					</ChildContent>
+
+					<EmptyTemplate>
+						<div class="box">
+							No records were found.
+						</div>
+					</EmptyTemplate>
+
+					<LoadingTemplate>
+						<div class="box">
+							<progress class="progress is-small is-primary" max="100" />
+						</div>
+					</LoadingTemplate>
+				</DataGrid>
+			</TabPanel>
+			<TabPanel Name="Team Tasks">
+				<DataGrid TItem="TeamTask"
+					  Data="@allTeamTasks"
+					  @bind-SelectedRow=selectedTeamTask
+					  Filterable="true"
+					  FilterMethod="DataGridFilterMethod.Contains"
+					  Striped="true"
+					  Editable="false"
+					  Hoverable="true"
+					  Responsive="true"
+					  ShowPager="true"
+					  ShowPageSizes="true"
+					  SelectionMode="DataGridSelectionMode.Single">
+					<ChildContent>
+						<DataGridColumn TItem="TeamTask" Field="Id" Caption="TeamTaskId" Sortable="false" Displayable="true" Editable />
+						<DataGridColumn TItem="TeamTask" Field="Task.Title" Caption="Title" Sortable="false" Displayable="true" Editable />
+						<DataGridColumn TItem="TeamTask" Field="Task.Category.Title" Caption="Category" Sortable="false" Displayable="true" Editable />
+						<DataGridColumn TItem="TeamTask" Field="Task.Language" Caption="Language" Sortable="false" Displayable="true" Editable />
+						<DataGridColumn TItem="TeamTask" Field="Task.Platform" Caption="Platform" Sortable="false" Displayable="true" Editable />
+						<DataGridColumn TItem="TeamTask" Field="Task.Duration" Caption="Duration" Sortable="true" Displayable="true" Editable />
+						<DataGridColumn TItem="TeamTask" Field="Task.Points" Caption="Points" Sortable="false" Displayable="true" Editable />
+						<DataGridColumn TItem="TeamTask" Field="Task.BonusExtraTime" Caption="BonusExtraTime" Sortable="true" Displayable="true" Editable />
+						<DataGridColumn TItem="TeamTask" Field="Task.BonusPoints" Caption="BonusPoints" Sortable="false" Displayable="true" Editable />
+						<DataGridColumn TItem="TeamTask" Caption="Get help" Sortable="false" Displayable="true">
+							<DisplayTemplate>
+								@if (ParticipantTasks.Any(e => e.ParticipantUserId == userId && e.TeamTaskId == context.Id)
+										&& context.TaskStatusNavigation.Id == 1)
+								{
+									<Button Color="Color.Primary" @onclick="() => GetHelp(context.TaskId)">Get Help</Button>
+								}
+							</DisplayTemplate>
+						</DataGridColumn>
+						<DataGridColumn Caption="Join to Task" Sortable="false" Displayable="true">
+								<DisplayTemplate>
+								@if (!ParticipantTasks.Any(e => e.ParticipantUserId == userId && e.TeamTaskId == context.Id)
+									&& context.TaskStatusNavigation.Id == 1)
+								{
+									<Button Color="Color.Primary" @onclick="() => JoinTask(context.TaskId)">Join to Task</Button>
+								}
+								@if (ParticipantTasks.Any(e => e.ParticipantUserId == userId && e.TeamTaskId == context.Id) && context.TaskStatusNavigation.Id == 1)
+								{
+									<Button Color="Color.Danger" @onclick="() => UnJoinTask(context.TaskId)">Stop task</Button>
+								}
+							</DisplayTemplate>
+						</DataGridColumn>
+						<DataGridColumn Caption="Send Task" Sortable="false" Displayable="true">
+							<DisplayTemplate>
+								@if (@context.TaskStatus == 1 && ParticipantTasks.Any(e => e.ParticipantUserId == userId && e.TeamTaskId == context.Id)) // in progress
+								{
+									<Button Color="Color.Primary" @onclick="() => SendTask(context.TaskId)" Displayable="() => ">Send Task</Button>
+								}
+								else
+								{
+								<p>@context.TaskStatusNavigation.Title</p>
+								}
+
+								</DisplayTemplate>
+							</DataGridColumn>
+
+
+
+					</ChildContent>
+
+					<EmptyTemplate>
+						<div class="box">
+							No records were found.
+						</div>
+					</EmptyTemplate>
+
+					<LoadingTemplate>
+						<div class="box">
+							<progress class="progress is-small is-primary" max="100" />
+						</div>
+					</LoadingTemplate>
+				</DataGrid>
+			</TabPanel>
+			</Content>
+		</Tabs>
+	if (hasTeamId)
+	{
+		
+	}
 }
 
 @code {
 	private Modal modalRef;
 	private EventTask selectedTask;
+	private TeamTask selectedTeamTask;
 	private TaskModel selectedTaskInPool;
-	private List<TaskModel> allTasks = new List<TaskModel> { };
 	private List<EventTask> allEventTasks = new List<EventTask> { };
-	private List<EventTask> eventTasks = new List<EventTask> { };
-	private List<EventManager> allEventManagers = new List<EventManager> { };
-	private List<EventManager> eventManagers = new List<EventManager> { };
-	private List<EventTaskEvaluateUser> allEventTaskEvaluateUsers = new List<EventTaskEvaluateUser> { };
-	private List<EventTaskEvaluateUser> eventTaskEvaluateUsers = new List<EventTaskEvaluateUser> { };
+	private List<EventTask> allEventTeamTasks = new List<EventTask> { };
+	private List<TeamTask> allTeamTasks = new List<TeamTask> { };
+
+	private List<TaskParticipant> ParticipantTasks = new List<TaskParticipant> {};
+	private List<ZionetCompetition.Models.TaskStatus> allTaskStatuses = new List<ZionetCompetition.Models.TaskStatus> { };
 	private int currentEventId;
 	private bool loaded = false;
+	private bool hasTeamId = false;
+	private bool isActive = false;
+	private bool isLeader = false;
+	private bool isApplied = false;
+	private int userId;
+	private int teamId;
+	private Dictionary<string, object> currentTasksFromTeamTasksFilter;
+	private Dictionary<string, object> currentTasksFromEventFilter;
+	private Dictionary<string, object> currentTasksParticipantFilter;
+
 
 	protected override async Task OnInitializedAsync()
 	{
 
+		var claims = HttpContextAccessor.HttpContext.User.Claims;
 		var token = await TokenService.GetToken();
 		// get Id by email
-		var email = HttpContextAccessor.HttpContext.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
+		var email = claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
+		isLeader = Boolean.Parse(claims.FirstOrDefault(e => e.Type == "isLeader").Value);
 		AuthController.ConfigureHub(token);
 		await AuthController.StartConnection();
 		await AuthController.Get(email);
-		var userId = AuthController.message.Id;
+		userId = AuthController.message.Id;
+		currentEventId = int.Parse(claims.FirstOrDefault(e => e.Type == "currentEventId").Value);
+		isActive = Boolean.Parse(claims.FirstOrDefault(e => e.Type == "isActive").Value);
+		isApplied = Boolean.Parse(claims.FirstOrDefault(e => e.Type == "isApplied").Value);
+		if (isActive && isApplied)
+		{
+			//get all task from this event
+			currentTasksFromEventFilter = new Dictionary<string, object>() { { "EventId", currentEventId } };
+			await EventTaskController.ConfigureHub(token);
+			await EventTaskController.StartConnection();
+			await EventTaskController.GetAllWithConditions(currentTasksFromEventFilter);
+			allEventTasks = EventTaskController.messages.ToList();
+			//get all active task of this team
+			try
+			{
+				teamId = int.Parse(claims.FirstOrDefault(e => e.Type == "currentTeamId").Value);
+			}
+			catch (Exception)
+			{
+				teamId = 0;
+			}
 
-		// get currentEventId
-		Dictionary<string, object> currentEventIdFilter = new Dictionary<string, object>() { { "participantId", userId }, { "is_active", true } };
-		await EventParticipantTeamController.ConfigureHub(token);
-		await EventParticipantTeamController.StartConnection();
-		await EventParticipantTeamController.GetOneWithConditions(currentEventIdFilter);
-		currentEventId = EventParticipantTeamController.message.EventId;
+			if (teamId > 0)
+			{
+				hasTeamId = true;
+				currentTasksFromTeamTasksFilter = new Dictionary<string, object>() { { "TeamId",teamId } };
+				await TeamTaskController.ConfigureHub(token);
+				await TeamTaskController.StartConnection();
+				await TeamTaskController.GetAllWithConditions(currentTasksFromTeamTasksFilter);
+				allTeamTasks = TeamTaskController.messages.ToList();
 
-		//get all task from this event
-		Dictionary<string, object> currentTasksFromEventFilter = new Dictionary<string, object>() { { "eventId", currentEventId }};
-		await EventTaskController.ConfigureHub(token);
-		await EventTaskController.StartConnection();
-		await EventTaskController.GetOneWithConditions(currentTasksFromEventFilter);
-		allEventTasks = EventTaskController.messages.ToList();
+				// filter
+				currentTasksParticipantFilter = new Dictionary<string, object>() { { "ParticipantUserId" , userId } };
+				await TaskParticipantController.ConfigureHub(token);
+				await TaskParticipantController.StartConnection();
+				await TaskParticipantController.GetAllWithConditions(currentTasksParticipantFilter);
+				ParticipantTasks = TaskParticipantController.messages.ToList();
+			}
 
+
+		}
 		loaded = true;
 		StateHasChanged();
 	}
 
-	public void ApplyTask()
+	public async Task TakeTask(int taskId)
 	{
-		//	
+		Dictionary<string, object> currentTasksFromTeamTasksFilter = new Dictionary<string, object>() { { "TeamId", teamId } };
+		await TeamTaskController.Create(new TeamTask {TaskId = taskId, TeamId = teamId, TaskStatus = 1 });
+		await TeamTaskController.GetAllWithConditions(currentTasksFromTeamTasksFilter);
+		allTeamTasks = TeamTaskController.messages.ToList();
+		StateHasChanged();
+	}
+
+	public async void SendTask(int taskId)
+	{
+		var updatedTeamTask = allTeamTasks.FirstOrDefault(e => e.TaskId == taskId && e.TeamId == teamId);
+		updatedTeamTask.TaskStatus = 3;
+		await TeamTaskController.Update(updatedTeamTask.Id, updatedTeamTask);
+		await TeamTaskController.GetAllWithConditions(currentTasksFromTeamTasksFilter);
+		allTeamTasks = TeamTaskController.messages.ToList();
+		StateHasChanged();
+
+	}
+
+	public async void JoinTask(int taskId)
+	{
+
+		var teamTaskId = allTeamTasks.FirstOrDefault(e => e.TaskId == taskId && e.TeamId == teamId).Id;
+		var newTaskParticipant = new TaskParticipant
+			{
+				TeamTaskId = teamTaskId,
+				ParticipantUserId = userId,
+				StatusId = 1,
+			};
+		await TaskParticipantController.Create(newTaskParticipant);
+		currentTasksParticipantFilter = new Dictionary<string, object>() { { "ParticipantUserId", userId } };
+		await TaskParticipantController.GetAllWithConditions(currentTasksParticipantFilter);
+		ParticipantTasks = TaskParticipantController.messages.ToList();
+		StateHasChanged();
+
+	}
+
+	public async void UnJoinTask(int taskId)
+	{
+		var teamTaskId = allTeamTasks.FirstOrDefault(e => e.TaskId == taskId && e.TeamId == teamId).Id;
+		var taskParticipantId = ParticipantTasks.FirstOrDefault(e => e.TeamTaskId == teamTaskId && e.ParticipantUserId == userId).Id;
+
+		await TaskParticipantController.Delete(taskParticipantId);
+		currentTasksParticipantFilter = new Dictionary<string, object>() { { "ParticipantUserId", userId } };
+		await TaskParticipantController.GetAllWithConditions(currentTasksParticipantFilter);
+		ParticipantTasks = TaskParticipantController.messages.ToList();
+		StateHasChanged();
+	}
+
+	public async void GetHelp(int taskId)
+	{
+		// HELP MEEEEE!!!
+	}
+
+	public void OnSelectedTabChanged()
+	{
+		
 	}
 
 	public async ValueTask DisposeAsync()
 	{
-		await TaskController.DisposeAsync();
 		await EventTaskController.DisposeAsync();
-		await EventManagerController.DisposeAsync();
-		await EventTaskEvaluateUserController.DisposeAsync();
 	}
 
 }	
