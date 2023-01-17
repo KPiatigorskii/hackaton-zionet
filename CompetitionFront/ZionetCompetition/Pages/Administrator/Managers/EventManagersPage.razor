@@ -1,4 +1,4 @@
-﻿@*@using System;
+﻿@using System;
 @using System.Globalization;
 @using System.Reflection;
 @using Microsoft.AspNetCore.SignalR.Client
@@ -6,6 +6,7 @@
 @using Blazorise.DataGrid
 
 @inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
+@inject ZionetCompetition.Controllers.GenClientController<Role> RoleController
 @inject ZionetCompetition.Controllers.GenClientController<User> UserController
 @inject ZionetCompetition.Controllers.GenClientController<EventManager> EventManagerController
 @inject NavigationManager Navigation
@@ -20,9 +21,9 @@
 }
 else
 {
-	<DataGrid TItem="EventTask"
-		  Data="@eventTasks"
-		  @bind-SelectedRow=selectedTask
+	<DataGrid TItem="EventManager"
+		  Data="@eventManagers"
+		  @bind-SelectedRow=selectedManager
 		  RowRemoved="@Delete"
 		  Filterable="true"
 		  FilterMethod="DataGridFilterMethod.Contains"
@@ -43,16 +44,12 @@ else
 					<Button ElementId="btnCancel" Color="Color.Secondary" Clicked="@context.Clicked">@context.LocalizationString</Button>
 				</CancelCommandTemplate>
 			</DataGridCommandColumn>
-			<DataGridColumn TItem="EventTask" Field="Task.Id" Caption="Id" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="EventTask" Field="Task.Title" Caption="Title" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="EventTask" Field="Task.Category.Title" Caption="Category" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="EventTask" Field="Task.Language" Caption="Language" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="EventTask" Field="Task.Platform" Caption="Platform" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="EventTask" Field="Task.Duration" Caption="Duration" Sortable="true" Displayable="true" Editable />
-			<DataGridColumn TItem="EventTask" Field="Task.Points" Caption="Points" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="EventTask" Field="Task.HasBonus" Caption="HasBonus" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="EventTask" Field="Task.BonusExtraTime" Caption="BonusExtraTime" Sortable="true" Displayable="true" Editable />
-			<DataGridColumn TItem="EventTask" Field="Task.BonusPoints" Caption="BonusPoints" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="EventManager" Field="User.Id" Caption="Id" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="EventManager" Field="User.FirstName" Caption="Firstname" Sortable="true" Displayable="true" Editable />
+			<DataGridColumn TItem="EventManager" Field="User.LastName" Caption="Lastname" Sortable="true" Displayable="true" Editable />
+			<DataGridColumn TItem="EventManager" Field="User.Email" Caption="Email" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="EventManager" Field="User.Github" Caption="Github" Sortable="true" Displayable="true" Editable />
+			<DataGridColumn TItem="EventManager" Field="User.Role.Title" Caption="Role" Sortable="true" Displayable="true" Editable />
 		</ChildContent>
 
 		<EmptyTemplate>
@@ -69,7 +66,7 @@ else
 
 		<ButtonRowTemplate>
 			<Button Color="Color.Success" Clicked="@ShowModal">Add</Button>
-			<Button Color="Color.Danger" Disabled="(selectedTask is null)" Clicked="context.DeleteCommand.Clicked">Delete</Button>
+			<Button Color="Color.Danger" Disabled="(selectedManager is null)" Clicked="context.DeleteCommand.Clicked">Delete</Button>
 		</ButtonRowTemplate>
 	</DataGrid>
 
@@ -80,11 +77,11 @@ else
 				<CloseButton />
 			</ModalHeader>
 			<ModalBody>
-				<DataGrid TItem="TaskModel"
-					  Data="@allTasks"
+				<DataGrid TItem="User"
+					  Data="@allManagers"
 					  SelectionMode="DataGridSelectionMode.Multiple"
-					  @bind-SelectedRow=selectedTaskInPool
-					  @bind-SelectedRows="selectedTasksInPool"
+					  @bind-SelectedRow=selectedManagerInPool
+					  @bind-SelectedRows="selectedManagersInPool"
 					  Filterable="true"
 					  FilterMethod="DataGridFilterMethod.Contains"
 					  Striped="true"
@@ -94,25 +91,21 @@ else
 					  ShowPager="true"
 					  ShowPageSizes="true"
 					  RowSelectable="RowSelectableHandler" >
-					<DataGridMultiSelectColumn TItem="TaskModel" Width="30px"></DataGridMultiSelectColumn>
-					<DataGridCommandColumn TItem="TaskModel" />
-					
-						<DataGridColumn TItem="TaskModel" Field="Id" Caption="Id" Sortable="true" Displayable="true" Editable />
-						<DataGridColumn TItem="TaskModel" Field="Title" Caption="Title" Sortable="true" Displayable="true" Editable />
-						<DataGridColumn TItem="TaskModel" Field="Category.Title" Caption="Category" Sortable="true" Displayable="true" Editable />
-						<DataGridColumn TItem="TaskModel" Field="Language" Caption="Language" Sortable="true" Displayable="true" Editable />
-						<DataGridColumn TItem="TaskModel" Field="Platform" Caption="Platform" Sortable="true" Displayable="true" Editable />
-						<DataGridColumn TItem="TaskModel" Field="Duration" Caption="Duration" Sortable="true" Displayable="true" Editable />
-						<DataGridColumn TItem="TaskModel" Field="Points" Caption="Points" Sortable="true" Displayable="true" Editable />
-						<DataGridColumn TItem="TaskModel" Field="HasBonus" Caption="HasBonus" Sortable="true" Displayable="true" Editable />
-						<DataGridColumn TItem="TaskModel" Field="BonusExtraTime" Caption="BonusExtraTime" Sortable="true" Displayable="true" Editable />
-						<DataGridColumn TItem="TaskModel" Field="BonusPoints" Caption="BonusPoints" Sortable="true" Displayable="true" Editable />
+					<DataGridMultiSelectColumn TItem="User" Width="30px"></DataGridMultiSelectColumn>
+					<DataGridCommandColumn TItem="User" />
+
+					<DataGridColumn TItem="User" Field="Id" Caption="Id" Sortable="false" Displayable="true" Editable />
+					<DataGridColumn TItem="User" Field="FirstName" Caption="Firstname" Sortable="true" Displayable="true" Editable />
+					<DataGridColumn TItem="User" Field="LastName" Caption="Lastname" Sortable="true" Displayable="true" Editable />
+					<DataGridColumn TItem="User" Field="Email" Caption="Email" Sortable="false" Displayable="true" Editable />
+					<DataGridColumn TItem="User" Field="Github" Caption="Github" Sortable="true" Displayable="true" Editable />
+					<DataGridColumn TItem="User" Field="Role.Title" Caption="Role" Sortable="true" Displayable="true" Editable />
 					
 				</DataGrid>
 			</ModalBody>
 			<ModalFooter>
 				<Button Color="Color.Secondary" Clicked="@HideModal">Close</Button>
-				<Button Color="Color.Primary" Disabled="(selectedTasksInPool is null)" Clicked="@AddTasksModal">Add</Button>
+				<Button Color="Color.Primary" Disabled="(selectedManagersInPool is null)" Clicked="@AddTasksModal">Add</Button>
 			</ModalFooter>
 		</ModalContent>
 	</Modal>
@@ -127,32 +120,33 @@ else
 	private User selectedManagerInPool;
 	private List<User> selectedManagersInPool;
 
-	private List<User> allUsers = new List<User> { };
+	//private List<User> allUsers = new List<User> { };
 	private List<User> allManagers = new List<User> { };
 
-	private List<EventManager> allEventManagers = new List<EventManager> { };
+	//private List<EventManager> allEventManagers = new List<EventManager> { };
 	private List<EventManager> eventManagers = new List<EventManager> { };
 	private bool loaded = false;
 
 	protected override async Task OnInitializedAsync()
 	{
+		//var filtersM = new Dictionary<string, object>() { { "Role.Title", Entities.Roles["Manager"] } };
+		var filtersM = new Dictionary<string, object>() { { "RoleId", 2 } };
+		var filtersEM = new Dictionary<string, object>() { { "EventId", eventId } };
+
 		var token = await TokenService.GetToken();
 
 		await UserController.ConfigureHub(token);
 		await UserController.StartConnection();
-		await UserController.GetAll();
-		allUsers = UserController.messages.ToList();
-		allManagers = allUsers.Where(u => u.Role.Title == Entities.Roles["Manager"]).ToList();
+		await UserController.GetAllWithConditions(filtersM);
+		allManagers = UserController.messages.ToList();
 
 		await EventManagerController.ConfigureHub(token);
 		await EventManagerController.StartConnection();
-		await EventManagerController.GetAll();
-		allEventManagers = EventManagerController.messages.ToList();
-		eventManagers = allEventManagers.Where(t => t.EventId == eventId).ToList();
+		await EventManagerController.GetAllWithConditions(filtersEM);
+		eventManagers = EventManagerController.messages.ToList();
 
 		loaded = true;
 		StateHasChanged();
-		await base.OnInitializedAsync();
 	}
 
 	private Task ShowModal()
@@ -168,6 +162,8 @@ else
 
 	private async Task AddTasksModal()
 	{
+		var filtersEM = new Dictionary<string, object>() { { "EventId", eventId } };
+
 		foreach (User poolItem in selectedManagersInPool)
 		{
 			EventManager newItem = new EventManager() { };
@@ -175,19 +171,18 @@ else
 			newItem.UserId = poolItem.Id;
 			await EventManagerController.Create(newItem);
 		}
-		await EventManagerController.GetAll();
-		allEventTasks = EventTaskController.messages.ToList();
-		eventTasks = allEventTasks.Where(t => t.EventId == eventId).ToList();
+		await EventManagerController.GetAllWithConditions(filtersEM);
+		eventManagers = EventManagerController.messages.ToList();
 		StateHasChanged();
-		selectedTasksInPool = null;
-		await modalRef.Hide(); // modalRef.Show();
+		selectedManagersInPool = null;
+		await modalRef.Hide();
 		return;
 	}
 
 	private void sortTask()
 	{
-		allTasks = TaskController.messages.ToList();
-		allTasks.RemoveAll(t => eventTasks.Select(e => e.TaskId).Contains(t.Id));
+		allManagers = UserController.messages.ToList();
+		allManagers.RemoveAll(m => eventManagers.Select(e => e.UserId).Contains(m.Id));
 		StateHasChanged();
 	}
 
@@ -199,22 +194,19 @@ else
 	//	StateHasChanged();
 	//}
 
-	private bool RowSelectableHandler(RowSelectableEventArgs<TaskModel> rowSelectableEventArgs)
+	private bool RowSelectableHandler(RowSelectableEventArgs<User> rowSelectableEventArgs)
 	=> rowSelectableEventArgs.SelectReason is not DataGridSelectReason.RowClick;
 
-	private async void Delete(EventTask rowRemoved)
+	private async void Delete(EventManager rowRemoved)
 	{
-		await EventTaskController.Delete(rowRemoved.Id);
+		await EventManagerController.Delete(rowRemoved.Id);
 		StateHasChanged();
 	}
 
 	public async ValueTask DisposeAsync()
 	{
-		await TaskController.DisposeAsync(); 
-		await EventTaskController.DisposeAsync();			
+		await UserController.DisposeAsync();
 		await EventManagerController.DisposeAsync();
-		await EventTaskEvaluateUserController.DisposeAsync();
 	}
 	
 }	
-*@
