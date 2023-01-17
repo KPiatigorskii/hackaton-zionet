@@ -155,45 +155,16 @@ else
     string selectedTab = "Info";
     private bool loaded = false;
 
-    //private List<User> teamList;
-    //private string? userInput;
-    //private int? userId;
-    //private string? messageInput;
-    
-
     private Event selectedEvent = new Event { };
-
-    //private List<EventParticipantTeam> allEventParticipantTeams = new List<EventParticipantTeam> { };
-    //private List<EventParticipantTeam> eventParticipantTeams = new List<EventParticipantTeam> { };
-    //private List<Team> allTeams = new List<Team> { };
-    //private List<Team> eventTeams = new List<Team> { };
 
     protected override async Task OnInitializedAsync()
     {
-        //var filtersUET = new Dictionary<string, object>() { { "EventId", id } };
-        //var filtersE = new Dictionary<string, object>() { { "Id", id } };
-
         var token =await TokenService.GetToken();
 
         await EventController.ConfigureHub(token);
         await EventController.StartConnection();
         await EventController.Get(id);
-        //await EventController.GetOneWithConditions(filtersE);
         selectedEvent = EventController.message;
-
-        //await UserEventTeamController.ConfigureHub(token);
-        //await UserEventTeamController.StartConnection();
-        ////await UserEventTeamController.GetAll();
-        //await UserEventTeamController.GetAllWithConditions(filtersUET);
-        //eventParticipantTeams = UserEventTeamController.messages.ToList();
-        //allEventParticipantTeams = UserEventTeamController.messages.ToList();
-        //eventParticipantTeams = allEventParticipantTeams.Where(t => t.EventId == id).ToList();
-
-        //await TeamController.ConfigureHub(token);
-        //await TeamController.StartConnection();
-        //await TeamController.GetAll();
-        //allTeams = TeamController.messages.ToList();
-        //eventTeams = allTeams.Where(t => t.EventId == id).ToList();
 
         loaded = true;
         //Counter();
@@ -220,29 +191,6 @@ else
     {
         Navigation.NavigateTo("/Events/" + id + "/edit");
     }
-
-    //private async Task Create()
-    //{
-    //    if (hubConnection is not null)
-    //    {
-    //        await hubConnection.SendAsync("Create");
-    //    }
-    //}
-
-    //private async Task Delete()
-    //{
-    //    if (hubConnection is not null)
-    //    {
-    //        await hubConnection.SendAsync("ForceDeleteOne", id);
-    //        Navigation.NavigateTo("/events/");
-    //    }
-    //}
-
-    //private async Task DeleteEvent()
-    //{
-
-    //}
-
 
     public async ValueTask DisposeAsync()
     {

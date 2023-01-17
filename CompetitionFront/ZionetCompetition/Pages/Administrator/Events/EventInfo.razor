@@ -158,21 +158,6 @@ else
 		</Column>
 	</Row>
 }
-@*<tbody>
-    @foreach (var property in typeof(Event).GetProperties())
-    {
-        @if (property.IsDefined(typeof(CustomAttribute), false))
-        {
-            <tr>
-                <td>@property.Name &nbsp;&nbsp;</td>
-                <td>@selectedEvent.GetType().GetProperty(property.Name).GetValue(selectedEvent)</td>
-            </tr>
-        }
-    }
-    <div style="margin-top: 20px">
-        <Button Color="Color.Primary" @onclick="EditEvent">Edit</Button>
-    </div>
-</tbody>*@
 @code {
 	[Inject]
 	IMessageService MessageService { get; set; }
