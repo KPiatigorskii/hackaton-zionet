@@ -223,7 +223,7 @@ else
 			//get all active task of this team
 			try
 			{
-				teamId = int.Parse(claims.FirstOrDefault(e => e.Type == "teamId").Value);
+				teamId = int.Parse(claims.FirstOrDefault(e => e.Type == "currentTeamId").Value);
 			}
 			catch (Exception)
 			{
