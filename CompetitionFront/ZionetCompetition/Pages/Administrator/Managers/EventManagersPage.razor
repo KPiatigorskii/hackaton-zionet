@@ -45,10 +45,10 @@ else
 				</CancelCommandTemplate>
 			</DataGridCommandColumn>
 			<DataGridColumn TItem="EventManager" Field="User.Id" Caption="Id" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="EventManager" Field="User.FirstName" Caption="Firstname" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="EventManager" Field="User.LastName" Caption="Lastname" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="EventManager" Field="User.FirstName" Caption="Firstname" Sortable="true" Displayable="true" Editable />
+			<DataGridColumn TItem="EventManager" Field="User.LastName" Caption="Lastname" Sortable="true" Displayable="true" Editable />
 			<DataGridColumn TItem="EventManager" Field="User.Email" Caption="Email" Sortable="false" Displayable="true" Editable />
-			<DataGridColumn TItem="EventManager" Field="User.Github" Caption="Github" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="EventManager" Field="User.Github" Caption="Github" Sortable="true" Displayable="true" Editable />
 			<DataGridColumn TItem="EventManager" Field="User.Role.Title" Caption="Role" Sortable="true" Displayable="true" Editable />
 		</ChildContent>
 
@@ -91,19 +91,15 @@ else
 					  ShowPager="true"
 					  ShowPageSizes="true"
 					  RowSelectable="RowSelectableHandler" >
-					<DataGridMultiSelectColumn TItem="TaskModel" Width="30px"></DataGridMultiSelectColumn>
-					<DataGridCommandColumn TItem="TaskModel" />
-					
-						<DataGridColumn TItem="TaskModel" Field="Id" Caption="Id" Sortable="true" Displayable="true" Editable />
-						<DataGridColumn TItem="TaskModel" Field="Title" Caption="Title" Sortable="true" Displayable="true" Editable />
-						<DataGridColumn TItem="TaskModel" Field="Category.Title" Caption="Category" Sortable="true" Displayable="true" Editable />
-						<DataGridColumn TItem="TaskModel" Field="Language" Caption="Language" Sortable="true" Displayable="true" Editable />
-						<DataGridColumn TItem="TaskModel" Field="Platform" Caption="Platform" Sortable="true" Displayable="true" Editable />
-						<DataGridColumn TItem="TaskModel" Field="Duration" Caption="Duration" Sortable="true" Displayable="true" Editable />
-						<DataGridColumn TItem="TaskModel" Field="Points" Caption="Points" Sortable="true" Displayable="true" Editable />
-						<DataGridColumn TItem="TaskModel" Field="HasBonus" Caption="HasBonus" Sortable="true" Displayable="true" Editable />
-						<DataGridColumn TItem="TaskModel" Field="BonusExtraTime" Caption="BonusExtraTime" Sortable="true" Displayable="true" Editable />
-						<DataGridColumn TItem="TaskModel" Field="BonusPoints" Caption="BonusPoints" Sortable="true" Displayable="true" Editable />
+					<DataGridMultiSelectColumn TItem="User" Width="30px"></DataGridMultiSelectColumn>
+					<DataGridCommandColumn TItem="User" />
+
+					<DataGridColumn TItem="User" Field="Id" Caption="Id" Sortable="false" Displayable="true" Editable />
+					<DataGridColumn TItem="User" Field="FirstName" Caption="Firstname" Sortable="true" Displayable="true" Editable />
+					<DataGridColumn TItem="User" Field="LastName" Caption="Lastname" Sortable="true" Displayable="true" Editable />
+					<DataGridColumn TItem="User" Field="Email" Caption="Email" Sortable="false" Displayable="true" Editable />
+					<DataGridColumn TItem="User" Field="Github" Caption="Github" Sortable="true" Displayable="true" Editable />
+					<DataGridColumn TItem="User" Field="Role.Title" Caption="Role" Sortable="true" Displayable="true" Editable />
 					
 				</DataGrid>
 			</ModalBody>
@@ -133,7 +129,8 @@ else
 
 	protected override async Task OnInitializedAsync()
 	{
-		var filtersM = new Dictionary<string, object>() { { "Role.Title", Entities.Roles["Manager"] } };
+		//var filtersM = new Dictionary<string, object>() { { "Role.Title", Entities.Roles["Manager"] } };
+		var filtersM = new Dictionary<string, object>() { { "RoleId", 2 } };
 		var filtersEM = new Dictionary<string, object>() { { "EventId", eventId } };
 
 		var token = await TokenService.GetToken();
