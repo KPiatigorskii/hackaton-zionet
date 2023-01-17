@@ -12,6 +12,7 @@
 @inject ZionetCompetition.Controllers.GenClientController<TeamTask> TeamTaskController
 @inject ZionetCompetition.Controllers.GenClientController<EventParticipantTeam> EventParticipantTeamController
 @inject ZionetCompetition.Controllers.GenClientController<TaskParticipant> TaskParticipantController
+@inject ZionetCompetition.Controllers.GenClientController<ZionetCompetition.Models.TaskStatus> TaskStatusController
 @inject NavigationManager Navigation
 @inject ZionetCompetition.Services.TokenService TokenService
 
@@ -65,7 +66,7 @@ else
 									}
 									else
 									{
-										<p>Already taken</p>
+										<p>@context.Task.Status.Title</p>
 									}
 
 								</DisplayTemplate>
@@ -102,19 +103,19 @@ else
 					  ShowPageSizes="true"
 					  SelectionMode="DataGridSelectionMode.Single">
 					<ChildContent>
-						<DataGridColumn TItem="TeamTask" Field="Task.Id" Caption="Id" Sortable="false" Displayable="true" Editable />
+						<DataGridColumn TItem="TeamTask" Field="Id" Caption="TeamTaskId" Sortable="false" Displayable="true" Editable />
 						<DataGridColumn TItem="TeamTask" Field="Task.Title" Caption="Title" Sortable="false" Displayable="true" Editable />
 						<DataGridColumn TItem="TeamTask" Field="Task.Category.Title" Caption="Category" Sortable="false" Displayable="true" Editable />
 						<DataGridColumn TItem="TeamTask" Field="Task.Language" Caption="Language" Sortable="false" Displayable="true" Editable />
 						<DataGridColumn TItem="TeamTask" Field="Task.Platform" Caption="Platform" Sortable="false" Displayable="true" Editable />
 						<DataGridColumn TItem="TeamTask" Field="Task.Duration" Caption="Duration" Sortable="true" Displayable="true" Editable />
 						<DataGridColumn TItem="TeamTask" Field="Task.Points" Caption="Points" Sortable="false" Displayable="true" Editable />
-						<DataGridColumn TItem="TeamTask" Field="Task.HasBonus" Caption="HasBonus" Sortable="false" Displayable="true" Editable />
 						<DataGridColumn TItem="TeamTask" Field="Task.BonusExtraTime" Caption="BonusExtraTime" Sortable="true" Displayable="true" Editable />
 						<DataGridColumn TItem="TeamTask" Field="Task.BonusPoints" Caption="BonusPoints" Sortable="false" Displayable="true" Editable />
 						<DataGridColumn TItem="TeamTask" Caption="Get help" Sortable="false" Displayable="true">
 							<DisplayTemplate>
-								@if (ParticipantTasks.Any(e => e.ParticipantUserId == userId && e.TeamTaskId == context.Id))
+								@if (ParticipantTasks.Any(e => e.ParticipantUserId == userId && e.TeamTaskId == context.Id)
+										&& context.TaskStatusNavigation.Id == 1)
 								{
 									<Button Color="Color.Primary" @onclick="() => GetHelp(context.TaskId)">Get Help</Button>
 								}
@@ -122,23 +123,27 @@ else
 						</DataGridColumn>
 						<DataGridColumn Caption="Join to Task" Sortable="false" Displayable="true">
 								<DisplayTemplate>
-								@if (!ParticipantTasks.Any(e => e.ParticipantUserId == userId && e.TeamTaskId == context.Id))
+								@if (!ParticipantTasks.Any(e => e.ParticipantUserId == userId && e.TeamTaskId == context.Id)
+									&& context.TaskStatusNavigation.Id == 1)
 								{
 									<Button Color="Color.Primary" @onclick="() => JoinTask(context.TaskId)">Join to Task</Button>
+								}
+								@if (ParticipantTasks.Any(e => e.ParticipantUserId == userId && e.TeamTaskId == context.Id) && context.TaskStatusNavigation.Id == 1)
+								{
+									<Button Color="Color.Danger" @onclick="() => UnJoinTask(context.TaskId)">Stop task</Button>
 								}
 							</DisplayTemplate>
 						</DataGridColumn>
 						<DataGridColumn Caption="Send Task" Sortable="false" Displayable="true">
 							<DisplayTemplate>
-								@if (@context.Status.Id == 1 && ParticipantTasks.Any(e => e.ParticipantUserId == userId && e.TeamTaskId == context.Id)) // in progress
+								@if (@context.TaskStatus == 1 && ParticipantTasks.Any(e => e.ParticipantUserId == userId && e.TeamTaskId == context.Id)) // in progress
 								{
-
-										<Button Color="Color.Primary" @onclick="() => SendTask(context.TaskId)" Displayable="() => ">Send Task</Button>
-									}
-									else
-									{
-									<p>@context.Status.Title</p>
-									}
+									<Button Color="Color.Primary" @onclick="() => SendTask(context.TaskId)" Displayable="() => ">Send Task</Button>
+								}
+								else
+								{
+								<p>@context.TaskStatusNavigation.Title</p>
+								}
 
 								</DisplayTemplate>
 							</DataGridColumn>
@@ -178,6 +183,7 @@ else
 	private List<TeamTask> allTeamTasks = new List<TeamTask> { };
 
 	private List<TaskParticipant> ParticipantTasks = new List<TaskParticipant> {};
+	private List<ZionetCompetition.Models.TaskStatus> allTaskStatuses = new List<ZionetCompetition.Models.TaskStatus> { };
 	private int currentEventId;
 	private bool loaded = false;
 	private bool hasTeamId = false;
@@ -258,9 +264,9 @@ else
 
 	public async void SendTask(int taskId)
 	{
-		var updatedTask = allTeamTasks.FirstOrDefault(e => e.TaskId == taskId);
-		updatedTask.StatusId = 3; // 
-		await TeamTaskController.Update(taskId, updatedTask);
+		var updatedTeamTask = allTeamTasks.FirstOrDefault(e => e.TaskId == taskId && e.TeamId == teamId);
+		updatedTeamTask.TaskStatus = 3;
+		await TeamTaskController.Update(updatedTeamTask.Id, updatedTeamTask);
 		await TeamTaskController.GetAllWithConditions(currentTasksFromTeamTasksFilter);
 		allTeamTasks = TeamTaskController.messages.ToList();
 		StateHasChanged();
@@ -283,6 +289,18 @@ else
 		ParticipantTasks = TaskParticipantController.messages.ToList();
 		StateHasChanged();
 
+	}
+
+	public async void UnJoinTask(int taskId)
+	{
+		var teamTaskId = allTeamTasks.FirstOrDefault(e => e.TaskId == taskId && e.TeamId == teamId).Id;
+		var taskParticipantId = ParticipantTasks.FirstOrDefault(e => e.TeamTaskId == teamTaskId && e.ParticipantUserId == userId).Id;
+
+		await TaskParticipantController.Delete(taskParticipantId);
+		currentTasksParticipantFilter = new Dictionary<string, object>() { { "ParticipantUserId", userId } };
+		await TaskParticipantController.GetAllWithConditions(currentTasksParticipantFilter);
+		ParticipantTasks = TaskParticipantController.messages.ToList();
+		StateHasChanged();
 	}
 
 	public async void GetHelp(int taskId)
