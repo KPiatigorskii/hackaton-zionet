@@ -225,7 +225,7 @@ else
 		if (await ValidationsRef.ValidateAll())
 		{
 			await EventController.Update(id, selectedEvent);
-			await MessageService.Info("The Event added complitely");
+			await MessageService.Info("The Event was changed");
 			await ValidationsRef.ClearAll();
 			Toggle();
 		}
