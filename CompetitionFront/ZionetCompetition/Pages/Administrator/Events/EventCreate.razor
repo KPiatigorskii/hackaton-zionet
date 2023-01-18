@@ -141,6 +141,7 @@ else
         newEvent.IsEnable = false;
 
         await EventController.Create(newEvent);
+        Navigation.NavigateTo("/Events");
     }
 
     Task OnCheckedValueChanged(int value)
