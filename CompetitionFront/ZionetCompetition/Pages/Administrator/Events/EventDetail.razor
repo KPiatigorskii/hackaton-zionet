@@ -47,6 +47,7 @@ else
             <Tab Name="Participants">Participants</Tab>
             <Tab Name="Tasks">Tasks</Tab>
             <Tab Name="Managers">Managers</Tab>
+            <Tab Name="Participant for apply">Participant for apply</Tab>
         </Items>
         <Content>
             <TabPanel Name="Info">
@@ -69,78 +70,8 @@ else
                 <EventManagersPage eventId="@id" />
             </TabPanel>
 
-            <TabPanel Name="Managers1">
-                @*<DataGrid TItem="User"
-                          Data="@teamUsers"
-                          Filterable="true"
-                          FilterMethod="DataGridFilterMethod.Contains"
-                          ShowPager="true"
-                          ShowPageSizes="true"
-                          EditMode="DataGridEditMode.Popup"
-                          CommandMode="DataGridCommandMode.ButtonRow"
-                          Editable="false"
-                          Striped="true"
-                          Hoverable="true"
-                          SelectionMode="DataGridSelectionMode.Single"
-                          Responsive="true"
-                          @bind-SelectedRow=selectedUser>
-                    <DataGridColumns>
-                        <DataGridCommandColumn TItem="TaskModel" NewCommandAllowed="false" EditCommandAllowed="false" DeleteCommandAllowed="false">
-                            <SaveCommandTemplate>
-                                <Button ElementId="btnSave" Type="ButtonType.Submit" PreventDefaultOnSubmit Color="Color.Success" Clicked="@context.Clicked">@context.LocalizationString</Button>
-                            </SaveCommandTemplate>
-                            <CancelCommandTemplate>
-                                <Button ElementId="btnCancel" Color="Color.Secondary" Clicked="@context.Clicked">@context.LocalizationString</Button>
-                            </CancelCommandTemplate>
-                        </DataGridCommandColumn>
-                        <DataGridColumn TItem="User" Field="Id" Caption="Id" Sortable="false" Displayable="true">
-                            <DisplayTemplate>
-                                <NavLink href="@($"/Users/{context.Id}")">@context.Id</NavLink>
-                            </DisplayTemplate>
-                        </DataGridColumn>
-                        <DataGridColumn Caption="Name" Sortable="false" Displayable="true" Editable>
-                            <DisplayTemplate>
-                                @{
-                                    var fullName = (context as User)?.FirstName.ToString() + " " + (context as User)?.LastName.ToString();
-
-                                    if (fullName != " ")
-                                    {
-                                        @($"{fullName}")
-                                    }
-                                }
-                            </DisplayTemplate>
-                            <EditTemplate>
-                                <Select TValue="string">
-                                    @foreach(var user in teamUsers)
-                                    {
-                                        if (user.RoleId == 2) // TODO fix the hardcode
-                                        {
-                                            <SelectItem Value="@user.Id">@user.FirstName @user.LastName</SelectItem>
-                                        }
-                                    }
-                                </Select>
-                            </EditTemplate>
-                        </DataGridColumn>
-                        <DataGridColumn TItem="User" Field="Email" Caption="Email" Sortable="false" Displayable="true" />
-                        <DataGridColumn TItem="User" Field="Github" Caption="Github" Sortable="true" Displayable="true" />
-                    </DataGridColumns>
-
-                    <EmptyTemplate>
-                        <div class="box">
-                            No records were found.
-                        </div>
-                    </EmptyTemplate>
-                    <LoadingTemplate>
-                        <div class="box">
-                            <progress class="progress is-small is-primary" max="100" />
-                        </div>
-                    </LoadingTemplate>
-                    <ButtonRowTemplate>
-                        <Button Color="Color.Success" Clicked="context.NewCommand.Clicked">New</Button>
-                        <Button Color="Color.Danger" Disabled="(selectedTask is null)" Clicked="context.DeleteCommand.Clicked">Delete</Button>
-                    </ButtonRowTemplate>
-
-                </DataGrid>*@
+            <TabPanel Name="Participant for apply">
+                <ParticipantForAppyPage eventId="@id" />
             </TabPanel>
             
         </Content>
