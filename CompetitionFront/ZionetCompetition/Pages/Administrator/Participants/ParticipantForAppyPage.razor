@@ -4,11 +4,13 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @using ZionetCompetition.Models
 @using Blazorise.DataGrid
+@using ZionetCompetition.Services;
 
 @inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
 @inject ZionetCompetition.Controllers.GenClientController<Team> TeamController
 @inject ZionetCompetition.Controllers.GenClientController<User> UserController
 @inject ZionetCompetition.Controllers.GenClientController<EventParticipantTeam> EventParticipantTeamController
+@inject FlagService flagService
 @inject NavigationManager Navigation
 @inject ZionetCompetition.Services.TokenService TokenService
 
@@ -43,7 +45,7 @@
                         <DataGridColumn TItem="User" Field="Login" Caption="Login" Sortable="true" Displayable="true" />
                         <DataGridColumn TItem="User" Caption="Apply" Displayable="true">
                             <DisplayTemplate>
-                <Button Color="Color.Primary" @onclick="() => AppyParticipant(context.Id)">Apply</Button>
+                                <Button Color="Color.Primary" @onclick="() => AppyParticipant(context.Id)">Apply</Button>
                             </DisplayTemplate>
                         </DataGridColumn>
                     </DataGridColumns>
@@ -82,6 +84,7 @@
     private async Task AppyParticipant(int ParticipantId)
     {
         participantForAppy = eventParticipantTeams.FirstOrDefault(e => e.ParticipantId == ParticipantId);
+        await flagService.ResetActive(ParticipantId);
         participantForAppy.IsApplied = true;
         participantForAppy.IsActive = true;
         await EventParticipantTeamController.Update(participantForAppy.Id, participantForAppy);
