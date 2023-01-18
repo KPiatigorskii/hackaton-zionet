@@ -43,7 +43,8 @@ namespace ZionetCompetition.Controllers
                         {
                             options.AccessTokenProvider = () => Task.FromResult(tokenString);
                         })
-                .Build();
+				.WithAutomaticReconnect()
+				.Build();
 
 
             hubConnection.On<List<User>>("ReceiveGetAll", (users) =>

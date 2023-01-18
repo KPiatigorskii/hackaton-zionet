@@ -48,7 +48,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Pages\Новая папка\" />
+    <Folder Include="wwwroot\src\tasks\" />
+    <Folder Include="wwwroot\src\" />
   </ItemGroup>
 
 </Project>

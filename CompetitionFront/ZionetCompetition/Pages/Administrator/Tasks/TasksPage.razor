@@ -6,12 +6,16 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @using ZionetCompetition.Models
 @using Blazorise.DataGrid
+@using Microsoft.AspNetCore.Components.Forms
 
 @inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
 @inject ZionetCompetition.Controllers.GenClientController<TaskModel> TaskController
 @inject ZionetCompetition.Controllers.GenClientController<TaskCategory> TaskCategoryController
 @inject NavigationManager Navigation
 @inject ZionetCompetition.Services.TokenService TokenService
+
+@inject IJSRuntime JSRuntime
+
 
 
 @implements IAsyncDisposable
@@ -101,6 +105,15 @@ else
 				</EditTemplate>*@
 			</DataGridNumericColumn>
 
+			<DataGridColumn TItem="TaskModel" Field="TaskBody" Caption="Description" Sortable="true" Displayable="true" Editable>
+				<DisplayTemplate>
+					<Button Color="Color.Primary" @onclick="() => DownloadTask(context.TaskBody)">Download Task</Button>
+				</DisplayTemplate>
+				<EditTemplate>
+					<InputFile OnChange="@HandleFileChange" />
+				</EditTemplate>
+			</DataGridColumn>
+
 		</ChildContent>
 
 		<EmptyTemplate>
@@ -131,6 +144,13 @@ else
 	private List<TaskCategory> allTaskCategoryes = new List<TaskCategory> { };
 	private bool loaded = false;
 
+	private List<IBrowserFile> loadedFiles = new();
+	private long maxFileSize = 1024 * 15;
+	private int maxAllowedFiles = 3;
+	private bool isLoading;
+	private string filePathName;
+	private InputFileChangeEventArgs inputFileChangeEventArgs;
+
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -160,6 +180,8 @@ else
 	private async void Create(SavedRowItem<TaskModel, Dictionary<string, object>> rowInserted)
 	{
 		var newItem = rowInserted.Item;
+		await SaveFile();
+		newItem.TaskBody = filePathName;
 		await TaskController.Create(newItem);
 		allTasks.RemoveAt(allTasks.Count - 1);
 		allTasks.Add(TaskController.message);
@@ -169,6 +191,8 @@ else
 	private async void Update(SavedRowItem<TaskModel, Dictionary<string, object>> rowUpdated)
 	{
 		var chengedItem = rowUpdated.Item;
+		await SaveFile();
+		chengedItem.TaskBody = filePathName;
 		await TaskController.Update(chengedItem.Id, chengedItem);
 		StateHasChanged();
 	}
@@ -177,6 +201,34 @@ else
 	{
 		await TaskController.Delete(rowRemoved.Id);
 		StateHasChanged();
+	}
+
+	private async Task HandleFileChange(InputFileChangeEventArgs e)
+	{
+		inputFileChangeEventArgs = e;
+	}
+
+	private async Task SaveFile()
+	{
+		var file = inputFileChangeEventArgs.File;
+		if (file != null)
+		{
+			// The file path can be obtained from the file.Name property
+			Guid uuid = Guid.NewGuid();
+			var filePath = Path.Combine("wwwroot/src/tasks/", uuid + "-" + file.Name);
+			filePathName = filePath;
+
+			Stream stream = file.OpenReadStream();
+			FileStream fs = File.Create(filePath);
+			await stream.CopyToAsync(fs);
+			fs.Close();
+		}
+	}
+
+	public async Task DownloadTask(string filePath)
+	{
+		var redirectUrl = Navigation.BaseUri + filePath.Remove(0, 8);
+		await JSRuntime.InvokeVoidAsync("open", redirectUrl, "_blank");
 	}
 
 	public async ValueTask DisposeAsync()

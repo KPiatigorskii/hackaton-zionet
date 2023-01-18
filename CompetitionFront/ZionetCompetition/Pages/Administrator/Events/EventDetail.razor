@@ -10,6 +10,8 @@
 @using ZionetCompetition.Data
 @using Blazorise
 @using System.Linq
+@using ZionetCompetition.Pages.Administrator.Events
+@using ZionetCompetition.Pages.Administrator.Managers
 @using ZionetCompetition.Pages.Administrator.Participants
 @using ZionetCompetition.Pages.Administrator.Tasks
 @using ZionetCompetition.Pages.Administrator.Teams
@@ -45,24 +47,11 @@ else
             <Tab Name="Participants">Participants</Tab>
             <Tab Name="Tasks">Tasks</Tab>
             <Tab Name="Managers">Managers</Tab>
+            <Tab Name="Participant for apply">Participant for apply</Tab>
         </Items>
         <Content>
             <TabPanel Name="Info">
-                <tbody>
-                    @foreach (var property in typeof(Event).GetProperties())
-                    {
-                        @if (property.IsDefined(typeof(CustomAttribute), false))
-                        {
-                            <tr>
-                                <td>@property.Name &nbsp;&nbsp;</td>
-                                <td>@selectedEvent.GetType().GetProperty(property.Name).GetValue(selectedEvent)</td>
-                            </tr>
-                        }
-                    }
-                    <div style="margin-top: 20px">
-                        <Button Color="Color.Primary" @onclick="EditEvent">Edit</Button>
-                    </div>
-                </tbody>
+                <EventInfo id="@id" />
             </TabPanel>
 
             <TabPanel Name="Teams">
@@ -71,84 +60,18 @@ else
 
             <TabPanel Name="Participants">
                 <ParticipantsPage eventId="@id" />
-            </TabPanel>
+            </TabPanel> 
             
             <TabPanel Name="Tasks">
                 <EventTasksPage eventId="@id" />
             </TabPanel>
 
             <TabPanel Name="Managers">
-                <DataGrid TItem="User"
-                          Data="@teamUsers"
-                          Filterable="true"
-                          FilterMethod="DataGridFilterMethod.Contains"
-                          ShowPager="true"
-                          ShowPageSizes="true"
-                          EditMode="DataGridEditMode.Popup"
-                          CommandMode="DataGridCommandMode.ButtonRow"
-                          Editable="false"
-                          Striped="true"
-                          Hoverable="true"
-                          SelectionMode="DataGridSelectionMode.Single"
-                          Responsive="true"
-                          @bind-SelectedRow=selectedUser>
-                    <DataGridColumns>
-@*                        <DataGridCommandColumn TItem="TaskModel" NewCommandAllowed="false" EditCommandAllowed="false" DeleteCommandAllowed="false">
-                            <SaveCommandTemplate>
-                                <Button ElementId="btnSave" Type="ButtonType.Submit" PreventDefaultOnSubmit Color="Color.Success" Clicked="@context.Clicked">@context.LocalizationString</Button>
-                            </SaveCommandTemplate>
-                            <CancelCommandTemplate>
-                                <Button ElementId="btnCancel" Color="Color.Secondary" Clicked="@context.Clicked">@context.LocalizationString</Button>
-                            </CancelCommandTemplate>
-                        </DataGridCommandColumn>*@
-                        <DataGridColumn TItem="User" Field="Id" Caption="Id" Sortable="false" Displayable="true">
-                            <DisplayTemplate>
-                                <NavLink href="@($"/Users/{context.Id}")">@context.Id</NavLink>
-                            </DisplayTemplate>
-                        </DataGridColumn>
-                        <DataGridColumn Caption="Name" Sortable="false" Displayable="true" Editable>
-                            <DisplayTemplate>
-                                @{
-                                    var fullName = (context as User)?.FirstName.ToString() + " " + (context as User)?.LastName.ToString();
+                <EventManagersPage eventId="@id" />
+            </TabPanel>
 
-                                    if (fullName != " ")
-                                    {
-                                        @($"{fullName}")
-                                    }
-                                }
-                            </DisplayTemplate>
-                            <EditTemplate>
-                                <Select TValue="string">
-                                    @foreach(var user in teamUsers)
-                                    {
-                                        if (user.RoleId == 2) // TODO fix the hardcode
-                                        {
-                                            <SelectItem Value="@user.Id">@user.FirstName @user.LastName</SelectItem>
-                                        }
-                                    }
-                                </Select>
-                            </EditTemplate>
-                        </DataGridColumn>
-                        <DataGridColumn TItem="User" Field="Email" Caption="Email" Sortable="false" Displayable="true" />
-                        <DataGridColumn TItem="User" Field="Github" Caption="Github" Sortable="true" Displayable="true" />
-                    </DataGridColumns>
-
-                    <EmptyTemplate>
-                        <div class="box">
-                            No records were found.
-                        </div>
-                    </EmptyTemplate>
-                    <LoadingTemplate>
-                        <div class="box">
-                            <progress class="progress is-small is-primary" max="100" />
-                        </div>
-                    </LoadingTemplate>
-                    <ButtonRowTemplate>
-                        <Button Color="Color.Success" Clicked="context.NewCommand.Clicked">New</Button>
-                        <Button Color="Color.Danger" Disabled="(selectedTask is null)" Clicked="context.DeleteCommand.Clicked">Delete</Button>
-                    </ButtonRowTemplate>
-
-                </DataGrid>
+            <TabPanel Name="Participant for apply">
+                <ParticipantForAppyPage eventId="@id" />
             </TabPanel>
             
         </Content>
@@ -158,107 +81,21 @@ else
 
 @code {
 
-
-    //public IEnumerable<string> teamNames = new List<String> { "DreamTeam", "DreamTeam2", "DreamTeam3", "undefined" };
-    public TaskModel selectedTask;
-
-    public List<User> teamUsers = new List<User>
-        {
-                new User { Id = 1, Email = "email1@example.com", Github = "team1", FirstName = "FirstName1", LastName = "LastName1", Login = "login1",      RoleId = 1, CreateDate = new DateTime(2020, 1, 1), UpdateDate = new DateTime(2020, 2, 1), CreateUserId = 1, UpdateUserId = 1, StatusId = 1 },
-                new User { Id = 2, Email = "email2@example.com", Github = "team1", FirstName = "FirstName2", LastName = "LastName2", Login = "login2",      RoleId = 2, CreateDate = new DateTime(2020, 1, 2), UpdateDate = new DateTime(2020, 2, 2), CreateUserId = 2, UpdateUserId = 2, StatusId = 1 },
-                new User { Id = 3, Email = "email3@example.com", Github = "undefined", FirstName = "FirstName3", LastName = "LastName3", Login = "login3",  RoleId = 3, CreateDate = new DateTime(2020, 1, 3), UpdateDate = new DateTime(2020, 2, 3), CreateUserId = 3, UpdateUserId = 3, StatusId = 1 },
-                new User { Id = 4, Email = "email4@example.com", Github = "team1", FirstName = "FirstName4", LastName = "LastName4", Login = "login4",      RoleId = 4, CreateDate = new DateTime(2020, 1, 4), UpdateDate = new DateTime(2020, 2, 4), CreateUserId = 4, UpdateUserId = 4, StatusId = 1 },
-                new User { Id = 5, Email = "email5@example.com", Github = "team1", FirstName = "FirstName5", LastName = "LastName5", Login = "login5",      RoleId = 3, CreateDate = new DateTime(2020, 1, 5), UpdateDate = new DateTime(2020, 2, 5), CreateUserId = 5, UpdateUserId = 5, StatusId = 1 },
-                new User { Id = 6, Email = "email6@example.com", Github = "team2", FirstName = "FirstName6", LastName = "LastName6", Login = "login6",      RoleId = 3, CreateDate = new DateTime(2020, 1, 6), UpdateDate = new DateTime(2020, 2, 6), CreateUserId = 6, UpdateUserId = 6, StatusId = 2 },
-                new User { Id = 7, Email = "email7@example.com", Github = "undefined", FirstName = "FirstName7", LastName = "LastName7", Login = "login7",  RoleId = 3, CreateDate = new DateTime(2020, 1, 7), UpdateDate= new DateTime(2020, 2, 7), CreateUserId = 7, UpdateUserId = 7, StatusId = 2 },
-                new User { Id = 8, Email = "email8@example.com", Github = "team2", FirstName = "FirstName8", LastName = "LastName8", Login = "login8",      RoleId = 2, CreateDate = new DateTime(2020, 1, 8), UpdateDate = new DateTime(2020, 2, 8), CreateUserId = 8, UpdateUserId = 8, StatusId = 2 },
-                new User { Id = 9, Email = "email9@example.com", Github = "team2", FirstName = "FirstName9", LastName = "LastName9", Login = "login9",      RoleId = 2, CreateDate = new DateTime(2020, 1, 9), UpdateDate = new DateTime(2020, 2, 9), CreateUserId = 9, UpdateUserId = 9, StatusId = 2 },
-                new User { Id = 11, Email = "email11@example.com", Github = "team3", FirstName = "FirstName11", LastName = "LastName11", Login = "login11",  RoleId = 2, CreateDate = new DateTime(2020, 1, 11), UpdateDate = new DateTime(2020, 2, 11), CreateUserId = 11, UpdateUserId = 11, StatusId = 3 },
-                new User { Id = 12, Email = "email12@example.com", Github = "undefined", FirstName = "FirstName12", LastName = "LastName12", Login = "login12", RoleId = 2, CreateDate = new DateTime(2020, 1, 12), UpdateDate = new DateTime(2020, 2, 12), CreateUserId = 12, UpdateUserId = 12, StatusId = 3 },
-                new User { Id = 13, Email = "email13@example.com", Github = "team3", FirstName = "FirstName13", LastName = "LastName13", Login = "login13", RoleId = 2, CreateDate = new DateTime(2020, 1, 13), UpdateDate = new DateTime(2020, 2, 13), CreateUserId = 13, UpdateUserId = 13, StatusId = 3 },
-                new User { Id = 14, Email = "email14@example.com", Github = "team3", FirstName = "FirstName14", LastName = "LastName14", Login = "login14", RoleId = 2, CreateDate = new DateTime(2020, 1, 14), UpdateDate = new DateTime(2020, 2, 14), CreateUserId = 14, UpdateUserId = 14, StatusId = 3 }
-
-        };
-
-
-    //private List<Team> teams = new List<Team>
-    //{
-    //    new Team(){
-    //        Id = 1,
-    //        Title = "DreamTeam",
-    //        EventId = 1,
-    //        CreateDate = new DateTime(2020, 1, 1),
-    //        UpdateDate = new DateTime(2020, 1, 1),
-    //        CreateUserId = 1,
-    //        UpdateUserId = 1,
-    //        StatusId = 1,
-    //    },
-    //    new Team(){
-    //        Id = 2,
-    //        Title = "DreamTeam2",
-    //        EventId = 1,
-    //        CreateDate = new DateTime(2020, 1, 2),
-    //        UpdateDate = new DateTime(2020, 1, 2),
-    //        CreateUserId = 2,
-    //        UpdateUserId = 2,
-    //        StatusId = 1
-    //    },
-    //    new Team(){
-    //        Id = 3,
-    //        Title = "DreamTeam3",
-    //        EventId = 1,
-    //        CreateDate = new DateTime(2020, 1, 3),
-    //        UpdateDate = new DateTime(2020, 1, 3),
-    //        CreateUserId = 3,
-    //        UpdateUserId = 3,
-    //        StatusId = 1
-    //    }
-    //};
-
     [Parameter]
     public int id { get; set; }
-
-    public User selectedUser;
     string selectedTab = "Info";
-
-    private List<User> teamList;
-    private string? userInput;
-    private int? userId;
-    private string? messageInput;
     private bool loaded = false;
 
     private Event selectedEvent = new Event { };
-    private List<EventParticipantTeam> allEventParticipantTeams = new List<EventParticipantTeam> { };
-    private List<EventParticipantTeam> eventParticipantTeams = new List<EventParticipantTeam> { };
-    private List<Team> allTeams = new List<Team> { };
-    private List<Team> eventTeams = new List<Team> { };
 
     protected override async Task OnInitializedAsync()
     {
-        var filtersUET = new Dictionary<string, object>() { { "EventId", id } };
-        var filtersE = new Dictionary<string, object>() { { "Id", id } };
-
         var token =await TokenService.GetToken();
 
         await EventController.ConfigureHub(token);
         await EventController.StartConnection();
-        //await EventController.Get(id);
-        await EventController.GetOneWithConditions(filtersE);
+        await EventController.Get(id);
         selectedEvent = EventController.message;
-
-        await UserEventTeamController.ConfigureHub(token);
-        await UserEventTeamController.StartConnection();
-        //await UserEventTeamController.GetAll();
-        await UserEventTeamController.GetAllWithConditions(filtersUET);
-        eventParticipantTeams = UserEventTeamController.messages.ToList();
-        //allEventParticipantTeams = UserEventTeamController.messages.ToList();
-        //eventParticipantTeams = allEventParticipantTeams.Where(t => t.EventId == id).ToList();
-
-        await TeamController.ConfigureHub(token);
-        await TeamController.StartConnection();
-        await TeamController.GetAll();
-        allTeams = TeamController.messages.ToList();
-        eventTeams = allTeams.Where(t => t.EventId == id).ToList();
 
         loaded = true;
         //Counter();
@@ -285,29 +122,6 @@ else
     {
         Navigation.NavigateTo("/Events/" + id + "/edit");
     }
-
-    //private async Task Create()
-    //{
-    //    if (hubConnection is not null)
-    //    {
-    //        await hubConnection.SendAsync("Create");
-    //    }
-    //}
-
-    //private async Task Delete()
-    //{
-    //    if (hubConnection is not null)
-    //    {
-    //        await hubConnection.SendAsync("ForceDeleteOne", id);
-    //        Navigation.NavigateTo("/events/");
-    //    }
-    //}
-
-    //private async Task DeleteEvent()
-    //{
-
-    //}
-
 
     public async ValueTask DisposeAsync()
     {
