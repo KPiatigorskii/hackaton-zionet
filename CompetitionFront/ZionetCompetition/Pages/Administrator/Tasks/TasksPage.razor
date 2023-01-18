@@ -14,6 +14,9 @@
 @inject NavigationManager Navigation
 @inject ZionetCompetition.Services.TokenService TokenService
 
+@inject IJSRuntime JSRuntime
+
+
 
 @implements IAsyncDisposable
 
@@ -102,7 +105,10 @@ else
 				</EditTemplate>*@
 			</DataGridNumericColumn>
 
-			<DataGridColumn TItem="TaskModel" Field="TaskBody" Caption="Description" Sortable="true" Displayable="false" Editable>
+			<DataGridColumn TItem="TaskModel" Field="TaskBody" Caption="Description" Sortable="true" Displayable="true" Editable>
+				<DisplayTemplate>
+					<Button Color="Color.Primary" @onclick="() => DownloadTask(context.TaskBody)">Download Task</Button>
+				</DisplayTemplate>
 				<EditTemplate>
 					<InputFile OnChange="@HandleFileChange" />
 				</EditTemplate>
@@ -143,7 +149,7 @@ else
 	private int maxAllowedFiles = 3;
 	private bool isLoading;
 	private string filePathName;
-	//private InputFileChangeEventArgs e;
+	private InputFileChangeEventArgs inputFileChangeEventArgs;
 
 
 	protected override async Task OnInitializedAsync()
@@ -174,6 +180,7 @@ else
 	private async void Create(SavedRowItem<TaskModel, Dictionary<string, object>> rowInserted)
 	{
 		var newItem = rowInserted.Item;
+		await SaveFile();
 		newItem.TaskBody = filePathName;
 		await TaskController.Create(newItem);
 		allTasks.RemoveAt(allTasks.Count - 1);
@@ -184,6 +191,7 @@ else
 	private async void Update(SavedRowItem<TaskModel, Dictionary<string, object>> rowUpdated)
 	{
 		var chengedItem = rowUpdated.Item;
+		await SaveFile();
 		chengedItem.TaskBody = filePathName;
 		await TaskController.Update(chengedItem.Id, chengedItem);
 		StateHasChanged();
@@ -197,20 +205,30 @@ else
 
 	private async Task HandleFileChange(InputFileChangeEventArgs e)
 	{
+		inputFileChangeEventArgs = e;
+	}
+
+	private async Task SaveFile()
+	{
+		var file = inputFileChangeEventArgs.File;
+		if (file != null)
 		{
-			var file = e.File;
-			if (file != null)
-			{
-				// The file path can be obtained from the file.Name property
-				Guid uuid = Guid.NewGuid();
-				var filePath = Path.Combine("wwwroot/src/tasks/", uuid + "-" + file.Name);
-				filePathName = filePath;
-				using (var stream = new FileStream(filePath, FileMode.Create))
-				{
-					file.OpenReadStream().CopyTo(stream);
-				}
-			}
+			// The file path can be obtained from the file.Name property
+			Guid uuid = Guid.NewGuid();
+			var filePath = Path.Combine("wwwroot/src/tasks/", uuid + "-" + file.Name);
+			filePathName = filePath;
+
+			Stream stream = file.OpenReadStream();
+			FileStream fs = File.Create(filePath);
+			await stream.CopyToAsync(fs);
+			fs.Close();
 		}
+	}
+
+	public async Task DownloadTask(string filePath)
+	{
+		var redirectUrl = Navigation.BaseUri + filePath.Remove(0, 8);
+		await JSRuntime.InvokeVoidAsync("open", redirectUrl, "_blank");
 	}
 
 	public async ValueTask DisposeAsync()

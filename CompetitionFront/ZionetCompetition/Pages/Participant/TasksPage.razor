@@ -16,6 +16,8 @@
 @inject NavigationManager Navigation
 @inject ZionetCompetition.Services.TokenService TokenService
 
+@inject IJSRuntime JSRuntime
+
 
 @implements IAsyncDisposable
 
@@ -103,7 +105,11 @@ else
 					  ShowPageSizes="true"
 					  SelectionMode="DataGridSelectionMode.Single">
 					<ChildContent>
-						<DataGridColumn TItem="TeamTask" Field="Id" Caption="TeamTaskId" Sortable="false" Displayable="true" Editable />
+						<DataGridColumn TItem="TeamTask" Field="Id" Caption="Task File" Sortable="false" Displayable="true" Editable >
+							<DisplayTemplate>
+								<Button Color="Color.Primary" @onclick="() => DownloadTask(context.Task.TaskBody)">Download Task</Button>
+							</DisplayTemplate>
+						</DataGridColumn>
 						<DataGridColumn TItem="TeamTask" Field="Task.Title" Caption="Title" Sortable="false" Displayable="true" Editable />
 						<DataGridColumn TItem="TeamTask" Field="Task.Category.Title" Caption="Category" Sortable="false" Displayable="true" Editable />
 						<DataGridColumn TItem="TeamTask" Field="Task.Language" Caption="Language" Sortable="false" Displayable="true" Editable />
@@ -301,6 +307,12 @@ else
 		await TaskParticipantController.GetAllWithConditions(currentTasksParticipantFilter);
 		ParticipantTasks = TaskParticipantController.messages.ToList();
 		StateHasChanged();
+	}
+
+	public async Task DownloadTask(string filePath)
+	{
+		var redirectUrl = Navigation.BaseUri + filePath.Remove(0,8); // delete wwwroot/
+		await JSRuntime.InvokeVoidAsync("open", redirectUrl, "_blank");
 	}
 
 	public async void GetHelp(int taskId)
