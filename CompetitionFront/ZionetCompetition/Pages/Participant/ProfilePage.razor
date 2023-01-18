@@ -200,7 +200,6 @@ else
             currentEventName = "";
         }
     
-        currentEventName =  claims.FirstOrDefault(e => e.Type == "currentEventName").Value;
         token = await TokenService.GetToken();
         // get Id by email
         email = claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;

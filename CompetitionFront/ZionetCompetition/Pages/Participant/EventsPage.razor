@@ -56,7 +56,14 @@ else
 					}
 					else
 					{
-						<p>Awaiting apply...</p>
+						if (eventParticipantTeamList.Any(e => e.EventId == context.Id && e.ParticipantId == userId && e.IsApplied))
+						{
+							<h3><Badge Color="Color.Success">Success</Badge></h3>
+						}
+						else
+						{
+							<p>Awaiting apply...</p>
+						}
 					}
 
 				</DisplayTemplate>

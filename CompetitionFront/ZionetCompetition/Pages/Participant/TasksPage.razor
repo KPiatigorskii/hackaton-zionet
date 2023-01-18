@@ -29,7 +29,9 @@ else
 {
 	if (hasTeamId)
 	{
-		<Div Class="float-end"><b>Team is: </b> <Badge Color="Color.Info">@teamName</Badge></Div>
+		
+		<Span Class="float-end" Margin="Margin.Is3"><b>Team is: </b> <Badge Color="Color.Info">@teamName</Badge></Span>
+		<Span Class="float-end" Visibility="@isLeaderBadge" Margin="Margin.Is3"><Badge Color="Color.Danger">I'm TeamLeader</Badge></Span>
 	<Tabs RenderMode="TabsRenderMode.LazyReload" SelectedTabChanged="@OnSelectedTabChanged">
 
 		 <Items>
@@ -186,7 +188,7 @@ else
 }
 
 @code {
-	private string selectedTab = "Info";
+	private string selectedTab = "All Tasks";
 	private Modal modalRef;
 	private EventTask selectedTask;
 	private TeamTask selectedTeamTask;
@@ -202,6 +204,7 @@ else
 	private bool hasTeamId = false;
 	private bool isActive = false;
 	private bool isLeader = false;
+	private Blazorise.Visibility isLeaderBadge;
 	private bool isApplied = false;
 	private int userId;
 	private int teamId;
@@ -219,6 +222,7 @@ else
 		// get Id by email
 		var email = claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
 		isLeader = Boolean.Parse(claims.FirstOrDefault(e => e.Type == "isLeader").Value);
+		isLeaderBadge = isLeader ? Blazorise.Visibility.Visible : Blazorise.Visibility.Invisible;
 		AuthController.ConfigureHub(token);
 		await AuthController.StartConnection();
 		await AuthController.Get(email);

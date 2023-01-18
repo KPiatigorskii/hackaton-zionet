@@ -17,6 +17,7 @@ using Autofac.Core;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Mvc;
 using TaskStatus = ZionetCompetition.Models.TaskStatus;
+using NuGet.Protocol.Plugins;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,7 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddTransient<TokenService>();
 builder.Services.AddTransient<ErrorService>();
+builder.Services.AddTransient<FlagService>();
 builder.Services.AddTransient<TwitterService>();
 builder.Services.AddTransient<TwitterEngineService>();
 
@@ -129,7 +131,20 @@ builder.Services
                     await EventParticipantTeamController.ConfigureHub(token);
                     await EventParticipantTeamController.StartConnection();
                     await EventParticipantTeamController.GetAllWithConditions(currentEventIdFilter);
-                    if (EventParticipantTeamController.messages.Count() > 0)
+
+					var additionalClaims = new List<Claim>
+							{
+								new Claim("currentEventId", "0"),
+								new Claim("currentEventName", ""),
+								new Claim("isLeader", "false"),
+								new Claim("isActive", "false"),
+								new Claim("currentTeamId", "0"),
+								new Claim("currentTeamName", ""),
+								new Claim("isApplied", "false"),
+							};
+
+
+					if (EventParticipantTeamController.messages.Count() > 0)
                     {
 						var currentEventId = EventParticipantTeamController.messages.First().EventId;
 						var isLeader = EventParticipantTeamController.messages.First().IsLeader;
@@ -143,7 +158,7 @@ builder.Services
                         await EventController.GetOneWithConditions( new Dictionary<string, object>() { { "Id", currentEventId } });
                         var currentEventName = EventController.message.Title;
 
-						var additionalClaims = new List<Claim>
+						additionalClaims = new List<Claim>
 							{
 								new Claim("currentEventId", currentEventId.ToString()),
 								new Claim("currentEventName", currentEventName.ToString()),
@@ -152,7 +167,7 @@ builder.Services
 								new Claim("currentTeamId", currentTeamId.ToString()),
 								new Claim("isApplied", isApplied.ToString()),
 							};
-						
+
 						if (currentTeamId is not null)
                         {
 							var TeamController = context.HttpContext.RequestServices.GetRequiredService<GenClientController<Team>>();
@@ -163,11 +178,9 @@ builder.Services
                             //additionalClaims.Add(new Claim("currentTeamId", currentTeamId.ToString()));
                             additionalClaims.Add(new Claim("currentTeamName", currentTeamName.ToString()));
 						}
-
-						appIdentity = new ClaimsIdentity(additionalClaims, CookieAuthenticationDefaults.AuthenticationScheme);
-						context.Principal.AddIdentity(appIdentity);
 					}
-
+					appIdentity = new ClaimsIdentity(additionalClaims, CookieAuthenticationDefaults.AuthenticationScheme);
+					context.Principal.AddIdentity(appIdentity);
 				}
 			},
 

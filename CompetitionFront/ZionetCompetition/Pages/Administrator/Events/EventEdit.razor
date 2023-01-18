@@ -136,6 +136,7 @@ else
     private async void Save(EditContext editContext)
     {
         await EventController.Update(id, changeEvent);
+        Navigation.NavigateTo("/Events");
     }
 
     Task OnCheckedValueChanged(int value)

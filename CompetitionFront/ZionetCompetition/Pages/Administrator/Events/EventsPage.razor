@@ -65,7 +65,7 @@ else
 		<ButtonRowTemplate>
 			<Button Color="Color.Success" @onclick="Create">New</Button>
 			<Button Color="Color.Primary" Disabled="(selectedEvent is null)">Duplicate</Button>
-			<Button Color="Color.Danger" Disabled="(selectedEvent is null)">Delete</Button>
+			<Button Color="Color.Danger" Disabled="(selectedEvent is null)" @onclick="Delete">Delete</Button>
 		</ButtonRowTemplate>
 	</DataGrid>
 }
@@ -93,6 +93,13 @@ else
 	private void Create()
 	{
 		Navigation.NavigateTo("/Events/Create");
+	}
+	private async Task Delete()
+	{
+		await EventController.Delete(selectedEvent.Id);
+		await EventController.GetAll();
+		messages = EventController.messages;
+		StateHasChanged();
 	}
 
 	public async ValueTask DisposeAsync()
