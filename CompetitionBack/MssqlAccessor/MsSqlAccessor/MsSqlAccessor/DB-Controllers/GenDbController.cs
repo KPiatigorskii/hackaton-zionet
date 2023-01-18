@@ -60,9 +60,6 @@ namespace MsSqlAccessor.DbControllers
                     case "DateTime":
                         filters[item.Key] = DateTime.Parse(item.Value.ToString());
                         break;
-                    case "Boolean":
-                        filters[item.Key] = Boolean.Parse(item.Value.ToString());
-                        break;
                 }
             }
             foreach (var item in filters) //Adding condition to filter
