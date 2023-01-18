@@ -15,7 +15,7 @@ public partial class EventParticipantTeam
 
     public int? TeamId { get; set; }
 
-    public bool? IsLeader { get; set; }
+    public bool? IsLeader { get; set; } = false;
 
     public bool? IsTwitt { get; set; }
 
