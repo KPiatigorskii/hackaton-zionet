@@ -147,7 +147,7 @@ builder.Services
 					if (EventParticipantTeamController.messages.Count() > 0)
                     {
 						var currentEventId = EventParticipantTeamController.messages.First().EventId;
-						var isLeader = EventParticipantTeamController.messages.First().IsLeader ?? false;
+						var isLeader = EventParticipantTeamController.messages.First().IsLeader;
                         var isActive = EventParticipantTeamController.messages.First().IsActive;
                         var currentTeamId = EventParticipantTeamController.messages.First().TeamId;
                         var isApplied = EventParticipantTeamController.messages.First().IsApplied;
