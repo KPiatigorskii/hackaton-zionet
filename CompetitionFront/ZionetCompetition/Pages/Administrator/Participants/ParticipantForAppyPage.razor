@@ -1,0 +1,93 @@
+﻿@using System;
+@using System.Globalization;
+@using System.Reflection;
+@using Microsoft.AspNetCore.SignalR.Client
+@using ZionetCompetition.Models
+@using Blazorise.DataGrid
+
+@inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
+@inject ZionetCompetition.Controllers.GenClientController<Team> TeamController
+@inject ZionetCompetition.Controllers.GenClientController<User> UserController
+@inject ZionetCompetition.Controllers.GenClientController<EventParticipantTeam> EventParticipantTeamController
+@inject NavigationManager Navigation
+@inject ZionetCompetition.Services.TokenService TokenService
+
+<DataGrid TItem="User"
+          Data="@notAppliedParticipants"
+                          Filterable="true"
+                          FilterMethod="DataGridFilterMethod.Contains"
+                          ShowPager="true"
+                          ShowPageSizes="true"
+                          EditMode="DataGridEditMode.Popup"
+                          CommandMode="DataGridCommandMode.ButtonRow"
+                          Editable="false"
+                          Striped="true"
+                          Hoverable="true"
+                          SelectionMode="DataGridSelectionMode.Single"
+                          Responsive="true"
+                          @bind-SelectedRow=selectedUser>
+                    <DataGridColumns>
+                        <DataGridColumn Caption="Name" Sortable="false" Displayable="true" Editable>
+                            <DisplayTemplate>
+                                @{
+                                    var fullName = (context as User)?.FirstName.ToString() + " " + (context as User)?.LastName.ToString();
+
+                                    if (fullName != " ")
+                                    {
+                                        @($"{fullName}")
+                                    }
+                                }
+                            </DisplayTemplate>
+                        </DataGridColumn>
+                        <DataGridColumn TItem="User" Field="Email" Caption="Email" Sortable="false" Displayable="true" />
+                        <DataGridColumn TItem="User" Field="Login" Caption="Login" Sortable="true" Displayable="true" />
+                        <DataGridColumn TItem="User" Caption="Apply" Displayable="true">
+                            <DisplayTemplate>
+                <Button Color="Color.Primary" @onclick="() => AppyParticipant(context.Id)">Apply</Button>
+                            </DisplayTemplate>
+                        </DataGridColumn>
+                    </DataGridColumns>
+                </DataGrid>
+
+
+@code {
+
+    [Parameter]
+    public int eventId { get; set; }
+
+    public User selectedUser;
+    private List<Team> allTeams = new List<Team> { };
+    private List<Team> eventTeams = new List<Team> { };
+    private List<User> userList = new List<User> { };
+    private List<User> notAppliedParticipants = new List<User> { };
+    private List<EventParticipantTeam> eventParticipantTeams = new List<EventParticipantTeam> { };
+    private EventParticipantTeam participantForAppy;
+    private bool loaded = false;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await TokenService.GetToken();
+
+        await EventParticipantTeamController.ConfigureHub(token);
+        await EventParticipantTeamController.StartConnection();
+        await EventParticipantTeamController.GetAllWithConditions(new Dictionary<string, object> { { "IsApplied", false } ,
+        { "EventId", eventId } });
+        eventParticipantTeams = EventParticipantTeamController.messages.ToList();
+        notAppliedParticipants = EventParticipantTeamController.messages.Select(e => e.Participant).ToList();
+        StateHasChanged();
+
+    }
+
+    private async Task AppyParticipant(int ParticipantId)
+    {
+        participantForAppy = eventParticipantTeams.FirstOrDefault(e => e.ParticipantId == ParticipantId);
+        participantForAppy.IsApplied = true;
+        await EventParticipantTeamController.Update(participantForAppy.Id, participantForAppy);
+        await EventParticipantTeamController.GetAllWithConditions(new Dictionary<string, object> { { "IsApplied", false } ,
+        { "EventId", eventId } });
+        eventParticipantTeams = EventParticipantTeamController.messages.ToList();
+        notAppliedParticipants = EventParticipantTeamController.messages.Select(e => e.Participant).ToList();
+        StateHasChanged();
+    }
+}
