@@ -1,4 +1,6 @@
-﻿namespace ZionetCompetition.Enums
+﻿using static System.Runtime.InteropServices.JavaScript.JSType;
+
+namespace ZionetCompetition.Enums
 {
     public enum StatusEnm
     {
@@ -14,7 +16,23 @@
 			{"Participant", "Participant"}
 		};
 
+		public static Dictionary<string, string> TaskStatuses = new Dictionary<string, string>()
+		{
+			{"InProgress", "InProgress"},
+			{"Discard", "Discard" },
+			{"OnCheck", "OnCheck"},
+			{"OnChecking", "OnChecking"},
+			{"Approved", "Approved" },
+			{"Rejected", "Rejected"},
+			{"NeedHelp", "NeedHelp"}
+		};
 
+		public static Dictionary<string, string> activTaskStatuses = new Dictionary<string, string>()
+		{
+			{"Discard", "Discard" },
+			{"OnCheck", "OnCheck"},
+			{"NeedHelp", "NeedHelp"}
+		};
 	}
 	public enum EnentStatusEnm
     {
