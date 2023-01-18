@@ -83,6 +83,7 @@
     {
         participantForAppy = eventParticipantTeams.FirstOrDefault(e => e.ParticipantId == ParticipantId);
         participantForAppy.IsApplied = true;
+        participantForAppy.IsActive = true;
         await EventParticipantTeamController.Update(participantForAppy.Id, participantForAppy);
         await EventParticipantTeamController.GetAllWithConditions(new Dictionary<string, object> { { "IsApplied", false } ,
         { "EventId", eventId } });
