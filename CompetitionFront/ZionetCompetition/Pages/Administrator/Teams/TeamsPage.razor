@@ -9,7 +9,7 @@
 
 @inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
 @inject ZionetCompetition.Controllers.GenClientController<Team> TeamController
-@inject ZionetCompetition.Controllers.GenClientController<EventParticipantTeam> UserEventTeamController
+@inject ZionetCompetition.Controllers.GenClientController<EventParticipantTeam> EventParticipantTeamController
 @inject NavigationManager Navigation
 @inject ZionetCompetition.Services.TokenService TokenService
 
@@ -50,6 +50,30 @@ else
 					@participantsCount(context.Id, eventParticipantTeams)
 				</DisplayTemplate>
 			</DataGridColumn>
+			<DataGridColumn Caption="Team Leader">
+
+				<DisplayTemplate>
+					<Select TValue="int" SelectedValue="@selectedDropValue.Id" SelectedValueChanged="@OnSelectedValueChanged">
+						@if (@eventParticipantTeams.Any(e => e.IsLeader == true && e.TeamId == context.Id))
+						{
+							<SelectItem Value="eventParticipantTeams.FirstOrDefault(e => e.IsLeader == true && e.TeamId == context.Id).Id">
+								@eventParticipantTeams.FirstOrDefault(e => e.IsLeader == true
+						&& e.TeamId == context.Id).Participant.FirstName @eventParticipantTeams.FirstOrDefault(e => e.IsLeader == true  
+									&& e.TeamId == context.Id).Participant.LastName</SelectItem>
+						}
+						else
+						{
+							<SelectItem></SelectItem>
+						}
+
+						@foreach (var participant in eventParticipantTeams.FindAll(e => e.TeamId == context.Id && e.IsLeader == false))
+					{
+							<SelectItem Value="participant.Id">@participant.Participant.FirstName @participant.Participant.LastName</SelectItem>
+					}
+					</Select>
+				</DisplayTemplate>
+
+			</DataGridColumn>
 			<DataGridColumn Field="@nameof(Team.UpdateDate)" Caption="Update Date" />
 		</DataGridColumns>
 		<ButtonRowTemplate>
@@ -62,13 +86,14 @@ else
 }
 
 @code {
-	[Parameter]
-	public int eventId { get; set; }
+		[Parameter]
+		public int eventId { get; set; }
 	public Team selectedTeam;
 	private List<Team> allTeams = new List<Team> { };
 	private List<Team> eventTeams = new List<Team> { };
 	private List<EventParticipantTeam> allEventParticipantTeams = new List<EventParticipantTeam> { };
 	private List<EventParticipantTeam> eventParticipantTeams = new List<EventParticipantTeam> { };
+	private EventParticipantTeam selectedDropValue = new EventParticipantTeam { };
 	private bool loaded = false;
 
 
@@ -80,13 +105,13 @@ else
 		await TeamController.StartConnection();
 		await TeamController.GetAll();
 		allTeams = TeamController.messages.ToList();
-		eventTeams = allTeams.Where(t => t.EventId == eventId).ToList();
+		eventTeams = allTeams.Where(t => t.EventId == eventId).ToList(); // teams
 
-		await UserEventTeamController.ConfigureHub(token);
-		await UserEventTeamController.StartConnection();
-		await UserEventTeamController.GetAll();
-		allEventParticipantTeams = UserEventTeamController.messages.ToList();
-		eventParticipantTeams = allEventParticipantTeams.Where(t => t.EventId == eventId).ToList();
+		await EventParticipantTeamController.ConfigureHub(token);
+		await EventParticipantTeamController.StartConnection();
+		await EventParticipantTeamController.GetAllWithConditions(new Dictionary<string, object> { { "EventId", eventId } });
+		eventParticipantTeams = EventParticipantTeamController.messages.ToList(); // users
+
 
 		loaded = true;
 		StateHasChanged();
@@ -120,9 +145,33 @@ else
 		return result;
 	}
 
-	public async ValueTask DisposeAsync()
+
+	private async Task OnSelectedValueChanged(int eventParticipantId)
+
 	{
+		var newLeader = eventParticipantTeams.FirstOrDefault(e => e.Id == eventParticipantId);
+		var changedTeamId = newLeader.TeamId;
+		var currentLeaders = eventParticipantTeams.Where(e => e.IsLeader == true && e.TeamId == changedTeamId).ToList();
+
+		if (currentLeaders.Count > 0)
+		{
+			foreach (var currentLeader in currentLeaders)
+			{
+				currentLeader.IsLeader = false;
+				await EventParticipantTeamController.Update(currentLeader.Id, currentLeader);
+			}
+		}
+
+		newLeader.IsLeader = true;
+		await EventParticipantTeamController.Update(newLeader.Id, newLeader);
+		await EventParticipantTeamController.GetAllWithConditions(new Dictionary<string, object> { { "EventId", eventId } });
+		StateHasChanged();
+    }
+
+
+    public async ValueTask DisposeAsync()
+    {
 		await TeamController.DisposeAsync();
-		await UserEventTeamController.DisposeAsync();
+		await EventParticipantTeamController.DisposeAsync();
 	}
 }
