@@ -235,19 +235,7 @@ else
 
     async Task OnCancelClicked()
     {
-        loaded = false;
-        DisableMode = true;
-        await AuthController.Get(email);
-        UserOnForm = new ZionetCompetition.Models.User
-            {
-                Email = currentUser.Email,
-                Github = currentUser.Github,
-                FirstName = currentUser.FirstName,
-                LastName = currentUser.LastName,
-
-            };
-        loaded = true;
-        StateHasChanged();
+        Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
     }
 
     async Task OnSaveClicked()
@@ -255,6 +243,10 @@ else
         if (await ValidationsRef.ValidateAll())
         {
             await ValidationsRef.ClearAll();
+            UserController.ConfigureHub(token);
+            await UserController.StartConnection();
+            await UserController.Update(currentUser.Id, currentUser);
+            StateHasChanged();
         }
     }
 
