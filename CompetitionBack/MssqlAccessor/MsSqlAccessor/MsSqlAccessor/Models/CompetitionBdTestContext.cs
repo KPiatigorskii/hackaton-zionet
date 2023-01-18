@@ -1,18 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using System.Configuration;
 
 namespace MsSqlAccessor.Models;
 
 public partial class CompetitionBdTestContext : DbContext
 {
+    private IConfiguration _config;
     public CompetitionBdTestContext()
     {
     }
 
-    public CompetitionBdTestContext(DbContextOptions<CompetitionBdTestContext> options)
+    public CompetitionBdTestContext(DbContextOptions<CompetitionBdTestContext> options, IConfiguration config)
         : base(options)
     {
+        _config = config;
     }
 
     public virtual DbSet<Event> Events { get; set; }
@@ -47,7 +50,7 @@ public partial class CompetitionBdTestContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=.;Database=CompetitionBD-test;Trusted_Connection=True;Encrypt=False");
+        => optionsBuilder.UseSqlServer(_config.GetSection("ConnectionStrings:DefaultConnection").Value);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
