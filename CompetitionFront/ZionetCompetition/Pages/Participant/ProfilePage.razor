@@ -184,8 +184,8 @@ else
     protected override async Task OnInitializedAsync()
     {
         var claims = HttpContextAccessor.HttpContext.User.Claims;
-        currentTeamName = claims.FirstOrDefault(e => e.Type == "currentTeamName").Value;
-        currentEventName = claims.FirstOrDefault(e => e.Type == "currentEventName").Value;
+        currentTeamName = claims.FirstOrDefault(e => e.Type == "currentTeamName")?.Value;
+        currentEventName = claims.FirstOrDefault(e => e.Type == "currentEventName")?.Value;
         token = await TokenService.GetToken();
         // get Id by email
         email = claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
