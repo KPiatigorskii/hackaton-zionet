@@ -120,13 +120,14 @@ else
 	public async void EventApply(int eventId)
 	{ // показать все ивенты начинающиеся позже чем сейчас 
 
-		
+
 
 		var eventParticipantTeam = new EventParticipantTeam
-		{
+			{
 				ParticipantId = userId,
-				EventId = eventId
-		};
+				EventId = eventId,
+				IsLeader = false
+	};
 		await EventParticipantTeamController.Create(eventParticipantTeam);
 		await EventParticipantTeamController.GetAll();
 		eventParticipantTeamList = EventParticipantTeamController.messages;
