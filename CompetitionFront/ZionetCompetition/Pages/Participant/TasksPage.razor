@@ -25,6 +25,9 @@
 }
 else
 {
+	if (hasTeamId)
+	{
+		<Div Class="float-end"><b>Team is: </b> <Badge Color="Color.Info">@teamName</Badge></Div>
 	<Tabs RenderMode="TabsRenderMode.LazyReload" SelectedTabChanged="@OnSelectedTabChanged">
 
 		 <Items>
@@ -167,13 +170,17 @@ else
 			</TabPanel>
 			</Content>
 		</Tabs>
-	if (hasTeamId)
+
+	}else
 	{
-		
+		<h1> Team is not assigned.</h1>
+		<h3> &nbsp;&nbsp;&nbsp; Try ReLogin, please...</h3>
 	}
+
 }
 
 @code {
+	private string selectedTab = "Info";
 	private Modal modalRef;
 	private EventTask selectedTask;
 	private TeamTask selectedTeamTask;
@@ -192,6 +199,7 @@ else
 	private bool isApplied = false;
 	private int userId;
 	private int teamId;
+	private string teamName = "";
 	private Dictionary<string, object> currentTasksFromTeamTasksFilter;
 	private Dictionary<string, object> currentTasksFromEventFilter;
 	private Dictionary<string, object> currentTasksParticipantFilter;
@@ -223,7 +231,7 @@ else
 			//get all active task of this team
 			try
 			{
-				teamId = int.Parse(claims.FirstOrDefault(e => e.Type == "currentTeamId").Value);
+				teamId = int.Parse(claims.FirstOrDefault(e => e.Type == "currentTeamId")?.Value);
 			}
 			catch (Exception)
 			{
@@ -233,6 +241,7 @@ else
 			if (teamId > 0)
 			{
 				hasTeamId = true;
+				teamName = claims.FirstOrDefault(e => e.Type == "currentTeamName").Value.ToString();
 				currentTasksFromTeamTasksFilter = new Dictionary<string, object>() { { "TeamId",teamId } };
 				await TeamTaskController.ConfigureHub(token);
 				await TeamTaskController.StartConnection();
