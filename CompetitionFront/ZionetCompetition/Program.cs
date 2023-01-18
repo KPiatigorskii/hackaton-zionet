@@ -143,22 +143,27 @@ builder.Services
                         await EventController.GetOneWithConditions( new Dictionary<string, object>() { { "Id", currentEventId } });
                         var currentEventName = EventController.message.Title;
 
-                        var TeamController = context.HttpContext.RequestServices.GetRequiredService<GenClientController<Team>>();
-                        await TeamController.ConfigureHub(token);
-                        await TeamController.StartConnection();
-                        await TeamController.GetOneWithConditions(new Dictionary<string, object>() { { "Id", currentTeamId } });
-                        var currentTeamName = TeamController.message.Title;
-
-                        var additionalClaims = new List<Claim>
-					        {
-						        new Claim("currentEventId", currentEventId.ToString()),
-                                new Claim("currentEventName", currentEventName.ToString()),
-                                new Claim("isLeader", isLeader.ToString()),
+						var additionalClaims = new List<Claim>
+							{
+								new Claim("currentEventId", currentEventId.ToString()),
+								new Claim("currentEventName", currentEventName.ToString()),
+								new Claim("isLeader", isLeader.ToString()),
 								new Claim("isActive", isActive.ToString()),
 								new Claim("currentTeamId", currentTeamId.ToString()),
-                                new Claim("currentTeamName", currentTeamName.ToString()),
-                                new Claim("isApplied", isApplied.ToString()),
+								new Claim("isApplied", isApplied.ToString()),
 							};
+						
+						if (currentTeamId is not null)
+                        {
+							var TeamController = context.HttpContext.RequestServices.GetRequiredService<GenClientController<Team>>();
+							await TeamController.ConfigureHub(token);
+							await TeamController.StartConnection();
+							await TeamController.GetOneWithConditions(new Dictionary<string, object>() { { "Id", currentTeamId } });
+							var currentTeamName = TeamController.message.Title;
+                            //additionalClaims.Add(new Claim("currentTeamId", currentTeamId.ToString()));
+                            additionalClaims.Add(new Claim("currentTeamName", currentTeamName.ToString()));
+						}
+
 						appIdentity = new ClaimsIdentity(additionalClaims, CookieAuthenticationDefaults.AuthenticationScheme);
 						context.Principal.AddIdentity(appIdentity);
 					}
