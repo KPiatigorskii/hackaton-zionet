@@ -80,32 +80,32 @@ else
 }
 
 @code {
-	[Parameter]
-	public int eventId { get; set; }
+    [Parameter]
+    public int eventId { get; set; }
 
-	private Event curentEvent;
-	private TeamTask selectedTeamTask;
-	private List<TeamTask> allTeamTask = new List<TeamTask> { };
-	private List<TeamTask> eventTeamTasks = new List<TeamTask> { };
-	private List<TeamTask> curentTeamTasks = new List<TeamTask> { };
-	private bool loaded = false;
+    private Event curentEvent;
+    private TeamTask selectedTeamTask;
+    private List<TeamTask> allTeamTask = new List<TeamTask> { };
+    private List<TeamTask> eventTeamTasks = new List<TeamTask> { };
+    private List<TeamTask> curentTeamTasks = new List<TeamTask> { };
+    private bool loaded = false;
 
-	protected override async Task OnInitializedAsync()
-	{
-		var token = await TokenService.GetToken();
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await TokenService.GetToken();
 
-		await EventController.ConfigureHub(token);
-		await EventController.StartConnection();
-		await EventController.Get(eventId);
-		curentEvent = EventController.message;
+        await EventController.ConfigureHub(token);
+        await EventController.StartConnection();
+        await EventController.Get(eventId);
+        curentEvent = EventController.message;
 
-		await TeamTaskController.ConfigureHub(token);
-		await TeamTaskController.StartConnection();
-		await TeamTaskController.GetAll();
-		allTeamTask = TeamTaskController.messages.ToList();
-		eventTeamTasks = allTeamTask.Where(t => t.Team.EventId == eventId).ToList();
-
-		loaded = true;
+        await TeamTaskController.ConfigureHub(token);
+        await TeamTaskController.StartConnection();
+        await TeamTaskController.GetAll();
+        allTeamTask = TeamTaskController.messages.ToList();
+        eventTeamTasks = allTeamTask.Where(t => t.Team.EventId == eventId).ToList();
+        Counter();
+        loaded = true;
 		StateHasChanged();
 		await base.OnInitializedAsync();
 	}
@@ -117,7 +117,7 @@ else
 		await TeamTaskController.GetAll();
 		allTeamTask = TeamTaskController.messages.ToList();
 		eventTeamTasks = allTeamTask.Where(t => t.Team.EventId == eventId).ToList();
-		curentTeamTasks = eventTeamTasks.Where(t => activTaskStatuses.Values.Contains(t.Status.Title)).ToList();
+		curentTeamTasks = eventTeamTasks.Where(t => activTaskStatuses.Values.Contains(t.TaskStatusNavigation.Title)).ToList();
 	}
 
 	private async void Update(SavedRowItem<TeamTask, Dictionary<string, object>> rowUpdated)
@@ -133,4 +133,13 @@ else
 		await TeamTaskController.DisposeAsync();
 	}
 	
+	private async Task Counter()
+	{
+		while (true)
+		{
+			await Task.Delay(2000);
+			updateCurentTeamTasks();
+			StateHasChanged();
+		}
+	}
 }	
