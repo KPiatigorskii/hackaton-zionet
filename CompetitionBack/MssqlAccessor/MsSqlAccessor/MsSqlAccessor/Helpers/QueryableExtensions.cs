@@ -44,5 +44,7 @@ namespace MsSqlAccessor.Helpers
 			}
 			return query;
 		}
+		//ToDo create function for wrap second foreach
+		
 	}
 }
