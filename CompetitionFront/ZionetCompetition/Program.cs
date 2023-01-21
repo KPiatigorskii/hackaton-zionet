@@ -144,7 +144,7 @@ builder.Services
 							};
 
 
-					if (EventParticipantTeamController.messages.Count() > 0)
+					if (EventParticipantTeamController.messages.Count() > 0) //TODO: ANY
                     {
 						var currentEventId = EventParticipantTeamController.messages.First().EventId;
 						var isLeader = EventParticipantTeamController.messages.First().IsLeader;

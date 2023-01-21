@@ -55,7 +55,7 @@ else
         var token = await TokenService.GetToken();
         await UserController.ConfigureHub(token);
         await UserController.StartConnection();
-        await UserController.Get(2);  // TODO receive REAL id of user
+        await UserController.Get(9);  // TODO receive REAL id of user
 
         message = UserController.message;
         //StateHasChanged();

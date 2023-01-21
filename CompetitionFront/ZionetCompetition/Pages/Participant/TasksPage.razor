@@ -328,9 +328,15 @@ else
 		await JSRuntime.InvokeVoidAsync("open", redirectUrl, "_blank");
 	}
 
-	public async void GetHelp(int taskId)
+	public async Task GetHelp(int taskId)
 	{
 		// HELP MEEEEE!!!
+		var updatedTeamTask = allTeamTasks.FirstOrDefault(e => e.TaskId == taskId && e.TeamId == teamId);
+		updatedTeamTask.TaskStatus = 7;
+		await TeamTaskController.Update(updatedTeamTask.Id, updatedTeamTask);
+		await TeamTaskController.GetAllWithConditions(currentTasksFromTeamTasksFilter);
+		allTeamTasks = TeamTaskController.messages.ToList();
+		StateHasChanged();
 	}
 
 	public void OnSelectedTabChanged()

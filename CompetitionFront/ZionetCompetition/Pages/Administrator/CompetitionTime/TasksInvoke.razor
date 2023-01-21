@@ -57,7 +57,7 @@ else
 			<DataGridColumn TItem="TeamTask" Field="Task.Points" Caption="Max points" Sortable="true" Displayable="true" Editable />
 			<DataGridColumn TItem="TeamTask" Field="Task.HasBonus" Caption="Bonus" Sortable="false" Displayable="true" Editable />
 			<DataGridColumn TItem="TeamTask" Field="Team.Title" Caption="Team" Sortable="true" Displayable="true" Editable />
-			<DataGridColumn TItem="TeamTask" Field="TaskStatus.Title" Caption="Status" Sortable="false" Displayable="true" Editable />
+			<DataGridColumn TItem="TeamTask" Field="TaskStatusNavigation.Title" Caption="Status" Sortable="false" Displayable="true" Editable />
 		</ChildContent>
 
 		<EmptyTemplate>
@@ -80,31 +80,32 @@ else
 }
 
 @code {
-    [Parameter]
-    public int eventId { get; set; }
+	[Parameter]
+	public int eventId { get; set; }
 
-    private Event curentEvent;
-    private TeamTask selectedTeamTask;
-    private List<TeamTask> allTeamTask = new List<TeamTask> { };
-    private List<TeamTask> eventTeamTasks = new List<TeamTask> { };
-    private List<TeamTask> curentTeamTasks = new List<TeamTask> { };
-    private bool loaded = false;
+	private Event curentEvent;
+	private TeamTask selectedTeamTask;
+	private List<TeamTask> allTeamTask = new List<TeamTask> { };
+	private List<TeamTask> eventTeamTasks = new List<TeamTask> { };
+	private List<TeamTask> curentTeamTasks = new List<TeamTask> { };
+	private bool loaded = false;
 
-    protected override async Task OnInitializedAsync()
-    {
-        var token = await TokenService.GetToken();
+	protected override async Task OnInitializedAsync()
+	{
+		var token = await TokenService.GetToken();
 
-        await EventController.ConfigureHub(token);
-        await EventController.StartConnection();
-        await EventController.Get(eventId);
-        curentEvent = EventController.message;
+		await EventController.ConfigureHub(token);
+		await EventController.StartConnection();
+		await EventController.Get(eventId);
+		curentEvent = EventController.message;
 
-        await TeamTaskController.ConfigureHub(token);
-        await TeamTaskController.StartConnection();
-        await TeamTaskController.GetAll();
-        allTeamTask = TeamTaskController.messages.ToList();
-        eventTeamTasks = allTeamTask.Where(t => t.Team.EventId == eventId).ToList();
-        Counter();
+		await TeamTaskController.ConfigureHub(token);
+		await TeamTaskController.StartConnection();
+		await TeamTaskController.GetAll();
+		allTeamTask = TeamTaskController.messages.ToList();
+		eventTeamTasks = allTeamTask.Where(t => t.Team.EventId == eventId).ToList();
+		updateCurentTeamTasks();
+		Counter();
         loaded = true;
 		StateHasChanged();
 		await base.OnInitializedAsync();
