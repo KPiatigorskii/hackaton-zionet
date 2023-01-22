@@ -8,19 +8,36 @@ import mssqlAccessorRoutes from './src/routes/mssqlAccessorRoutes';
 import * as dotenv from 'dotenv' // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
 dotenv.config()
 
-
-
 // Instantiate with desired auth type (here's Bearer v2 auth)
 
-const router: Express = express();
+const expressSanitizer = require("express-sanitizer");
 
+// Importing the fs and https modules -------------- STEP 1
+const https = require("https");
+
+const fs = require('fs'); // TODO: f
+
+// Read the certificate and the private key for the https server options
+// ------------------- STEP 2
+
+const httpsOptions = {
+  key: fs.readFileSync('./security/localhost.key'),
+  cert: fs.readFileSync('./security/localhost.crt')
+}
+
+// Initialize instance of express
+const app = express();
+
+// Init Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 /** Parse the request */
-router.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: false }));
 /** Takes care of JSON data */
-router.use(express.json());
-
+app.use(express.json());
+console.log('This process is SERVER pid ' + process.pid);
 /** RULES OF OUR API */
-router.use((req, res, next) => {
+app.use((req, res, next) => {
     // set the CORS policy
     res.header('Access-Control-Allow-Origin', '*');
     // set the CORS headers
@@ -34,24 +51,30 @@ router.use((req, res, next) => {
 });
 
 // /** Routes */
-router.use('/CronSchedule', cronRoutes.router);
-router.use('/twitter', twitterRoutes.router);
-router.use('/mssqlAccessor',mssqlAccessorRoutes.router )
+app.use('/CronSchedule', cronRoutes.router);
+app.use('/twitter', twitterRoutes.router);
+app.use('/mssqlAccessor',mssqlAccessorRoutes.router )
 
 /** Error handling */
-router.use((req, res, next) => {
+app.use((req, res, next) => {
     const error = new Error('not found');
     return res.status(404).json({
         message: error.message
     });
 });
 
-   /** Server */
-const httpServer = http.createServer(router); 
-const PORT: any = process.env.PORT ?? 6978;
-httpServer.listen(
-    PORT, 
-    () => {
-        console.log(`The server is running on port ${PORT}`)
-    });
+app.get('/', (req, res) => {
+  res.send("IT'S WORKING!")
+})
 
+const PORT: any = process.env.PORT ?? 6978;
+
+// app.listen(PORT, () => {
+//     console.log(`Server started on port ${PORT}`);
+//   });
+  
+  // Create the https server by initializing it with 'options'
+  // -------------------- STEP 3
+  https.createServer(httpsOptions, app).listen(PORT, () => {
+    console.log(`HTTPS server started on port ${PORT}`);
+  });
