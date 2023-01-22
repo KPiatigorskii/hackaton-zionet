@@ -45,9 +45,12 @@ namespace ZionetCompetition.Enums
 
     public enum TaskStatusEnm
     {
-        InProgress = 1,
-        Pass = 2,
-        OnChecking = 3,
-        Approved = 4
+			InProgress = 1,
+			Discard,
+			OnCheck, 
+			OnChecking,
+			Approved,
+			Rejected,
+			NeedHelp,
     }
 }
