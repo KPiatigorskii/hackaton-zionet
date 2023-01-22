@@ -67,4 +67,7 @@ public partial class User : IdModel
 
     [JsonIgnore]
     public virtual ICollection<Team> TeamUpdateUsers { get; } = new List<Team>();
+
+    [JsonIgnore]
+	public virtual ICollection<TwitterRecord> TwitterRecords { get; } = new List<TwitterRecord>();
 }
