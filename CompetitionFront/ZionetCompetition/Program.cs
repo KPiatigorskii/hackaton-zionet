@@ -32,6 +32,7 @@ builder.Services.AddSession();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddTransient<TokenService>();
+builder.Services.AddTransient<AuthorizationService>();
 builder.Services.AddTransient<ErrorService>();
 builder.Services.AddTransient<FlagService>();
 builder.Services.AddTransient<TwitterService>();
@@ -132,6 +133,12 @@ builder.Services
                     await EventParticipantTeamController.StartConnection();
                     await EventParticipantTeamController.GetAllWithConditions(currentEventIdFilter);
 
+					var EventManagerController = context.HttpContext.RequestServices.GetRequiredService<GenClientController<EventManager>>();
+					Dictionary<string, object> currentEventManagerFilter = new Dictionary<string, object>() { { "UserId", existedUser.Id } };
+					await EventManagerController.ConfigureHub(token);
+					await EventManagerController.StartConnection();
+					await EventManagerController.GetAllWithConditions(currentEventManagerFilter);
+
 					var additionalClaims = new List<Claim>
 							{
 								new Claim("currentEventId", "0"),
@@ -144,7 +151,7 @@ builder.Services
 							};
 
 
-					if (EventParticipantTeamController.messages.Count() > 0)
+					if (EventParticipantTeamController.messages.Any()) //TODO: ANY
                     {
 						var currentEventId = EventParticipantTeamController.messages.First().EventId;
 						var isLeader = EventParticipantTeamController.messages.First().IsLeader;
@@ -179,6 +186,24 @@ builder.Services
                             additionalClaims.Add(new Claim("currentTeamName", currentTeamName.ToString()));
 						}
 					}
+
+					if (EventManagerController.messages.Any()) //TODO: ANY
+					{
+                        var allEvents = EventManagerController.messages.ToList();
+						var currentEvent = allEvents.FirstOrDefault(e => e.Event.IsEnable && DateHelper.IsBetweenDates(DateTime.Now, e.Event.StartTime, e.Event.EndTime) );
+
+                        if (currentEvent != null)
+                        {
+							var currentEventId = currentEvent.EventId;
+							var currentEventName = currentEvent.Event.Title;
+							additionalClaims = new List<Claim>
+							{
+								new Claim("currentEventId", currentEventId.ToString()),
+								new Claim("currentEventName", currentEventName.ToString()),
+							};
+						}
+					}
+
 					appIdentity = new ClaimsIdentity(additionalClaims, CookieAuthenticationDefaults.AuthenticationScheme);
 					context.Principal.AddIdentity(appIdentity);
 				}
