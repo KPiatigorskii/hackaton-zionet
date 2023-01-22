@@ -1,3 +1,5 @@
+import { RandomUUIDOptions } from "crypto"
+
 export interface tweetEntity {
     
 }
@@ -14,31 +16,43 @@ export interface Team {
 }
 
 export interface Status {
-    Id : number,
-    Title : string,
-    StatusId : number
+    id : number,
+    title : string,
+    statusId : number
 }
 
 export interface Role {
-    Id : number,
-    Title : string,
-    StatusId : string,
-    Status : Status
+    id : number,
+    title : string,
+    statusId : string,
+    status : Status
 }
 
 export interface User {
-        Id : number,
-        Email : string,
-        Github : string,
-        FirstName: string,
-        LastName : string,
-        Login : string,
-        RoleId : number,
-        CreateDate : Date,
-        UpdateDate : Date,
-        CreateUserId : number,
-        UpdateUserId : number,
-        StatusId : number,
-        Role: Role,
-        Status: Status
+        id : number,
+        email : string,
+        github : string,
+        firstName: string,
+        lastName : string,
+        login : string,
+        roleId : number,
+        createDate : Date,
+        updateDate : Date,
+        createUserId : number,
+        updateUserId : number,
+        statusId : number,
+        role: Role,
+        status: Status
     }
+
+export interface TwitterRecord{
+    id: number,
+    authorId: number,
+    participantId: number,
+    eventName: string,
+    teamName: string,
+    enginePort: number,
+    engineCronUuid: string,
+    isSearching: boolean,
+    alreadyFound: boolean
+}
