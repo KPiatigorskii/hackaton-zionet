@@ -175,7 +175,7 @@ namespace MsSqlAccessor
 			app.MapHub<UserHub<User, UserDTO>>("/Users");
             app.MapHub<EventStatusHub<EventStatus, EventStatusDTO>>("/EventStatuss");
             app.MapHub<TaskStatusHub<TaskStatus, TaskStatusDTO>>("/TaskStatuss");
-			app.MapHub<TaskStatusHub<TwitterRecord, TwitterRecordDTO>>("/TwitterRecords");
+			app.MapHub<TwitterRecordHub<TwitterRecord, TwitterRecordDTO>>("/TwitterRecords");
 
 			app.MapControllers();
 			app.Run();
