@@ -5,90 +5,98 @@ import { SignalRHelper } from "../helpers/SignalRHelper"
 
 import * as https from 'https';
 import * as querystring from 'querystring';
-export class MssqlAccessorService {
+export class MssqlAccessorService<T> {
 	signalR = require("@microsoft/signalr");
 	connection: any;
 	url: string;
-	messageUser!: User;
+	message!: T;
+	messages!: T[];
 
-	constructor(url: string){
-		this.url = url;
+	constructor(Huburl: string){
+		this.url = process.env.MSSQL_ACCESSOR_URL + Huburl
 	}
 
 	public async connect (token: string){
-		// var connection = this.signalR.HubConnectionBuilder.create("http://localhost:5192/Users")
-		// .withTransport(this.signalR.TransportEnum.WEBSOCKETS)
-		// .build();
 
-
-		// const connection = new this.signalR.HubConnectionBuilder()
-		// .withUrl("http://localhost:5192/Users", { 
-		// 	accessTokenFactory: () => token })
-		// .configureLogging(this.signalR.LogLevel.Trace)
-		// .withAutomaticReconnect()
-		// .build()
-		// this.connection = connection;
-
-		this.connection = new this.signalR.HubConnectionBuilder() // accessTokenFactory: () => { tokenString },
+		this.connection = new this.signalR.HubConnectionBuilder()
 			.configureLogging(this.signalR.LogLevel.Debug)
-			.withUrl(`http://localhost:5192/Users`, {
-				headers: {"Authorization":  token },
+			.withUrl(this.url, {
+				headers: {"Authorization": "Bearer " + token },
 				skipNegotiation: true,
 				transport: this.signalR.HttpTransportType.WebSockets
-			  })
+			})
 			.build();
 
-			this.connection.on("ReceiveGetOne", (data: User) => {
-				this.messageUser = data;
+			this.connection.on("ReceiveGetOne", (data: T) => {
+				this.message = data;
 			});
-			this.connection.on("ReceiveUpdate", (data: User) => {
-				this.messageUser = data;
+
+			this.connection.on("ReceiveGetAll", (data: T[]) => {
+				this.messages = data;
+			});
+
+			this.connection.on("ReceiveUpdate", (data: T) => {
+				this.message = data;
+			});
+
+			this.connection.on("ReceiveCreate", (data: T) => {
+				this.message = data;
+			});
+
+			this.connection.on("ReceiveDelete", (data: T) => {
+				this.message = data;
 			});
 
 			//
 		};
 
-	public async getUser(id: number): Promise<User>
+	public async getOne(id: number): Promise<T>
 	{
 		await this.connection.start()
 		await this.connection.invoke("GetOne", id);
-		return this.messageUser;
+		return this.message;
 	}
 
-	public async setUser(id: number, user: User)
+	public async updateOne(id: number, entity: T)
 	{
 		await this.connection.start()
-		await this.connection.invoke("Update", id, user);
-		return this.messageUser;
+		await this.connection.invoke("Update", id, entity);
+		return this.message;
 	}
 
-	// get all records from DB table twitterRecords with already_found = false
-	public getTwitterRecords() : TwitterRecord[]
+	public async create(entity: T) : Promise<T>
 	{
-		https.get('http://localhost:7277/api/TwitterRecords', (res) => {
-			res.on('data', (data: TwitterRecord[]) => {
-				return data;
-			});
-		});
-		return  new Array<TwitterRecord>;
+		await this.connection.start()
+		await this.connection.invoke("Update", entity);
+		return this.message;
 	}
 
-	// update record from DB
-	public updateTwitterRecord() : TwitterRecord
+	public async deletOne(id: number): Promise<T>
 	{
-		// go to DB and update record
-		var t: TwitterRecord = {
-			id: 0,
-			authorId: 0,
-			participantId: 0,
-			eventName: '',
-			teamName: '',
-			enginePort: 0,
-			engineCronUuid: '',
-			isSearching: false,
-			alreadyFound: false
-		};
-		return t;
+		await this.connection.start()
+		await this.connection.invoke("Delete", id);
+		return this.message;
+	}
+
+	public async getAll(): Promise<T[]>
+	{
+		await this.connection.start()
+		await this.connection.invoke("GetAll");
+		return this.messages;
+	}
+
+	public async getAllWithCondition(filters: Object): Promise<T[]>
+	{
+		await this.connection.start()
+		await this.connection.invoke("GetAllWithConditions", filters);
+		return this.messages;
+	}
+
+	public async getOneWithCondition(filters: Object): Promise<T>
+	{
+		await this.connection.start()
+		await this.connection.invoke("GetOneWithConditions", filters);
+		return this.message;
 	}
 
 }
