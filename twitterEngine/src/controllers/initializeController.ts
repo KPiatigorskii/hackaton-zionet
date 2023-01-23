@@ -40,17 +40,13 @@ export class InitializeController
         if (PORT == record.enginePort && record.isSearching){ // our cron fails
             needUpdate = !CronService.isCronRunning(record.engineCronUuid);
         }
-        if (needUpdate){
+        if (needUpdate || !record.isSearching){
+            record.enginePort = PORT;
+            record.isSearching = true;
             record.engineCronUuid = CronService.startCron(record, process.env.TEST_TOKEN || "");
-            this.updateRecord(record);
+            InitializeController.mssql.updateOne(record.id, record)
         }
-        
     }
 
-    public static updateRecord(record: TwitterRecord){
-        record.enginePort = PORT;
-        record.isSearching = true;
-        InitializeController.mssql.updateOne(record.id, record)
-    }
     
 }
