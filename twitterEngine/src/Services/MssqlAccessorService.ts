@@ -79,7 +79,7 @@ export class MssqlAccessorService<T> {
 		return this.messages;
 	}
 
-	public async getAllWithCondition(filters: Object): Promise<T[]>
+	public async getAllWithCondition(filters: Record<string,any>): Promise<T[]>
 	{
 		await this.connection.start()
 		await this.connection.invoke("GetAllWithConditions", filters);

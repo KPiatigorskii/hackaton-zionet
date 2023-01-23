@@ -52,13 +52,9 @@ app.use((req, res, next) => {
 })
 
 let records: TwitterRecord[];
-// app.use( async (req, res, next) => {
-//   console.log("IM HERE@!!!!!")
-//   records = await InitializeController.getAllActualRecords();
-//   next();
-// });
 
-const PORT: any = process.env.PORT ?? 6978;
+export const PORT: any = process.env.PORT ?? 6978;
+
 
   http.createServer(app).listen(PORT, async () => {
     console.log(`HTTP server started on port ${PORT}`);

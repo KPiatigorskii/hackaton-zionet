@@ -2,19 +2,19 @@ import { Scheduler } from "timers/promises";
 import { Team } from "../entities";
 import { TwitterService } from "./TwitterService";
 import { TwitterRecord } from './../entities';
+import {v4 as uuidv4} from 'uuid';
 
 const cron = require('node-cron');
 
 export class CronService {
     public static cronJobs: Record<string, any> = {};
 
-    // public static startCron(twitterService: TwitterService, eventName: string, teamName: string, userId: number, userTwitterId: number, token: string): any {
-    //     CronService.cronJobs[userTwitterId] = cron.schedule('*/30 * * * * *', () => twitterService.getTweets(eventName, teamName, userId, userTwitterId, token));
-    // }
+    public static startCron(record : TwitterRecord, token: string){
+        let newUuid = uuidv4();
+        CronService.cronJobs[newUuid] = cron.schedule('*/30 * * * * *', () => 
+            TwitterService.getTweets(record.eventName, record.teamName, record.participantId, record.authorId, token));
+        return newUuid;
 
-    public static startCron(record : TwitterRecord, twitterService: TwitterService, token: string){
-        CronService.cronJobs[record.engineCronUuid] = cron.schedule('*/30 * * * * *', () => 
-            twitterService.getTweets(record.eventName, record.teamName, record.participantId, record.authorId, token));
     }
 
     public static stopCron(engineCronUuid: number, token: string): any {
@@ -24,6 +24,11 @@ export class CronService {
         } catch (error) {
             console.log(`can't stop cron task ${engineCronUuid}`);
         }
+    }
+
+    public static isCronRunning(engineCronUuid: string): boolean {
+        const job = CronService.cronJobs[engineCronUuid];
+        return job?.running === true;
     }
 
     public static getCronByUuid(cronUuid: string, token: string)

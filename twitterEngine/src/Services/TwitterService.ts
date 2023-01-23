@@ -8,6 +8,8 @@ dotenv.config()
 export class TwitterService {
 	twitterClient: TwitterApi;
 	apiHelper: ApiHelper;
+	static twitterClient: any;
+	static apiHelper: any;
 
 	constructor() {
 		this.apiHelper = new ApiHelper();
@@ -23,7 +25,7 @@ export class TwitterService {
 		}
 	}
 
-	public async getTweets(eventName: string, teamName: string, userId: number, userTwitterId: number, token: string): Promise<any> {
+	public static async getTweets(eventName: string, teamName: string, userId: number, userTwitterId: number, token: string): Promise<any> {
 			let minutesInterval = 2;
 			let currentDate = new Date();
 			currentDate.setMinutes(currentDate.getMinutes() - minutesInterval);
