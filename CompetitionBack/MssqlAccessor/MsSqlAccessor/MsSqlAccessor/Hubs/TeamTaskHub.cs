@@ -92,8 +92,9 @@ namespace MsSqlAccessor.Hubs
                 throw new HubException(ex.Message);
             }
 
-            await Clients.All.SendAsync("ReceiveUpdate", dtoItemResult);
-        }
+            await Clients.Caller.SendAsync("ReceiveUpdate", dtoItemResult);
+			await Clients.All.SendAsync("DataHasChanged");
+		}
 
         [HubMethodName("Create")]
         [Authorize(Roles = CreateRoles)]
@@ -112,8 +113,9 @@ namespace MsSqlAccessor.Hubs
                 throw new HubException(ex.Message);
             }
 
-            await Clients.All.SendAsync("ReceiveCreate", dtoItemResult);
-        }
+            await Clients.Caller.SendAsync("ReceiveCreate", dtoItemResult);
+			await Clients.All.SendAsync("DataHasChanged");
+		}
 
         [HubMethodName("Delete")]
         [Authorize(Roles = DeleteRoles)]
@@ -132,8 +134,9 @@ namespace MsSqlAccessor.Hubs
                 throw new HubException(ex.Message);
             }
 
-            await Clients.All.SendAsync("ReceiveDelete", dtoItemResult);
-        }
+            await Clients.Caller.SendAsync("ReceiveDelete", dtoItemResult);
+			await Clients.All.SendAsync("DataHasChanged");
+		}
 
         [HubMethodName("ForceDelete")]
         [Authorize(Roles = ForceDeleteRoles)]
@@ -152,9 +155,9 @@ namespace MsSqlAccessor.Hubs
                 throw new HubException(ex.Message);
             }
 
-
-            await Clients.All.SendAsync("ReceiveForceDelete", new TmodelDTO());
-            return;
+            await Clients.Caller.SendAsync("ReceiveForceDelete", new TmodelDTO());
+			await Clients.All.SendAsync("DataHasChanged");
+			return;
         }
 
     }
