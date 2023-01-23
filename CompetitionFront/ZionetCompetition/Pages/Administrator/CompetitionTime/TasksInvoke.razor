@@ -104,7 +104,7 @@ else
 
 	protected override async Task OnInitializedAsync()
 	{
-		TeamTaskController.OnDataUpdate += OnDataUpdated;
+		TeamTaskController.OnDataHasChanged += OnDataUpdated;
 		TeamTaskController.OnListDataReceive += UpdateDataOnPage;
 
 		managerClaims = await _authorizationService.GetManagerClaims();
@@ -151,7 +151,7 @@ else
 	//	curentTeamTasks = eventTeamTasks.Where(t => activTaskStatuses.Values.Contains(t.TaskStatusNavigation.Title)).ToList();
 	//}
 
-	private void OnDataUpdated(TeamTask newTask)
+	private void OnDataUpdated()
 	{
 		TeamTaskController.GetAll();
 	}
@@ -162,7 +162,7 @@ else
 		eventTeamTasks = allTeamTask.Where(t => t.Team.EventId == eventId).ToList();
 		curentTeamTasks = eventTeamTasks.Where(t => activTaskStatuses.Values.Contains(t.TaskStatusNavigation.Title)).ToList();
 
-		allTeamTask = TeamTaskController.messages.ToList();
+		//allTeamTask = TeamTaskController.messages.ToList();
 		InvokeAsync(StateHasChanged);
 		//StateHasChanged();
 		//JSRuntime.InvokeVoidAsync("Blazor.runtime.invokeVoid", "StateHasChanged");
@@ -170,8 +170,8 @@ else
 
 	private async void Update(SavedRowItem<TeamTask, Dictionary<string, object>> rowUpdated)
 	{
-		var chengedItem = rowUpdated.Item;
-		await TeamTaskController.Update(chengedItem.Id, chengedItem);
+		var changedItem = rowUpdated.Item;
+		await TeamTaskController.Update(changedItem.Id, changedItem);
 		StateHasChanged();
 	}
 

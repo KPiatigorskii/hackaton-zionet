@@ -40,6 +40,7 @@ namespace ZionetCompetition.Controllers
             }
         }
 
+		public event Action OnDataHasChanged;
 		public event Action<List<Tmodel>> OnListDataReceive;
 		public event Action<Tmodel> OnOneDataReceive;
 		public event Action<Tmodel> OnDataUpdate;
@@ -56,8 +57,12 @@ namespace ZionetCompetition.Controllers
                 .WithAutomaticReconnect()
                 .Build();
 
+			hubConnection.On("DataHasChanged", () =>
+			{
+				OnDataHasChanged?.Invoke();
+			});
 
-            hubConnection.On<List<Tmodel>>("ReceiveGetAll", (receiveObj) =>
+			hubConnection.On<List<Tmodel>>("ReceiveGetAll", (receiveObj) =>
             {
                 messages = receiveObj;
                 isLoaded = true;
