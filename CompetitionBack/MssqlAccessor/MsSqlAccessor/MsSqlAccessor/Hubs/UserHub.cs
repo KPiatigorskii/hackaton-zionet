@@ -56,15 +56,8 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.ItemNotFound)
-                {
-                    throw new HubException(Errors.ItemNotFound);
-                }
-                else
-                {
-                    throw new HubException(Errors.General);
-                }
-            }
+				throw new HubException(ex.Message);
+			}
             //await Task.Delay(1000);
             await Clients.Caller.SendAsync("ReceiveGetOne", dtoItem);
         }
@@ -97,8 +90,8 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                throw new HubException(Errors.General);
-            }
+				throw new HubException(ex.Message);
+			}
             //await Task.Delay(1000);
             await Clients.Caller.SendAsync("ReceiveGetOneByEmail", dtoItem);
         }
@@ -117,26 +110,12 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.NotAuthorizedByEmail)
-                {
-                    throw new HubException(Errors.NotAuthorizedByEmail);
-                }
-                if (ex.Message == Errors.ItemNotFound)
-                {
-                    throw new HubException(Errors.ItemNotFound);
-                }
-                if (ex.Message == Errors.BadRequest)
-                {
-                    throw new HubException(Errors.BadRequest);
-                }
-                else
-                {
-                    throw new HubException(Errors.General);
-                }
-            }
+				throw new HubException(ex.Message);
+			}
 
             await Clients.Caller.SendAsync("ReceiveUpdate", dtoItemResult);
-        }
+			await Clients.All.SendAsync("DataHasChanged");
+		}
 
         [HubMethodName("Create")]
         [Authorize(Roles = CreateRoles)]
@@ -152,22 +131,12 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.NotAuthorizedByEmail)
-                {
-                    throw new HubException(Errors.NotAuthorizedByEmail);
-                }
-                if (ex.Message == Errors.ConflictData)
-                {
-                    throw new HubException(Errors.ConflictData);
-                }
-                else
-                {
-                    throw new HubException(Errors.General);
-                }
-            }
+				throw new HubException(ex.Message);
+			}
 
             await Clients.Caller.SendAsync("ReceiveCreate", dtoItemResult);
-        }
+			await Clients.All.SendAsync("DataHasChanged");
+		}
 
         [HubMethodName("Register")]
         [Authorize(Roles = RegistrationRoles)]
@@ -183,26 +152,12 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.NotAuthorizedByEmail)
-                {
-                    throw new HubException(Errors.NotAuthorizedByEmail);
-                }
-                if (ex.Message == Errors.BadRequest)
-                {
-                    throw new HubException(Errors.BadRequest);
-                }
-                if (ex.Message == Errors.ConflictData)
-                {
-                    throw new HubException(Errors.ConflictData);
-                }
-                else
-                {
-                    throw new HubException(Errors.General);
-                }
-            }
+				throw new HubException(ex.Message);
+			}
 
             await Clients.Caller.SendAsync("ReceiveRegister", dtoItemResult);
-        }
+			await Clients.All.SendAsync("DataHasChanged");
+		}
 
         [HubMethodName("Delete")]
         [Authorize(Roles = DeleteRoles)]
@@ -218,22 +173,12 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.NotAuthorizedByEmail)
-                {
-                    throw new HubException(Errors.NotAuthorizedByEmail);
-                }
-                if (ex.Message == Errors.ConflictData)
-                {
-                    throw new HubException(Errors.ConflictData);
-                }
-                else
-                {
-                    throw new HubException(Errors.General);
-                }
-            }
+				throw new HubException(ex.Message);
+			}
 
             await Clients.Caller.SendAsync("ReceiveDelete", dtoItemResult);
-        }
+			await Clients.All.SendAsync("DataHasChanged");
+		}
 
         [HubMethodName("ForceDelete")]
         [Authorize(Roles = ForceDeleteRoles)]
@@ -249,23 +194,13 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.NotAuthorizedByEmail)
-                {
-                    throw new HubException(Errors.NotAuthorizedByEmail);
-                }
-                if (ex.Message == Errors.ConflictData)
-                {
-                    throw new HubException(Errors.ConflictData);
-                }
-                else
-                {
-                    throw new HubException(Errors.General);
-                }
-            }
+				throw new HubException(ex.Message);
+			}
 
 
             await Clients.Caller.SendAsync("ReceiveForceDelete", new TmodelDTO());
-            return;
+			await Clients.All.SendAsync("DataHasChanged");
+			return;
         }
 
     }
