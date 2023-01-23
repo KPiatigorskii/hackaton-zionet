@@ -92,7 +92,7 @@ namespace MsSqlAccessor.Hubs
                 throw new HubException(ex.Message);
             }
 
-            await Clients.Caller.SendAsync("ReceiveUpdate", dtoItemResult);
+            await Clients.All.SendAsync("ReceiveUpdate", dtoItemResult);
         }
 
         [HubMethodName("Create")]
@@ -112,7 +112,7 @@ namespace MsSqlAccessor.Hubs
                 throw new HubException(ex.Message);
             }
 
-            await Clients.Caller.SendAsync("ReceiveCreate", dtoItemResult);
+            await Clients.All.SendAsync("ReceiveCreate", dtoItemResult);
         }
 
         [HubMethodName("Delete")]
@@ -132,7 +132,7 @@ namespace MsSqlAccessor.Hubs
                 throw new HubException(ex.Message);
             }
 
-            await Clients.Caller.SendAsync("ReceiveDelete", dtoItemResult);
+            await Clients.All.SendAsync("ReceiveDelete", dtoItemResult);
         }
 
         [HubMethodName("ForceDelete")]
@@ -153,7 +153,7 @@ namespace MsSqlAccessor.Hubs
             }
 
 
-            await Clients.Caller.SendAsync("ReceiveForceDelete", new TmodelDTO());
+            await Clients.All.SendAsync("ReceiveForceDelete", new TmodelDTO());
             return;
         }
 
