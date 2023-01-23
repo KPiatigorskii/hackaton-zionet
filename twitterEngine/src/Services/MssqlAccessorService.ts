@@ -1,10 +1,4 @@
 
-import SignalR from '@microsoft/signalr'
-import { TwitterRecord, User } from '../entities';
-import { SignalRHelper } from "../helpers/SignalRHelper"
-
-import * as https from 'https';
-import * as querystring from 'querystring';
 export class MssqlAccessorService<T> {
 	signalR = require("@microsoft/signalr");
 	connection: any;
