@@ -7,11 +7,11 @@ import mssqlAccessorRoutes from './src/routes/mssqlAccessorRoutes';
 
 import * as dotenv from 'dotenv'
 import { InitializeController } from './src/controllers/initializeController';
-import { TwitterRecord } from './src/entities';
 dotenv.config()
 
 // Initialize instance of express
 const app = express();
+const cron = require('node-cron');
 
 // Init Middleware
 app.use(express.json());
@@ -46,15 +46,13 @@ app.use('/mssqlAccessor',mssqlAccessorRoutes.router )
 //         message: error.message
 //     });
 // });
+export const PORT: number = Number(process.env.PORT) || 6978;
+InitializeController.setPort(PORT);
 
-app.use((req, res, next) => {
-  console.log('Time:', Date.now())
-})
+console.log("Starting server with cron job every 30 second...");
+cron.schedule('*/30 * * * * *', () => 
+InitializeController.getAllActualRecords());
 
-
-//InitializeController.getAllActualRecords();
-
-export const PORT: any = process.env.PORT ?? 6978;
 
 
 http.createServer(app).listen(PORT, () => {

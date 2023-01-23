@@ -2,11 +2,12 @@ import { TwitterApi } from 'twitter-api-v2';
 import { Request, Response, NextFunction } from 'express';
 import { TwitterService } from '../services/TwitterService';
 import { TeamMember, Team } from '../entities';
+import { TwitterRecord } from './../entities';
 
 const twitterService = new TwitterService()
 
 const getTweets = async (req: Request, res: Response, next: NextFunction) => {
-	TwitterService.getTweets(req.body.eventName, req.body.teamName, req.body.userId, req.body.userTwitterId, String(req.headers['authorization']) || '')
+	TwitterService.getTweets(req.body as TwitterRecord, String(req.headers['authorization']) || '')
 		.then((result: any) => {
 			return res.status(200).json({
 				message: result

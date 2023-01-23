@@ -12,12 +12,12 @@ export class CronService {
     public static startCron(record : TwitterRecord, token: string){
         let newUuid = uuidv4();
         CronService.cronJobs[newUuid] = cron.schedule('*/30 * * * * *', () => 
-            TwitterService.getTweets(record.eventName, record.teamName, record.participantId, record.authorId, token));
+            TwitterService.getTweets(record, token));
         return newUuid;
 
     }
 
-    public static stopCron(engineCronUuid: number, token: string): any {
+    public static stopCron(engineCronUuid: string, token: string): any {
         try {
             CronService.cronJobs[engineCronUuid].stop();
             console.log(`cron task ${engineCronUuid} was successfully stopped`);
@@ -35,6 +35,6 @@ export class CronService {
 
     public static isCronRunning(engineCronUuid: string): boolean {
         const job = CronService.cronJobs[engineCronUuid];
-        return job?.running === true;
+        return job != undefined;
     }
 }

@@ -5,6 +5,7 @@ import { ApiHelper } from '../helpers/ApiHelper';
 import * as dotenv from 'dotenv' // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
 dotenv.config()
 
+
 export class TwitterService {
 	twitterClient: TwitterApi;
 	apiHelper: ApiHelper;
@@ -25,14 +26,17 @@ export class TwitterService {
 		}
 	}
 
-	public static async getTweets(eventName: string, teamName: string, userId: number, userTwitterId: number, token: string): Promise<any> {
+	public static async getTweets(record: TwitterRecord, token: string): Promise<any> {
 			let minutesInterval = 2;
 			let currentDate = new Date();
 			currentDate.setMinutes(currentDate.getMinutes() - minutesInterval);
 			let formattedDate = currentDate.toISOString();
 			console.log(formattedDate);
-			console.log(`This process is getTweets pid of ${teamName} ${eventName}` + process.pid);
-			const result =await this.twitterClient.v2.search(eventName + " " + teamName,
+			console.log(`Searching tweets in proccess ${record.engineCronUuid} with data: 
+			${record.teamName} 
+			${record.eventName} 
+			${record.authorId}`);
+			const result =await this.twitterClient.v2.search(record.eventName + " " + record.teamName,
 							{ 'expansions': 'author_id', 'start_time': formattedDate })
 			console.log("==============================================")
 			try {
@@ -40,13 +44,15 @@ export class TwitterService {
 				for (const tweet of result.tweets) {
 					console.log("author_id: " + tweet.author_id);
 					console.log("text: " + tweet.text.substring(0, 20));
-					if (tweet.author_id == String(userTwitterId)) {// get match from team members
+					if (tweet.author_id == String(record.authorId)) {// get match from team members
 						isMatched = true;
 					}
 				}
 				if (isMatched) {
-					this.apiHelper.UserIsTwit(userId);
-					CronService.stopCron(userTwitterId, token);
+					console.log("Found a match!");
+					this.apiHelper.UserIsTwit(record.participantId);
+					console.log(`Stopping cron job with uuid=${record.engineCronUuid}`);
+					CronService.stopCron(record.engineCronUuid, token);
 					return "Tweet is stopped";
 				}
 			} catch (error) {
@@ -64,12 +70,5 @@ export class TwitterService {
 				reject(error)
 			})
 		});
-	}
-
-	// return all records with invalid instance 
-	public getRecordsWithInvalidInstances(arrayOfRecords: Array<TwitterRecord>): Array<TwitterRecord>
-	
-	{
-		return  new Array<TwitterRecord>;
 	}
 }

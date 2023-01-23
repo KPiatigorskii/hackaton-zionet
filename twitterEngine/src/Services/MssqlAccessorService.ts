@@ -13,7 +13,7 @@ export class MssqlAccessorService<T> {
 	public async connect (token: string){
 
 		this.connection = new this.signalR.HubConnectionBuilder()
-			.configureLogging(this.signalR.LogLevel.Debug)
+			//.configureLogging(this.signalR.LogLevel.Debug)
 			.withUrl(this.url, {
 				headers: {"Authorization": "Bearer " + token },
 				skipNegotiation: true,
