@@ -216,6 +216,9 @@ else
 
 	protected override async Task OnInitializedAsync()
 	{
+		TeamTaskController.OnDataHasChanged += OnDataUpdated;
+		TeamTaskController.OnListDataReceive += UpdateDataOnPage;
+
 		participantClaims = await _authorizationService.GetParticipantClaims();
 
 		var email = participantClaims.Email;
@@ -256,6 +259,17 @@ else
 		}
 		loaded = true;
 		StateHasChanged();
+	}
+
+	private void OnDataUpdated()
+	{
+		TeamTaskController.GetAllWithConditions(currentTasksFromTeamTasksFilter);
+	}
+
+	private void UpdateDataOnPage(List<TeamTask> allTeamTasks)
+	{
+		allTeamTasks = TeamTaskController.messages.ToList();
+		InvokeAsync(StateHasChanged);
 	}
 
 	public async Task TakeTask(int taskId)
