@@ -8,11 +8,13 @@
 
 @inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
 @inject ZionetCompetition.Services.AuthorizationService _authorizationService
+@inject ZionetCompetition.Services.TokenService TokenService
 @inject ZionetCompetition.Controllers.AuthClientController<User> AuthController
 @inject ZionetCompetition.Controllers.GenClientController<Event> EventController
 @inject ZionetCompetition.Controllers.GenClientController<TeamTask> TeamTaskController
 @inject NavigationManager Navigation
-@inject ZionetCompetition.Services.TokenService TokenService
+@inject IJSRuntime JSRuntime
+
 
 
 @implements IAsyncDisposable
@@ -102,6 +104,9 @@ else
 
 	protected override async Task OnInitializedAsync()
 	{
+		TeamTaskController.OnDataUpdate += OnDataUpdated;
+		TeamTaskController.OnListDataReceive += UpdateDataOnPage;
+
 		managerClaims = await _authorizationService.GetManagerClaims();
 
 		var email = managerClaims.Email;
@@ -126,8 +131,9 @@ else
 			await TeamTaskController.GetAll();
 			allTeamTask = TeamTaskController.messages.ToList();
 			eventTeamTasks = allTeamTask.Where(t => t.Team.EventId == eventId).ToList();
-			updateCurentTeamTasks();
-			Counter();
+			UpdateDataOnPage(allTeamTask);
+			//updateCurentTeamTasks();
+			//Counter();
 		}
 
 		loaded = true;
@@ -135,14 +141,31 @@ else
 		await base.OnInitializedAsync();
 	}
 
-	private async Task updateCurentTeamTasks()
+	//private async Task updateCurentTeamTasks()
+	//{
+	//	var activTaskStatuses = Entities.activTaskStatuses;
+
+	//	await TeamTaskController.GetAll();
+	//	allTeamTask = TeamTaskController.messages.ToList();
+	//	eventTeamTasks = allTeamTask.Where(t => t.Team.EventId == eventId).ToList();
+	//	curentTeamTasks = eventTeamTasks.Where(t => activTaskStatuses.Values.Contains(t.TaskStatusNavigation.Title)).ToList();
+	//}
+
+	private void OnDataUpdated(TeamTask newTask)
+	{
+		TeamTaskController.GetAll();
+	}
+
+	private void UpdateDataOnPage(List<TeamTask> allTeamTask)
 	{
 		var activTaskStatuses = Entities.activTaskStatuses;
-
-		await TeamTaskController.GetAll();
-		allTeamTask = TeamTaskController.messages.ToList();
 		eventTeamTasks = allTeamTask.Where(t => t.Team.EventId == eventId).ToList();
 		curentTeamTasks = eventTeamTasks.Where(t => activTaskStatuses.Values.Contains(t.TaskStatusNavigation.Title)).ToList();
+
+		allTeamTask = TeamTaskController.messages.ToList();
+		InvokeAsync(StateHasChanged);
+		//StateHasChanged();
+		//JSRuntime.InvokeVoidAsync("Blazor.runtime.invokeVoid", "StateHasChanged");
 	}
 
 	private async void Update(SavedRowItem<TeamTask, Dictionary<string, object>> rowUpdated)
@@ -158,13 +181,13 @@ else
 		await TeamTaskController.DisposeAsync();
 	}
 
-	private async Task Counter()
-	{
-		while (true)
-		{
-			await Task.Delay(2000);
-			updateCurentTeamTasks();
-			StateHasChanged();
-		}
-	}
+	//private async Task Counter()
+	//{
+	//	while (true)
+	//	{
+	//		await Task.Delay(2000);
+	//		updateCurentTeamTasks();
+	//		StateHasChanged();
+	//	}
+	//}
 }

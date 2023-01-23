@@ -40,7 +40,13 @@ namespace ZionetCompetition.Controllers
             }
         }
 
-        public async Task ConfigureHub(string tokenString)
+		public event Action<List<Tmodel>> OnListDataReceive;
+		public event Action<Tmodel> OnOneDataReceive;
+		public event Action<Tmodel> OnDataUpdate;
+		public event Action<Tmodel> OnDataCreate;
+		public event Action<Tmodel> OnDataDelete;
+
+		public async Task ConfigureHub(string tokenString)
         {
             hubConnection = new HubConnectionBuilder()
                 .WithUrl(connectionUrl, options =>
@@ -55,31 +61,36 @@ namespace ZionetCompetition.Controllers
             {
                 messages = receiveObj;
                 isLoaded = true;
-            });
+				OnListDataReceive?.Invoke(messages.ToList());
+			});
 
 			hubConnection.On<Tmodel>("ReceiveGetOne", (receiveObj) =>
             {
                 message = receiveObj;
                 isLoaded = true;
-            });
+				OnOneDataReceive?.Invoke(message);
+			});
 
             hubConnection.On<Tmodel>("ReceiveUpdate", (receiveObj) =>
             {
                 message = receiveObj;
                 isLoaded = true;
-            });
+				OnDataUpdate?.Invoke(message);
+			});
 
             hubConnection.On<Tmodel>("ReceiveCreate", (receiveObj) =>
             {
                 message = receiveObj;
                 isLoaded = true;
-            });
+				OnDataCreate?.Invoke(message);
+			});
 
             hubConnection.On<Tmodel>("ReceiveDelete", (receiveObj) =>
             {
                 message = receiveObj;
                 isLoaded = true;
-            });
+				OnDataDelete?.Invoke(message);
+			});
         }
 
         public async Task GetAll() 
