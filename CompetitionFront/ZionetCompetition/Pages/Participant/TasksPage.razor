@@ -132,6 +132,11 @@ else
 									{
 										<Button Color="Color.Primary" @onclick="() => GetHelp(context.TaskId)">Get Help</Button>
 									}
+									@if (ParticipantTasks.Any(e => e.ParticipantUserId == userId && e.TeamTaskId == context.Id)
+											&& context.TaskStatusNavigation.Id == 7)
+									{
+										<Button Color="Color.Secondary" @onclick="() => OffHelp(context.TaskId)">Stop Help call</Button>
+									}
 								</DisplayTemplate>
 							</DataGridColumn>
 							<DataGridColumn Caption="Join to Task" Sortable="false" Displayable="true">
@@ -320,6 +325,17 @@ else
 		// HELP MEEEEE!!!
 		var updatedTeamTask = allTeamTasks.FirstOrDefault(e => e.TaskId == taskId && e.TeamId == participantClaims.CurrentTeamtId);
 		updatedTeamTask.TaskStatus = (int)TaskStatusEnm.NeedHelp;
+		await TeamTaskController.Update(updatedTeamTask.Id, updatedTeamTask);
+		await TeamTaskController.GetAllWithConditions(currentTasksFromTeamTasksFilter);
+		allTeamTasks = TeamTaskController.messages.ToList();
+		StateHasChanged();
+	}
+
+	public async Task OffHelp(int taskId)
+	{
+		// HELP MEEEEE!!!
+		var updatedTeamTask = allTeamTasks.FirstOrDefault(e => e.TaskId == taskId && e.TeamId == participantClaims.CurrentTeamtId);
+		updatedTeamTask.TaskStatus = (int)TaskStatusEnm.InProgress;
 		await TeamTaskController.Update(updatedTeamTask.Id, updatedTeamTask);
 		await TeamTaskController.GetAllWithConditions(currentTasksFromTeamTasksFilter);
 		allTeamTasks = TeamTaskController.messages.ToList();
