@@ -8,9 +8,9 @@ import { TwitterRecord } from './../entities';
 
 export class InitializeController
 {
-    static records: TwitterRecord[];
+    //static records: TwitterRecord[];
 
-    public static getAllActualRecords = async () => {
+    public static async getAllActualRecords(){
         let token = process.env.TEST_TOKEN; //TODO make real authorization
         var mssql = new MssqlAccessorService<TwitterRecord>("/TwitterRecords");
         mssql.connect( String(token));  
@@ -19,24 +19,24 @@ export class InitializeController
         }
         const twitterUnsortedRecords: TwitterRecord[] = await mssql.getAllWithCondition(filter);
         twitterUnsortedRecords.forEach((record: TwitterRecord) => {
-            this.CheckRecordJobs(record);
+           // this.CheckRecordJobs(record);
         });
 
     }
 
-    public static CheckRecordJobs = async (record: TwitterRecord) => {
+    public static async CheckRecordJobs(record: TwitterRecord){
         let token = process.env.TEST_TOKEN; //TODO make real authorization
         var mssql = new MssqlAccessorService<TwitterRecord>("/TwitterRecords");
         mssql.connect( String(token)); 
         var needUpdate: boolean = false;
         if (PORT != record.enginePort && record.isSearching){ // remote cron fails
             try {
-                // const response = await axios.get(`${process.env.HOST_URL}:${record.enginePort}/CronSchedule/${record.engineCronUuid}/status`);
-                // if (response.status === 200 && response.data === "running") {
-                //     needUpdate = false;
-                // } else {
-                //     needUpdate = true;
-                // }
+                const response = await axios.get(`${process.env.HOST_URL}:${record.enginePort}/CronSchedule/${record.engineCronUuid}/status`);
+                if (response.status === 200 && response.data === "running") {
+                    needUpdate = false;
+                } else {
+                    needUpdate = true;
+                }
             } catch (error) {
                 console.error(error);
                 needUpdate = true;

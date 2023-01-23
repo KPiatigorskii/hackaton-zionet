@@ -52,12 +52,13 @@ app.use((req, res, next) => {
 })
 
 
+//InitializeController.getAllActualRecords();
+
 export const PORT: any = process.env.PORT ?? 6978;
 
 
-http.createServer(app).listen(PORT, async () => {
-  console.log(`HTTP server started on port ${PORT}`);
-  await InitializeController.getAllActualRecords();
+http.createServer(app).listen(PORT, () => {
+  console.log(`HTTP server started on port ${PORT}`); 
 });
 
 
