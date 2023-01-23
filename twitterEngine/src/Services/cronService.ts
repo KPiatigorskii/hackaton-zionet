@@ -26,14 +26,15 @@ export class CronService {
         }
     }
 
+    public static getCronByUuid(cronUuid: string, token: string){
+        if (this.isCronRunning(cronUuid))
+            return true;
+        else
+            return false;
+    }
+
     public static isCronRunning(engineCronUuid: string): boolean {
         const job = CronService.cronJobs[engineCronUuid];
         return job?.running === true;
     }
-
-    public static getCronByUuid(cronUuid: string, token: string)
-    {
-
-    }
-
 }

@@ -8,34 +8,39 @@ import { TwitterRecord } from './../entities';
 
 export class InitializeController
 {
-    static mssql: MssqlAccessorService<TwitterRecord>;
-
-    constructor() {
-        InitializeController.mssql = new MssqlAccessorService<TwitterRecord>("/TwitterRecords");
-        
-    }
     static records: TwitterRecord[];
-    public static async getAllActualRecords() : Promise<TwitterRecord[]> {
 
+    public static getAllActualRecords = async () => {
         let token = process.env.TEST_TOKEN; //TODO make real authorization
-
-        let twitterService = new TwitterService();
-        this.mssql.connect( String(token));
+        var mssql = new MssqlAccessorService<TwitterRecord>("/TwitterRecords");
+        mssql.connect( String(token));  
         const filter : Record<string, any> = {
             "AlreadyFound": false,
         }
-        const twitterUnsortedRecords: TwitterRecord[] = await InitializeController.mssql.getAllWithCondition(filter);
+        const twitterUnsortedRecords: TwitterRecord[] = await mssql.getAllWithCondition(filter);
         twitterUnsortedRecords.forEach((record: TwitterRecord) => {
             this.CheckRecordJobs(record);
         });
-    return  this.records;
 
     }
 
-    public static CheckRecordJobs(record: TwitterRecord){
+    public static CheckRecordJobs = async (record: TwitterRecord) => {
+        let token = process.env.TEST_TOKEN; //TODO make real authorization
+        var mssql = new MssqlAccessorService<TwitterRecord>("/TwitterRecords");
+        mssql.connect( String(token)); 
         var needUpdate: boolean = false;
         if (PORT != record.enginePort && record.isSearching){ // remote cron fails
-            needUpdate = true;//axios(`${process.env.HOST_URL}:${record.enginePort}/CronSchedule/${record.engineCronUuid}`); // ping service
+            try {
+                // const response = await axios.get(`${process.env.HOST_URL}:${record.enginePort}/CronSchedule/${record.engineCronUuid}/status`);
+                // if (response.status === 200 && response.data === "running") {
+                //     needUpdate = false;
+                // } else {
+                //     needUpdate = true;
+                // }
+            } catch (error) {
+                console.error(error);
+                needUpdate = true;
+            }
         }
         if (PORT == record.enginePort && record.isSearching){ // our cron fails
             needUpdate = !CronService.isCronRunning(record.engineCronUuid);
@@ -44,9 +49,8 @@ export class InitializeController
             record.enginePort = PORT;
             record.isSearching = true;
             record.engineCronUuid = CronService.startCron(record, process.env.TEST_TOKEN || "");
-            InitializeController.mssql.updateOne(record.id, record)
+            //console.log(`start cron with uuid ${record.engineCronUuid}`);
+            mssql.updateOne(record.id, record)
         }
     }
-
-    
 }
