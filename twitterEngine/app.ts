@@ -40,20 +40,19 @@ app.use('/twitter', twitterRoutes.router);
 app.use('/mssqlAccessor',mssqlAccessorRoutes.router )
 
 /** Error handling */
-// app.use((req, res, next) => {
-//     const error = new Error('not found');
-//     return res.status(404).json({
-//         message: error.message
-//     });
-// });
-export const PORT: number = Number(process.env.PORT) || 6978;
+app.use((req, res, next) => {
+    const error = new Error('not found');
+    return res.status(404).json({
+        message: error.message
+    });
+});
+
+export const PORT: number = Number(process.argv[2]) || Number(process.env.PORT) || 6978;
 InitializeController.setPort(PORT);
 
 console.log("Starting server with cron job every 30 second...");
 cron.schedule('*/30 * * * * *', () => 
 InitializeController.getAllActualRecords());
-
-
 
 http.createServer(app).listen(PORT, () => {
   console.log(`HTTP server started on port ${PORT}`); 
