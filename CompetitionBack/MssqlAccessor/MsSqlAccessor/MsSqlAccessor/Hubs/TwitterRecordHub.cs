@@ -6,6 +6,7 @@ using Task = System.Threading.Tasks.Task;
 
 namespace MsSqlAccessor.Hubs
 {
+    [Authorize(Policy = "api_admin")]
     public class TwitterRecordHub<Tmodel, TmodelDTO> : Hub where Tmodel : class, IdModel, new() where TmodelDTO : class, IdModel, new()
     {
         private const string GetAllRoles = "admin";
@@ -24,7 +25,7 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("GetAll")]
-        [Authorize(Roles = GetAllRoles)]
+        //[Authorize(Roles = GetAllRoles)]
         public async Task GetAll()
         {
             var dtoItems = await _dbController.GetAll();
@@ -33,7 +34,8 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("GetAllWithConditions")]
-        [Authorize(Roles = GetAllRoles)]
+        //[Authorize(Roles = GetOneRoles)]
+        //[Authorize(Policy = "api_admin")]
         public async Task GetAllWithConditions(Dictionary<string, object> filters)
         {
             var dtoItems = await _dbController.GetAllWithConditions(filters);
@@ -42,7 +44,8 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("GetOne")]
-        [Authorize(Roles = GetOneRoles)]
+        //[Authorize(Roles = GetOneRoles)]
+        //[Authorize(Policy = "api_admin")]
         public async Task GetOne(int id)
         {
             TmodelDTO dtoItem;
@@ -59,7 +62,7 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("GetOneWithConditions")]
-        [Authorize(Roles = GetOneRoles)]
+        //[Authorize(Roles = GetOneRoles)]
         public async Task GetOneWithConditions(Dictionary<string, object> filters)
         {
             TmodelDTO dtoItem;
@@ -76,7 +79,8 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("Update")]
-        [Authorize(Roles = UpdateRoles)]
+        //[Authorize(Roles = UpdateRoles)]
+        //[Authorize(Policy = "api_admin")]
         public async Task Update(int id, TmodelDTO dtoItem)
         {
             var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
@@ -97,7 +101,7 @@ namespace MsSqlAccessor.Hubs
 		}
 
         [HubMethodName("Create")]
-        [Authorize(Roles = CreateRoles)]
+        //[Authorize(Roles = CreateRoles)]
         public async Task Create(TmodelDTO dtoItem)
         {
             var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
@@ -118,7 +122,7 @@ namespace MsSqlAccessor.Hubs
 		}
 
         [HubMethodName("Delete")]
-        [Authorize(Roles = DeleteRoles)]
+        //[Authorize(Roles = DeleteRoles)]
         public async Task Delete(int id)
         {
             var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
@@ -139,7 +143,7 @@ namespace MsSqlAccessor.Hubs
 		}
 
         [HubMethodName("ForceDelete")]
-        [Authorize(Roles = ForceDeleteRoles)]
+        //[Authorize(Roles = ForceDeleteRoles)]
         public async Task ForceDelete(int id)
         {
             var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
