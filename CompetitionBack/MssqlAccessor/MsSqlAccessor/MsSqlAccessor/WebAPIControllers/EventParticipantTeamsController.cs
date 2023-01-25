@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MsSqlAccessor.Interfaces;
 using MsSqlAccessor.Models;
+using Newtonsoft.Json;
 
 namespace MsSqlAccessor.WebAPIControllers
 {
@@ -14,17 +16,24 @@ namespace MsSqlAccessor.WebAPIControllers
     public class EventParticipantTeamsHub : ControllerBase
     {
         private readonly CompetitionBdTestContext _context;
+		private readonly ILoggerManager _logger;
 
-        public EventParticipantTeamsHub(CompetitionBdTestContext context)
+		public EventParticipantTeamsHub(CompetitionBdTestContext context, ILoggerManager logger)
         {
             _context = context;
-        }
+			_logger = logger;
+		}
 
         // GET: api/EventParticipantTeams
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EventParticipantTeam>>> GetEventParticipantTeams()
         {
-            return await _context.EventParticipantTeams.ToListAsync();
+			_logger.LogInfo("Here is info message from the controller.");
+			_logger.LogDebug("Here is debug message from the controller.");
+			_logger.LogWarn("Here is warn message from the controller.");
+			_logger.LogError("Here is error message from the controller.");
+
+			return await _context.EventParticipantTeams.ToListAsync();
         }
 
         // GET: api/EventParticipantTeams/5
@@ -38,7 +47,9 @@ namespace MsSqlAccessor.WebAPIControllers
                 return NotFound();
             }
 
-            return eventParticipantTeam;
+			_logger.LogInfo(JsonConvert.SerializeObject(eventParticipantTeam));
+
+			return eventParticipantTeam;
         }
 
         // PUT: api/EventParticipantTeams/5
