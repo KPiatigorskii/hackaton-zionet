@@ -14,23 +14,23 @@ public partial class EventParticipantTeam : IdModel
 
     public int? TeamId { get; set; }
 
-    public bool? IsLeader { get; set; }
+	public bool IsLeader { get; set; }
 
-    public bool? IsTwitt { get; set; }
+	public bool IsTwitt { get; set; }
 
-    public int StatusId { get; set; }
+	public int StatusId { get; set; }
 
-	public bool IsActive { get; set; } = false;
+	public bool IsActive { get; set; }
 
-	public bool IsApplied { get; set; } = false;
+	public bool IsApplied { get; set; }
 
 	public virtual Event Event { get; set; } = null!;
 
-    public virtual User Participant { get; set; } = null!;
+	public virtual User Participant { get; set; } = null!;
 
-    public virtual Status Status { get; set; } = null!;
+	public virtual Status Status { get; set; } = null!;
 
-    [JsonIgnore]
+	[JsonIgnore]
     public virtual ICollection<TaskParticipant> TaskParticipants { get; } = new List<TaskParticipant>();
 
     public virtual Team? Team { get; set; }

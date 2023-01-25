@@ -126,7 +126,8 @@ namespace MsSqlAccessor
             builder.Services.AddTransient<GenDbController<User, UserDTO>>();
             builder.Services.AddTransient<GenDbController<EventStatus, EventStatusDTO>>();
             builder.Services.AddTransient<GenDbController<TaskStatus, TaskStatusDTO>>();
-            builder.Services.AddTransient<AuthUserDbController>();
+			builder.Services.AddTransient<GenDbController<TwitterRecord, TwitterRecordDTO>>();
+			builder.Services.AddTransient<AuthUserDbController>();
 
 
 
@@ -174,8 +175,9 @@ namespace MsSqlAccessor
 			app.MapHub<UserHub<User, UserDTO>>("/Users");
             app.MapHub<EventStatusHub<EventStatus, EventStatusDTO>>("/EventStatuss");
             app.MapHub<TaskStatusHub<TaskStatus, TaskStatusDTO>>("/TaskStatuss");
+			app.MapHub<TwitterRecordHub<TwitterRecord, TwitterRecordDTO>>("/TwitterRecords");
 
-            app.MapControllers();
+			app.MapControllers();
 			app.Run();
 		}
 		public void Configuration(IAppBuilder app)
