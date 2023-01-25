@@ -17,6 +17,8 @@ using System.Security.Claims;
 using Task = MsSqlAccessor.Models.Task;
 using Microsoft.Extensions.DependencyInjection;
 using TaskStatus = MsSqlAccessor.Models.TaskStatus;
+using NLog;
+using MsSqlAccessor.Interfaces;
 
 namespace MsSqlAccessor
 {
@@ -26,9 +28,12 @@ namespace MsSqlAccessor
 		{
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+			LogManager.LoadConfiguration(string.Concat(Directory.GetCurrentDirectory(), "/nlog.config"));
+			builder.Services.ConfigureLoggerService();
 
-            builder.Services.AddControllers().AddJsonOptions(options => {
+			// Add services to the container.
+
+			builder.Services.AddControllers().AddJsonOptions(options => {
 				options.JsonSerializerOptions.PropertyNamingPolicy = null;
 			});
 
@@ -180,6 +185,7 @@ namespace MsSqlAccessor
 			app.MapControllers();
 			app.Run();
 		}
+
 		public void Configuration(IAppBuilder app)
 		{
 			// Any connection or hub wire up and configuration should go here

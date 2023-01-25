@@ -12,8 +12,10 @@ using MsSqlAccessor;
 using MsSqlAccessor.Enums;
 using MsSqlAccessor.Helpers;
 using MsSqlAccessor.Hubs;
+using MsSqlAccessor.Interfaces;
 using MsSqlAccessor.Models;
 using MsSqlAccessor.Services;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using static NuGet.Packaging.PackagingConstants;
 
@@ -22,15 +24,19 @@ namespace MsSqlAccessor.DbControllers
     public class GenDbController<Tmodel, TmodelDTO> where Tmodel : class, IdModel, new() where TmodelDTO : class, IdModel, new()
     {
         private readonly CompetitionBdTestContext _context;
+		private readonly ILoggerManager _logger;
 
-        public GenDbController(CompetitionBdTestContext context)
+		public GenDbController(CompetitionBdTestContext context, ILoggerManager logger)
         {
             _context = context;
-        }
+			_logger = logger;
+		}
 
         public async Task<IEnumerable<TmodelDTO>> GetAll()
         {
-            var dtoItems = await _context.Set<Tmodel>()
+			_logger.LogInfo($"Request to DB all: {typeof(Tmodel).Name}");
+
+			var dtoItems = await _context.Set<Tmodel>()
                 .IncludeVirtualProperties(new Tmodel { })
                 .Where(e => e.StatusId == (int)StatusEnm.Active)
                 .Select(e => e.ConvertToDto<Tmodel, TmodelDTO>())
@@ -41,6 +47,8 @@ namespace MsSqlAccessor.DbControllers
 
 		public async Task<IEnumerable<TmodelDTO>> GetAllWithConditions(Dictionary<string, object> filters)
 		{
+			_logger.LogInfo($"Request to DB all: {typeof(Tmodel).Name} with filter: {JsonConvert.SerializeObject(filters)}");
+
 			Expression<Func<Tmodel, bool>> filter = x => true; // Initialize the filter with a "true" expression
             foreach (var item in filters)  //Casting
             {
@@ -80,14 +88,18 @@ namespace MsSqlAccessor.DbControllers
 
 		public async Task<TmodelDTO> GetOne(int id)
         {
-            var dbItem = await _context.Set<Tmodel>()
+			_logger.LogInfo($"Request to DB: {typeof(Tmodel).Name} with id={id}");
+
+			var dbItem = await _context.Set<Tmodel>()
                 .IncludeVirtualProperties(new Tmodel { })
                 .Where(e => e.StatusId == (int)StatusEnm.Active)
                 .FirstOrDefaultAsync(e => e.Id == id);
 
             if (dbItem == null)
             {
-                throw new Exception(Errors.ItemNotFound);
+				_logger.LogError($"Error: {Errors.ItemNotFound}");
+
+				throw new Exception(Errors.ItemNotFound);
             }
 
             var dtoItem = dbItem.ConvertToDto<Tmodel, TmodelDTO>();
@@ -97,6 +109,8 @@ namespace MsSqlAccessor.DbControllers
 
 		public async Task<TmodelDTO> GetOneWithConditions(Dictionary<string, object> filters)
 		{
+			_logger.LogInfo($"Request to DB one: {typeof(Tmodel).Name} with filter: {JsonConvert.SerializeObject(filters)}");
+
 			Expression<Func<Tmodel, bool>> filter = x => true; // Initialize the filter with a "true" expression
             foreach (var item in filters)  //Casting
             {
@@ -130,6 +144,8 @@ namespace MsSqlAccessor.DbControllers
 
 			if (dbItem == null)
 			{
+				_logger.LogError($"Error: {Errors.ItemNotFound}");
+
 				throw new Exception(Errors.ItemNotFound);
 			}
 
@@ -140,11 +156,15 @@ namespace MsSqlAccessor.DbControllers
 
 		public async Task<TmodelDTO> Update(int id, TmodelDTO dtoItem, string userEmail)
         {
-            int userId = await GetUserIdByEmail(userEmail);
+			_logger.LogInfo($"Request to update in DB: {typeof(Tmodel).Name} with id={id} from userEmail={userEmail}");
+
+			int userId = await GetUserIdByEmail(userEmail);
 
             if (id != dtoItem.Id)
             {
-                throw new Exception(Errors.BadRequest);
+				_logger.LogError($"Error: {Errors.BadRequest}");
+
+				throw new Exception(Errors.BadRequest);
             }
 
             var dbItem = await _context.Set<Tmodel>()
@@ -154,7 +174,9 @@ namespace MsSqlAccessor.DbControllers
 
             if (dbItem == null)
             {
-                throw new Exception(Errors.ItemNotFound);
+				_logger.LogError($"Error: {Errors.ItemNotFound}");
+
+				throw new Exception(Errors.ItemNotFound);
             }
 
             dbItem = dbItem.MakeChangesFromDto<Tmodel, TmodelDTO>(dtoItem);
@@ -171,9 +193,11 @@ namespace MsSqlAccessor.DbControllers
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
-                throw new Exception(Errors.General);
+				_logger.LogError($"Error: {JsonConvert.SerializeObject(ex)}");
+
+				throw new Exception(Errors.General);
             }
 
             var dbItemResult = await _context.Set<Tmodel>().IncludeVirtualProperties(new Tmodel { }).FirstOrDefaultAsync(e => e.Id == id);
@@ -184,7 +208,9 @@ namespace MsSqlAccessor.DbControllers
 
         public async Task<TmodelDTO> Create(TmodelDTO dtoItem, string userEmail)
         {
-            int userId = await GetUserIdByEmail(userEmail);
+			_logger.LogInfo($"Request to create in DB: {typeof(Tmodel).Name} from userEmail={userEmail}");
+
+			int userId = await GetUserIdByEmail(userEmail);
 
             Tmodel dbItem = dtoItem.ConvertFromDto<Tmodel, TmodelDTO>();
 
@@ -199,9 +225,11 @@ namespace MsSqlAccessor.DbControllers
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
-                if (isItemExists(dbItem.Id))
+				_logger.LogError($"Error: {JsonConvert.SerializeObject(ex)}");
+
+				if (isItemExists(dbItem.Id))
                 {
                     throw new Exception(Errors.ConflictData);
                 }
@@ -218,12 +246,16 @@ namespace MsSqlAccessor.DbControllers
 
         public async Task<TmodelDTO> Delete(int id, string userEmail)
         {
-            int userId = await GetUserIdByEmail(userEmail);
+			_logger.LogInfo($"Request to delete in DB: {typeof(Tmodel).Name} with id={id} from userEmail={userEmail}");
+
+			int userId = await GetUserIdByEmail(userEmail);
 
             var dbItem = await _context.Set<Tmodel>().FindAsync(id);
             if (dbItem == null)
             {
-                throw new Exception(Errors.ItemNotFound);
+				_logger.LogError($"Error: {Errors.ItemNotFound}");
+
+				throw new Exception(Errors.ItemNotFound);
             }
 
             dbItem.StatusId = (int)StatusEnm.NotActive;
@@ -236,9 +268,11 @@ namespace MsSqlAccessor.DbControllers
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
-                throw new Exception(Errors.General);
+				_logger.LogError($"Error: {JsonConvert.SerializeObject(ex)}");
+
+				throw new Exception(Errors.General);
             }
 
             var dbItemResult = await _context.Set<Tmodel>().IncludeVirtualProperties(new Tmodel { }).FirstOrDefaultAsync(e => e.Id == id);
@@ -249,12 +283,16 @@ namespace MsSqlAccessor.DbControllers
 
         public async Task<TmodelDTO> ForceDelete(int id, string userEmail)
         {
-            int userId = await GetUserIdByEmail(userEmail);
+			_logger.LogInfo($"Request to FORCE delete in DB: {typeof(Tmodel).Name} with id={id} from userEmail={userEmail}");
+
+			int userId = await GetUserIdByEmail(userEmail);
 
             var dbItem = await _context.Set<Tmodel>().FindAsync(id);
             if (dbItem == null)
             {
-                throw new Exception(Errors.ItemNotFound);
+				_logger.LogError($"Error: {Errors.ItemNotFound}");
+
+				throw new Exception(Errors.ItemNotFound);
             }
 
             _context.Set<Tmodel>().Remove(dbItem);
@@ -262,9 +300,11 @@ namespace MsSqlAccessor.DbControllers
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
-                throw new Exception(Errors.General);
+				_logger.LogError($"Error: {JsonConvert.SerializeObject(ex)}");
+
+				throw new Exception(Errors.General);
             }
 
             return new TmodelDTO();
