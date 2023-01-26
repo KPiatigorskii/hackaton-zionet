@@ -17,6 +17,8 @@ using System.Security.Claims;
 using Task = MsSqlAccessor.Models.Task;
 using Microsoft.Extensions.DependencyInjection;
 using TaskStatus = MsSqlAccessor.Models.TaskStatus;
+using Microsoft.AspNetCore.Authorization;
+using MsSqlAccessor.Helpers;
 
 namespace MsSqlAccessor
 {
@@ -28,11 +30,12 @@ namespace MsSqlAccessor
 
             builder.Services.AddAuthorization(options =>
             {
-                //options.AddPolicy("read_messages", policy => policy.Requirements.Add(new HasScopeRequirement("read:messages", domain)));
-                options.AddPolicy("api_admin", policy => policy.RequireClaim("permissions", "pg:tenant:admin"));
-                options.AddPolicy("admin", policy => policy.RequireClaim("roles", "admin"));
-                options.AddPolicy("participant", policy => policy.RequireClaim("roles", "participant"));
-            });
+                options.AddPolicy("admin", policy => policy.Requirements.Add(new AuthorizationRequirementPolicy("admin")));
+                options.AddPolicy("manager", policy => policy.Requirements.Add(new AuthorizationRequirementPolicy("manager")));
+                options.AddPolicy("participant", policy => policy.Requirements.Add(new AuthorizationRequirementPolicy("participant")));
+});
+
+            builder.Services.AddSingleton<IAuthorizationHandler, PolicyAuthorizationHandler>();
 
             // Add services to the container.
 
