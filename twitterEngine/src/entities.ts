@@ -1,9 +1,5 @@
 import { RandomUUIDOptions } from "crypto"
 
-export interface tweetEntity {
-    
-}
-
 export interface TeamMember{
     id: number,
     twitterAuthorId: number
@@ -29,21 +25,21 @@ export interface Role {
 }
 
 export interface User {
-        id : number,
-        email : string,
-        github : string,
-        firstName: string,
-        lastName : string,
-        login : string,
-        roleId : number,
-        createDate : Date,
-        updateDate : Date,
-        createUserId : number,
-        updateUserId : number,
-        statusId : number,
-        role: Role,
-        status: Status
-    }
+    id : number,
+    email : string,
+    github : string,
+    firstName: string,
+    lastName : string,
+    login : string,
+    roleId : number,
+    createDate : Date,
+    updateDate : Date,
+    createUserId : number,
+    updateUserId : number,
+    statusId : number,
+    role: Role,
+    status: Status
+}
 
 export interface TwitterRecord{
     id: number,

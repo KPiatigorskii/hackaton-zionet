@@ -9,15 +9,15 @@ const cron = require('node-cron');
 export class CronService {
     public static cronJobs: Record<string, any> = {};
 
-    public static startCron(record : TwitterRecord, token: string){
+    public static startCron(record : TwitterRecord){
         let newUuid = uuidv4();
         CronService.cronJobs[newUuid] = cron.schedule('*/30 * * * * *', () => 
-            TwitterService.getTweets(record, token));
+            TwitterService.getTweets(record));
         return newUuid;
 
     }
 
-    public static stopCron(engineCronUuid: string, token: string): any {
+    public static stopCron(engineCronUuid: string): any {
         try {
             CronService.cronJobs[engineCronUuid].stop();
             console.log(`cron task ${engineCronUuid} was successfully stopped`);
@@ -26,7 +26,7 @@ export class CronService {
         }
     }
 
-    public static getCronByUuid(cronUuid: string, token: string){
+    public static getCronByUuid(cronUuid: string){
         if (this.isCronRunning(cronUuid))
             return true;
         else

@@ -1,3 +1,4 @@
+import { AuthService } from "./AuthService";
 
 export class MssqlAccessorService<T> {
 	signalR = require("@microsoft/signalr");
@@ -10,12 +11,11 @@ export class MssqlAccessorService<T> {
 		this.url = process.env.MSSQL_ACCESSOR_URL + Huburl
 	}
 
-	public async connect (token: string){
-
+	public async connect (){
 		this.connection = new this.signalR.HubConnectionBuilder()
 			//.configureLogging(this.signalR.LogLevel.Debug)
 			.withUrl(this.url, {
-				headers: {"Authorization": "Bearer " + token },
+				headers: {"Authorization": "Bearer " + AuthService.getToken() },
 				skipNegotiation: true,
 				transport: this.signalR.HttpTransportType.WebSockets
 			})

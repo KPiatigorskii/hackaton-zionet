@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { CronService } from '../services/CronService';
+import { CronService } from '../services/cronService';
 import { MssqlAccessorService } from '../services/MssqlAccessorService';
 import { TwitterRecord } from './../entities';
 import { PORT } from '../../app';
@@ -13,10 +13,9 @@ export class InitializeController
     }
 
     public static async getAllActualRecords(){
-        let token = process.env.TEST_TOKEN; //TODO make real authorization
         var mssql = new MssqlAccessorService<TwitterRecord>("/TwitterRecords");
         console.log("Getting records from DB for searching....")
-        mssql.connect( String(token));  
+        mssql.connect();  
         const filter : Record<string, any> = {
             "AlreadyFound": false,
         }
@@ -32,7 +31,7 @@ export class InitializeController
     public static async CheckRecordJobs(record: TwitterRecord){
         let token = process.env.TEST_TOKEN; //TODO make real authorization
         var mssql = new MssqlAccessorService<TwitterRecord>("/TwitterRecords");
-        mssql.connect( String(token)); 
+        mssql.connect(); 
         var needUpdate: boolean = false;
         if (InitializeController.port != record.enginePort && record.isSearching){ // remote cron fails
             console.log(`Get remote job status from port ${record.enginePort}`)
@@ -59,7 +58,7 @@ export class InitializeController
             console.log(`Starting new cron job...`);
             record.enginePort = InitializeController.port;
             record.isSearching = true;
-            record.engineCronUuid = CronService.startCron(record, process.env.TEST_TOKEN || "");
+            record.engineCronUuid = CronService.startCron(record);
             console.log(`Job successfully started with uuid=${record.engineCronUuid}`);
             mssql.updateOne(record.id, record)
             console.log(`Job successfully updated on DB`);

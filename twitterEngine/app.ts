@@ -4,7 +4,7 @@ import express, { Express } from 'express';
 import  twitterRoutes from '../twitterEngine/src/routes/twitterRoutes'
 import cronRoutes from '../twitterEngine/src/routes/cronRoutes'
 import mssqlAccessorRoutes from './src/routes/mssqlAccessorRoutes';
-
+import { AuthService } from "./src/services/AuthService"
 import * as dotenv from 'dotenv'
 import { InitializeController } from './src/controllers/initializeController';
 dotenv.config()
@@ -50,9 +50,14 @@ app.use((req, res, next) => {
 export const PORT: number = Number(process.argv[2]) || Number(process.env.PORT) || 6978;
 InitializeController.setPort(PORT);
 
+AuthService.receiveToken();
+
 console.log("Starting server with cron job every 30 second...");
-cron.schedule('*/30 * * * * *', () => 
+cron.schedule('*/5 * * * * *', () => 
 InitializeController.getAllActualRecords());
+
+cron.schedule('0 */22 * * *', () =>  // every 22 hours we refresh token
+AuthService.receiveToken());
 
 http.createServer(app).listen(PORT, () => {
   console.log(`HTTP server started on port ${PORT}`); 

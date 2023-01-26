@@ -1,19 +1,25 @@
-import { TwitterApi } from 'twitter-api-v2';
-import { Team, TwitterRecord } from '../entities'
-import { CronService } from './CronService'
+import { TweetSearchRecentV2Paginator, TwitterApi } from 'twitter-api-v2';
+import { Team, TwitterRecord, User } from '../entities'
+//import { CronService } from './CronService'
 import { ApiHelper } from '../helpers/ApiHelper';
 import * as dotenv from 'dotenv' // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
 dotenv.config()
+import { MssqlAccessorService } from './MssqlAccessorService';
+import { CronService } from './cronService';
+
 
 
 export class TwitterService {
 	twitterClient: TwitterApi;
-	apiHelper: ApiHelper;
+	static mssqlUser: MssqlAccessorService<User>;
 	static twitterClient: any;
 	static apiHelper: any;
+	static user: User;
+	static formattedDate: string | undefined ;
 
 	constructor() {
-		this.apiHelper = new ApiHelper();
+		TwitterService.mssqlUser = new MssqlAccessorService<User>("/Users");
+		TwitterService.mssqlUser.connect();
         this.twitterClient = new TwitterApi({
             appKey: String(process.env.TWITTER_API_KEY) || '',
             appSecret: String(process.env.TWITTER_API_SECRET) || '',
@@ -22,42 +28,47 @@ export class TwitterService {
           });
 		if (this.twitterClient == null) {
 			throw new Error("Can't authorize in twitter");
-
 		}
 	}
 
-	public static async getTweets(record: TwitterRecord, token: string): Promise<any> {
-			let minutesInterval = 2;
-			let currentDate = new Date();
-			currentDate.setMinutes(currentDate.getMinutes() - minutesInterval);
-			let formattedDate = currentDate.toISOString();
-			console.log(formattedDate);
-			console.log(`Searching tweets in proccess ${record.engineCronUuid} with data: 
-			${record.teamName} 
-			${record.eventName} 
-			${record.authorId}`);
-			const result =await this.twitterClient.v2.search(record.eventName + " " + record.teamName,
-							{ 'expansions': 'author_id', 'start_time': formattedDate })
-			console.log("==============================================")
-			try {
-				var isMatched = false;
-				for (const tweet of result.tweets) {
-					console.log("author_id: " + tweet.author_id);
-					console.log("text: " + tweet.text.substring(0, 20));
-					if (tweet.author_id == String(record.authorId)) {// get match from team members
-						isMatched = true;
-					}
-				}
-				if (isMatched) {
-					console.log("Found a match!");
-					this.apiHelper.UserIsTwit(record.participantId);
-					console.log(`Stopping cron job with uuid=${record.engineCronUuid}`);
-					CronService.stopCron(record.engineCronUuid, token);
-					return "Tweet is stopped";
-				}
-			} catch (error) {
-				console.log("smthing goes wrong.....");
+	public static async getTweets(record: TwitterRecord): Promise<any> {
+		TwitterService.formattedDate = TwitterService.getDateinterval(Number(process.env.TWITTER_SEARCH_MINUTES_RANGE));
+		console.log(`Searching tweets in proccess ${record.engineCronUuid} with data: 
+		teamName='${record.teamName}'
+		recordName='${record.eventName}'
+		authorId='${record.authorId}'`);
+		const result: TweetSearchRecentV2Paginator =await this.twitterClient.v2.search(record.eventName + " " + record.teamName,
+						{ 'expansions': 'author_id', 'start_time': TwitterService.formattedDate })
+		console.log("==============================================")
+		try {
+			if (TwitterService.matchTweets(result.tweets, record)) {
+				TwitterService.updateTweetParticipant(record);
 			}
+		} catch (error) {
+			console.log("smthing goes wrong.....");
+		}
+	}
+
+	public static matchTweets(tweets: any, record: TwitterRecord): boolean{
+		for (const tweet of tweets) {
+			console.log("author_id: " + tweet.author_id);
+			console.log("text: " + tweet.text.substring(0, 20));
+			if (tweet.author_id == String(record.authorId)) {// get match from team members
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static updateTweetParticipant(record: TwitterRecord){
+		console.log("Found a match!");
+		const filter : Record<string, any> = { "Id": record.participantId }
+		TwitterService.mssqlUser.getOneWithCondition(filter);
+		TwitterService.user = TwitterService.mssqlUser.message;
+		TwitterService.mssqlUser.updateOne(TwitterService.user.id, TwitterService.user);
+		console.log(`Stopping cron job with uuid=${record.engineCronUuid}`);
+		CronService.stopCron(record.engineCronUuid);
+		console.log("Tweet is stopped");
 	}
 
 	public sendTweet(tweetString: string){
@@ -70,5 +81,12 @@ export class TwitterService {
 				reject(error)
 			})
 		});
+	}
+
+	public static getDateinterval(minutesInterval: number): string{
+		let currentDate = new Date();
+		currentDate.setMinutes(currentDate.getMinutes() - minutesInterval);
+		let formattedDate = currentDate.toISOString();
+		return formattedDate;
 	}
 }

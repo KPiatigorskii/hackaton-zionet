@@ -7,7 +7,7 @@ import { TwitterRecord } from './../entities';
 const twitterService = new TwitterService()
 
 const getTweets = async (req: Request, res: Response, next: NextFunction) => {
-	TwitterService.getTweets(req.body as TwitterRecord, String(req.headers['authorization']) || '')
+	TwitterService.getTweets(req.body as TwitterRecord)
 		.then((result: any) => {
 			return res.status(200).json({
 				message: result
