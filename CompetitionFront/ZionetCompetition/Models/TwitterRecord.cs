@@ -1,10 +1,10 @@
-﻿using MsSqlAccessor.Models;
+﻿using ZionetCompetition.Models;
 using System;
 using System.Collections.Generic;
 
-namespace MsSqlAccessor.Models;
+namespace ZionetCompetition.Models;
 
-public partial class TwitterRecord : IdModel
+public partial class TwitterRecord
 {
     public int Id { get; set; }
 
