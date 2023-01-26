@@ -18,6 +18,9 @@ using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Mvc;
 using TaskStatus = ZionetCompetition.Models.TaskStatus;
 using NuGet.Protocol.Plugins;
+using Microsoft.AspNetCore.Authentication;
+using Newtonsoft.Json.Linq;
+using RestSharp;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -85,8 +88,9 @@ builder.Services
         {
             OnTokenValidated = async (context) =>
             {
-                var token = context.SecurityToken.RawHeader+ "." + 
-                context.SecurityToken.RawPayload + "." + context.SecurityToken.RawSignature;
+
+                var token = context.TokenEndpointResponse?.AccessToken;
+
                 var email = context.Principal.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
 
                 var claims = new List<Claim>
