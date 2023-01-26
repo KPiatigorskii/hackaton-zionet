@@ -26,7 +26,7 @@ namespace MsSqlAccessor.Controllers
         // GET: api/Users
         
         [HttpGet]
-        [Authorize(Roles ="user")]
+        [Authorize(Policy ="participant")]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
             var jwt = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");

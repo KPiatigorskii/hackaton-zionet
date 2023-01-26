@@ -17,7 +17,7 @@ public partial class TwitterRecordDTO : IdModel
 
     public int EnginePort { get; set; }
 
-    public int EngineCronUuid { get; set; }
+    public string EngineCronUuid { get; set; }
 
     public bool IsSearching { get; set; }
 

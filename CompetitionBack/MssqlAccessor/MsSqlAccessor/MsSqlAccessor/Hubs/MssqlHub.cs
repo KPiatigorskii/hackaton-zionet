@@ -48,7 +48,7 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("GetOne")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Policy = "admin")]
         public async Task GetOne(int id)
         {
             var dbItem = await _context.Set<Tmodel>()

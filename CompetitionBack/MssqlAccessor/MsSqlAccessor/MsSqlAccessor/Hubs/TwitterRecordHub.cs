@@ -6,14 +6,15 @@ using Task = System.Threading.Tasks.Task;
 
 namespace MsSqlAccessor.Hubs
 {
+    [Authorize(Policy = "admin")]
     public class TwitterRecordHub<Tmodel, TmodelDTO> : Hub where Tmodel : class, IdModel, new() where TmodelDTO : class, IdModel, new()
     {
-        private const string GetAllRoles = "admin";
-        private const string GetOneRoles = "admin";
-        private const string UpdateRoles = "admin";
-        private const string CreateRoles = "admin";
-        private const string DeleteRoles = "admin";
-        private const string ForceDeleteRoles = "admin";
+        private const string GetAllPolicy = "admin";
+        private const string GetOnePolicy = "admin";
+        private const string UpdatePolicy = "admin";
+        private const string CreatePolicy = "admin";
+        private const string DeletePolicy = "admin";
+        private const string ForceDeletePolicy = "admin";
 
 
         private readonly GenDbController<Tmodel, TmodelDTO> _dbController;
@@ -24,7 +25,7 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("GetAll")]
-        [Authorize(Roles = GetAllRoles)]
+        //[Authorize(Policy = GetAllPolicy)]
         public async Task GetAll()
         {
             var dtoItems = await _dbController.GetAll();
@@ -33,7 +34,8 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("GetAllWithConditions")]
-        [Authorize(Roles = GetAllRoles)]
+        //[Authorize(Policy = GetOnePolicy)]
+        //[Authorize(Policy = "api_admin")]
         public async Task GetAllWithConditions(Dictionary<string, object> filters)
         {
             var dtoItems = await _dbController.GetAllWithConditions(filters);
@@ -42,7 +44,8 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("GetOne")]
-        [Authorize(Roles = GetOneRoles)]
+        //[Authorize(Policy = GetOnePolicy)]
+        //[Authorize(Policy = "api_admin")]
         public async Task GetOne(int id)
         {
             TmodelDTO dtoItem;
@@ -59,7 +62,7 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("GetOneWithConditions")]
-        [Authorize(Roles = GetOneRoles)]
+        //[Authorize(Policy = GetOnePolicy)]
         public async Task GetOneWithConditions(Dictionary<string, object> filters)
         {
             TmodelDTO dtoItem;
@@ -76,7 +79,8 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("Update")]
-        [Authorize(Roles = UpdateRoles)]
+        //[Authorize(Policy = UpdatePolicy)]
+        //[Authorize(Policy = "api_admin")]
         public async Task Update(int id, TmodelDTO dtoItem)
         {
             var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
@@ -97,7 +101,7 @@ namespace MsSqlAccessor.Hubs
 		}
 
         [HubMethodName("Create")]
-        [Authorize(Roles = CreateRoles)]
+        //[Authorize(Policy = CreatePolicy)]
         public async Task Create(TmodelDTO dtoItem)
         {
             var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
@@ -118,7 +122,7 @@ namespace MsSqlAccessor.Hubs
 		}
 
         [HubMethodName("Delete")]
-        [Authorize(Roles = DeleteRoles)]
+        //[Authorize(Policy = DeletePolicy)]
         public async Task Delete(int id)
         {
             var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
@@ -139,7 +143,7 @@ namespace MsSqlAccessor.Hubs
 		}
 
         [HubMethodName("ForceDelete")]
-        [Authorize(Roles = ForceDeleteRoles)]
+        //[Authorize(Policy = ForceDeletePolicy)]
         public async Task ForceDelete(int id)
         {
             var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
