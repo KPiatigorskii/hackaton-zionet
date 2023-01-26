@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
+using NuGet.Common;
+using System.Security.Claims;
 
 namespace MsSqlAccessor.Helpers
 {
@@ -17,6 +20,21 @@ namespace MsSqlAccessor.Helpers
             var hasAdminClaim = context.User.HasClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "admin");
             var hasManagerClaim = context.User.HasClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "manager");
             var hasParticipantClaim = context.User.HasClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "participant");
+
+
+
+            if (hasApiAdminClaim){
+                var claims = new List<Claim>
+            {
+                new Claim("http://zionet-api/user/claims/email", "system@system.system")
+            };
+
+                var appIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var additionalClaim = new Claim("http://zionet-api/user/claims/email", "system@system.system");
+                appIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                context.User.AddIdentity(appIdentity);
+            }
+
             if (requirement.Role == "admin" ) {
                 if (hasAdminClaim || hasApiAdminClaim)
                 {
