@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.SignalR;
 using MsSqlAccessor.DbControllers;
 using MsSqlAccessor.Models;
+using MsSqlAccessor.Managers;
 using Task = System.Threading.Tasks.Task;
+using System.Security.Claims;
 
 namespace MsSqlAccessor.Hubs
 {
@@ -10,6 +12,7 @@ namespace MsSqlAccessor.Hubs
     {
         private const string GetAllPolicy = "participant";
         private const string GetOnePolicy = "participant";
+        private const string RunWithArgumentsPolicy = "participant";
         private const string UpdatePolicy = "admin";
         private const string CreatePolicy = "admin";
         private const string DeletePolicy = "admin";
@@ -17,10 +20,13 @@ namespace MsSqlAccessor.Hubs
 
 
         private readonly GenDbController<Tmodel, TmodelDTO> _dbController;
+        private EventLogicManager _eventLogicManager;
 
-        public EventHub(GenDbController<Tmodel, TmodelDTO> dbController)
+        public EventHub(GenDbController<Tmodel, TmodelDTO> dbController, EventLogicManager eventLogicManager)
         {
             _dbController = dbController;
+            _eventLogicManager = eventLogicManager;
+ 
         }
 
         [HubMethodName("GetAll")]
@@ -75,11 +81,30 @@ namespace MsSqlAccessor.Hubs
 			await Clients.Caller.SendAsync("ReceiveGetOne", dtoItem);
 		}
 
-		[HubMethodName("Update")]
+        [HubMethodName("RunWithArguments")]
+        [Authorize(Policy = RunWithArgumentsPolicy)]
+        public async Task RunWithArguments(string functionName, Dictionary<string, object> arguments)
+        {
+            TmodelDTO dtoItem;
+            try
+            {
+                var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == ClaimTypes.Email).Value;
+                _eventLogicManager.startEvent(arguments, userEmail);
+                //dtoItem = await _dbController.GetOneWithConditions(filters);
+            }
+            catch (Exception ex)
+            {
+                throw new HubException(ex.Message);
+            }
+            //await Task.Delay(1000);
+            await Clients.All.SendAsync("DataHasChanged");  
+        }
+
+        [HubMethodName("Update")]
         [Authorize(Policy = UpdatePolicy)]
         public async Task Update(int id, TmodelDTO dtoItem)
         {
-            var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
+            var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == ClaimTypes.Email).Value;
 
             TmodelDTO dtoItemResult;
 
@@ -100,7 +125,7 @@ namespace MsSqlAccessor.Hubs
         [Authorize(Policy = CreatePolicy)]
         public async Task Create(TmodelDTO dtoItem)
         {
-            var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
+            var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == ClaimTypes.Email).Value;
 
             TmodelDTO dtoItemResult;
 
@@ -121,7 +146,7 @@ namespace MsSqlAccessor.Hubs
         [Authorize(Policy = DeletePolicy)]
         public async Task Delete(int id)
         {
-            var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
+            var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == ClaimTypes.Email).Value;
 
             TmodelDTO dtoItemResult;
 
@@ -142,7 +167,7 @@ namespace MsSqlAccessor.Hubs
         [Authorize(Policy = ForceDeletePolicy)]
         public async Task ForceDelete(int id)
         {
-            var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
+            var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == ClaimTypes.Email).Value;
 
             TmodelDTO dtoItemResult;
 
