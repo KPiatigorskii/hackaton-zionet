@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using MsSqlAccessor.DbControllers;
+using MsSqlAccessor.Enums;
 using MsSqlAccessor.Models;
 using Task = System.Threading.Tasks.Task;
 
@@ -138,17 +139,26 @@ namespace MsSqlAccessor.Hubs
 			await Clients.All.SendAsync("DataHasChanged");
 		}
 
-        [HubMethodName("Register")]
+        [HubMethodName("RegisterMe")]
         [Authorize(Policy = RegistrationPolicy)]
-        public async Task Register(UserDTO dtoItem)
+        public async Task RegisterMe()
         {
             var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
 
-            UserDTO dtoItemResult;
+			var dtoNewUser = new UserDTO
+			{
+				Email = userEmail,
+				RoleId = (int)RoleEnm.Participant,
+				Login = Context.User.Claims.FirstOrDefault(e => e.Type == "name").Value,
+				FirstName = Context.User.Claims.FirstOrDefault(e => e.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname").Value,
+				LastName = Context.User.Claims.FirstOrDefault(e => e.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname").Value,
+			};
+
+			UserDTO dtoItemResult;
 
             try
             {
-                dtoItemResult = await _dbAuthUserController.Create(dtoItem, userEmail);
+                dtoItemResult = await _dbAuthUserController.Create(dtoNewUser, userEmail);
             }
             catch (Exception ex)
             {
