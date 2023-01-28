@@ -181,6 +181,10 @@ else
 
 	protected override async Task OnInitializedAsync()
 	{
+
+		EventController.OnDataHasChanged += OnDataUpdated;
+		EventController.OnOneDataReceive += UpdateDataOnPage;
+
 		var token = await TokenService.GetToken();
 
 		await EventController.ConfigureHub(token);
@@ -227,5 +231,16 @@ else
 	{
 		await EventController.DisposeAsync();
 		await EventStatusController.DisposeAsync();
+	}
+
+	private void OnDataUpdated()
+	{
+		EventController.Get(id);
+	}
+
+	private void UpdateDataOnPage(Event currentEvent)
+	{
+		selectedEvent = currentEvent;
+		//InvokeAsync(StateHasChanged);
 	}
 }
