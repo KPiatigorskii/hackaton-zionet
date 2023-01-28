@@ -12,6 +12,7 @@ namespace ZionetCompetition.Controllers
         private HubConnection hubConnection;
         private readonly ErrorService _errorService;
         public IEnumerable<Tmodel> messages = new List<Tmodel> { };
+        public string receivedStatus;
         public Tmodel message;
         private bool isLoaded = false;
 
@@ -154,7 +155,22 @@ namespace ZionetCompetition.Controllers
 			}
 		}
 
-		public async Task Update(int id, Tmodel item)
+        public async Task RunWithArguments(string functionName, Dictionary<string, object> arguments) 
+        {
+            try
+            {
+                await hubConnection.InvokeAsync("RunWithArguments", functionName, arguments);
+                while (!isLoaded) { }
+                isLoaded = false;
+            }
+            catch (HubException ex)
+            {
+                _errorService.Redirect(ex.Message);
+            }
+        }
+
+
+        public async Task Update(int id, Tmodel item)
         {
             try
             {

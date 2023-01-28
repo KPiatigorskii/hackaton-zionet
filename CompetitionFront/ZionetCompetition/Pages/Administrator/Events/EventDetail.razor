@@ -110,7 +110,8 @@ else
 
     private async Task StartEvent()
     {
-        TwitterEngineService.SendTweet($"Competition {selectedEvent.Title} starting! All bets are off");
+        EventController.RunWithArguments("startEvent", new Dictionary<string, object> { { "Id", id } });
+        //TwitterEngineService.SendTweet($"Competition {selectedEvent.Title} starting! All bets are off");
     }
 
     private async Task StopEvent()
