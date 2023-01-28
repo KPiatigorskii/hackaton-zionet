@@ -14,10 +14,10 @@ export class AuthService {
   
     static async receiveToken() {
       try {
-        const response = await axios.post('https://dev-5c7ycbgdjybsnqif.us.auth0.com/oauth/token', {
-          client_id: "Esu7PsT3vnUh4SktOBAuBliM3Fes6ttl",
-          client_secret: "0-CFh6odWI7CXTdCKi6taSxw4YkXAZ6xRnWajWpkhyspemkJuEHUV2CjvG8du2UG",
-          audience: "https://zionet-api.com",
+        const response = await axios.post(process.env.AUTH0_TOKEN_URL, {
+          client_id: process.env.AUTH0_TOKEN_CLIENT_ID,
+          client_secret: process.env.AUTH0_TOKEN_CLIENT_SECRET,
+          audience: process.env.AUTH0_AUDIENCE,
           grant_type: "client_credentials"
         });
         AuthService.token = response.data.access_token;

@@ -53,14 +53,16 @@ InitializeController.setPort(PORT);
 AuthService.receiveToken();
 
 console.log("Starting server with cron job every 30 second...");
-cron.schedule('*/5 * * * * *', () => 
-InitializeController.getAllActualRecords());
+cron.schedule('*/30 * * * * *', () => 
+    InitializeController.getAllActualRecords()
+    );
 
 cron.schedule('0 */22 * * *', () =>  // every 22 hours we refresh token
-AuthService.receiveToken());
+    AuthService.receiveToken()
+    );
 
 http.createServer(app).listen(PORT, () => {
-  console.log(`HTTP server started on port ${PORT}`); 
-});
+    console.log(`HTTP server started on port ${PORT}`); 
+    });
 
 

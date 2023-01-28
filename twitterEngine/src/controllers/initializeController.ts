@@ -48,7 +48,7 @@ export class InitializeController
                 needUpdate = true;
             }
         }
-         if (InitializeController.port == record.enginePort && record.isSearching){ // our cron fails
+        if (InitializeController.port == record.enginePort && record.isSearching){ // our cron fails
             console.log(`Get local job status from our server with uuid=${record.engineCronUuid}`);
             var cronStatus = CronService.isCronRunning(record.engineCronUuid);
             needUpdate = !cronStatus;
