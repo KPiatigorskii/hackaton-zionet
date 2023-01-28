@@ -5,6 +5,7 @@ using MsSqlAccessor.Models;
 using MsSqlAccessor.Managers;
 using Task = System.Threading.Tasks.Task;
 using System.Security.Claims;
+using System.Reflection;
 
 namespace MsSqlAccessor.Hubs
 {
@@ -85,18 +86,22 @@ namespace MsSqlAccessor.Hubs
         [Authorize(Policy = RunWithArgumentsPolicy)]
         public async Task RunWithArguments(string functionName, Dictionary<string, object> arguments)
         {
-            TmodelDTO dtoItem;
             try
             {
                 var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == ClaimTypes.Email).Value;
-                await _eventLogicManager.startEvent(arguments, userEmail);
-                //dtoItem = await _dbController.GetOneWithConditions(filters);
+                arguments.Add("email" , userEmail);
+                Type type = _eventLogicManager.GetType();
+                MethodInfo method = type.GetMethod(functionName);
+                Task task = (Task)method.Invoke(_eventLogicManager, new object[] { arguments});
+                await task;
+
+                //await _eventLogicManager.startEvent(arguments, userEmail);
             }
             catch (Exception ex)
             {
                 throw new HubException(ex.Message);
             }
-            //await Task.Delay(1000);
+
             await Clients.All.SendAsync("DataHasChanged");  
         }
 

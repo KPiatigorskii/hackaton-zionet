@@ -26,9 +26,10 @@ namespace MsSqlAccessor.Managers
             _config = configuration;
             _logger = logger;
         }
-        public async Task startEvent(Dictionary<string, object> arguments, string userEmail) {
+        public async Task startEvent(Dictionary<string, object> arguments) {
             EventDTO eventItem;
             string tweet_message;
+            string userEmail = "";
             int eventId = 0;
 
             try // unpack needed arguments
@@ -38,6 +39,10 @@ namespace MsSqlAccessor.Managers
                     if (item.Key == "Id")
                     {
                         eventId = int.Parse(item.Value.ToString());
+                    }
+                    if (item.Key == "email")
+                    {
+                        userEmail = item.Value.ToString();
                     }
                 }
             }
