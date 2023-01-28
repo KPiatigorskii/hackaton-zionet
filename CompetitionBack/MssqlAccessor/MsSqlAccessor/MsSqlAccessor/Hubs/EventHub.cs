@@ -89,7 +89,7 @@ namespace MsSqlAccessor.Hubs
             try
             {
                 var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == ClaimTypes.Email).Value;
-                _eventLogicManager.startEvent(arguments, userEmail);
+                await _eventLogicManager.startEvent(arguments, userEmail);
                 //dtoItem = await _dbController.GetOneWithConditions(filters);
             }
             catch (Exception ex)

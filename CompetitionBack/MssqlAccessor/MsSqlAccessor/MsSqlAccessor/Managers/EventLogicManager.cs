@@ -1,9 +1,14 @@
 ﻿using Microsoft.Build.Framework;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MsSqlAccessor.DbControllers;
 using MsSqlAccessor.Helpers;
 using MsSqlAccessor.Interfaces;
 using MsSqlAccessor.Models;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using Task = System.Threading.Tasks.Task;
 
 namespace MsSqlAccessor.Managers
 {
@@ -21,14 +26,20 @@ namespace MsSqlAccessor.Managers
             _config = configuration;
             _logger = logger;
         }
-        public async void startEvent(Dictionary<string, object> arguments, string userEmail) {
+        public async Task startEvent(Dictionary<string, object> arguments, string userEmail) {
             EventDTO eventItem;
             string tweet_message;
-            int eventId;
+            int eventId = 0;
 
             try // unpack needed arguments
             {
-                eventId = int.Parse((string)arguments["id"]);
+                foreach (var item in arguments)
+                {
+                    if (item.Key == "Id")
+                    {
+                        eventId = int.Parse(item.Value.ToString());
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -40,8 +51,8 @@ namespace MsSqlAccessor.Managers
             {
                 eventItem = await _dbController.GetOne(eventId);
                 eventItem.StartTime = DateTime.UtcNow;
-                eventItem.StatusId = 3; // running status
-                _dbController.Update(eventItem.Id, eventItem, userEmail);
+                eventItem.EventStatusId = 3; // running status
+                await _dbController.Update(eventItem.Id, eventItem, userEmail);
 
                 tweet_message = _config.GetSection("Twitter:TWUTTER_RUN_PHRASE")?.Value.ToString()
                     .Replace("{eventName}", eventItem.Title);
