@@ -38,6 +38,25 @@
 
     }
 
+    public enum EventStatusEnm
+    {
+        Preparation = 1,
+        Disable = 2,
+        Running = 3,
+        Pause = 4,
+        Finished = 6
+    }
+
+    public enum TaskStatusEnm
+    {
+        InProgress = 1,
+        Discard,
+        OnCheck,
+        OnChecking,
+        Approved,
+        Rejected,
+        NeedHelp,
+    }
 
 }
 
