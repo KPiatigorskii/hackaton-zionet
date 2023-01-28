@@ -90,6 +90,9 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        EventController.OnDataHasChanged += OnDataUpdated;
+        EventController.OnOneDataReceive += UpdateDataOnPage;
+
         var token =await TokenService.GetToken();
 
         await EventController.ConfigureHub(token);
@@ -110,12 +113,12 @@ else
 
     private async Task StartEvent()
     {
-        TwitterEngineService.SendTweet($"Competition {selectedEvent.Title} starting! All bets are off");
+        EventController.RunWithArguments("startEvent", new Dictionary<string, object> { { "Id", id } });
     }
 
     private async Task StopEvent()
     {
-        TwitterEngineService.SendTweet($"Competition {selectedEvent.Title} was stopped");
+        EventController.RunWithArguments("stopEvent", new Dictionary<string, object> { { "Id", id } });
     }
 
     private void EditEvent()
@@ -127,7 +130,7 @@ else
     {
         await UserEventTeamController.DisposeAsync();
         await EventController.DisposeAsync();
-        
+
     }
 
     private int counter = 0;
@@ -140,4 +143,16 @@ else
             StateHasChanged();
         }
     }
+
+    private void OnDataUpdated()
+    {
+        EventController.Get(id);
+    }
+
+    private void UpdateDataOnPage(Event currentEvent)
+    {
+        selectedEvent = currentEvent;
+        OnSelectedTabChanged(selectedTab);
+    }
+
 }

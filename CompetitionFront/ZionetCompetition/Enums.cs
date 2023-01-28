@@ -35,7 +35,7 @@ namespace ZionetCompetition.Enums
 			{"NeedHelp", "NeedHelp"}
 		};
 	}
-	public enum EnentStatusEnm
+	public enum EventStatusEnm
     {
         Preparation = 1,
         Disable = 2,
