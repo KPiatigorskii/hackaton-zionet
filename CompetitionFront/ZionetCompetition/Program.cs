@@ -83,6 +83,7 @@ builder.Services
     {
         options.Domain = builder.Configuration["Auth0:Domain"];
         options.ClientId = builder.Configuration["Auth0:ClientId"];
+        options.Scope = "openid profile offline_access email";
         options.ClientSecret = builder.Configuration["Auth0:ClientSecret"];
         options.OpenIdConnectEvents = new OpenIdConnectEvents
         {
@@ -90,8 +91,9 @@ builder.Services
             {
 
                 var token = context.TokenEndpointResponse?.AccessToken;
-
-                var email = context.Principal.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
+                
+                //var email = context.Principal.Claims.FirstOrDefault(e => e.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress").Value;
+                var email = context.Principal.Claims.FirstOrDefault(e => e.Type == ClaimTypes.Email).Value;
 
                 var claims = new List<Claim>
                     {
