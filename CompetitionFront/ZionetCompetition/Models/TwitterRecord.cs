@@ -1,4 +1,5 @@
-﻿using ZionetCompetition.Models;
+
+using ZionetCompetition.Models;
 using System;
 using System.Collections.Generic;
 

@@ -31,6 +31,7 @@ namespace ZionetCompetition.Enums
 		{
 			{"Discard", "Discard" },
 			{"OnCheck", "OnCheck"},
+			{"OnChecking", "OnChecking"},
 			{"NeedHelp", "NeedHelp"}
 		};
 	}

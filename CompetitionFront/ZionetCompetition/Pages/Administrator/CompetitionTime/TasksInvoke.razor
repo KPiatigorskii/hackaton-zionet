@@ -8,11 +8,13 @@
 
 @inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
 @inject ZionetCompetition.Services.AuthorizationService _authorizationService
+@inject ZionetCompetition.Services.TokenService TokenService
 @inject ZionetCompetition.Controllers.AuthClientController<User> AuthController
 @inject ZionetCompetition.Controllers.GenClientController<Event> EventController
 @inject ZionetCompetition.Controllers.GenClientController<TeamTask> TeamTaskController
 @inject NavigationManager Navigation
-@inject ZionetCompetition.Services.TokenService TokenService
+@inject IJSRuntime JSRuntime
+
 
 
 @implements IAsyncDisposable
@@ -31,7 +33,6 @@ else
 		<DataGrid TItem="TeamTask"
 		  Data="@curentTeamTasks"
 		  @bind-SelectedRow=selectedTeamTask
-		  RowUpdated="@Update"
 		  Filterable="true"
 		  FilterMethod="DataGridFilterMethod.Contains"
 		  Striped="true"
@@ -51,16 +52,41 @@ else
 						<Button ElementId="btnCancel" Color="Color.Secondary" Clicked="@context.Clicked">@context.LocalizationString</Button>
 					</CancelCommandTemplate>
 				</DataGridCommandColumn>
-				<DataGridColumn TItem="TeamTask" Field="Task.Id" Caption="Id" Sortable="true" Displayable="true" Editable />
-				<DataGridColumn TItem="TeamTask" Field="Task.Title" Caption="Title" Sortable="true" Displayable="true" Editable />
-				<DataGridColumn TItem="TeamTask" Field="Task.Category.Title" Caption="Category" Sortable="true" Displayable="true" Editable />
-				<DataGridColumn TItem="TeamTask" Field="Task.Language" Caption="Language" Sortable="true" Displayable="true" Editable />
-				<DataGridColumn TItem="TeamTask" Field="Task.Platform" Caption="Platform" Sortable="true" Displayable="true" Editable />
-				<DataGridColumn TItem="TeamTask" Field="Task.Duration" Caption="Duration" Sortable="true" Displayable="true" Editable />
-				<DataGridColumn TItem="TeamTask" Field="Task.Points" Caption="Max points" Sortable="true" Displayable="true" Editable />
-				<DataGridColumn TItem="TeamTask" Field="Task.HasBonus" Caption="Bonus" Sortable="false" Displayable="true" Editable />
-				<DataGridColumn TItem="TeamTask" Field="Team.Title" Caption="Team" Sortable="true" Displayable="true" Editable />
-				<DataGridColumn TItem="TeamTask" Field="TaskStatusNavigation.Title" Caption="Status" Sortable="false" Displayable="true" Editable />
+				<DataGridColumn TItem="TeamTask" Field="Task.Id" Caption="Id" CellClass="@((item)=>CellClass(item.TaskStatusNavigation.Id))" CellStyle="@((item)=>item.TaskStatusNavigation.Id == (int)TaskStatusEnm.NeedHelp ? "color: green;" : "color: red;")" Sortable="true" Displayable="true" Editable />
+				<DataGridColumn TItem="TeamTask" Field="Task.Title" Caption="Title" CellClass="@((item)=>CellClass(item.TaskStatusNavigation.Id))" Sortable="true" Displayable="true" Editable />
+				<DataGridColumn TItem="TeamTask" Field="Task.Category.Title" Caption="Category" CellClass="@((item)=>CellClass(item.TaskStatusNavigation.Id))" Sortable="true" Displayable="true" Editable />
+				<DataGridColumn TItem="TeamTask" Field="Task.Language" Caption="Language" CellClass="@((item)=>CellClass(item.TaskStatusNavigation.Id))" Sortable="true" Displayable="true" Editable />
+				<DataGridColumn TItem="TeamTask" Field="Task.Platform" Caption="Platform" CellClass="@((item)=>CellClass(item.TaskStatusNavigation.Id))" Sortable="true" Displayable="true" Editable />
+				<DataGridColumn TItem="TeamTask" Field="Task.Duration" Caption="Duration" CellClass="@((item)=>CellClass(item.TaskStatusNavigation.Id))" Sortable="true" Displayable="true" Editable />
+				<DataGridColumn TItem="TeamTask" Field="Task.Points" Caption="Max points" CellClass="@((item)=>CellClass(item.TaskStatusNavigation.Id))" Sortable="true" Displayable="true" Editable />
+				<DataGridColumn TItem="TeamTask" Field="Task.HasBonus" Caption="Bonus" CellClass="@((item)=>CellClass(item.TaskStatusNavigation.Id))" Sortable="false" Displayable="true" Editable />
+				<DataGridColumn TItem="TeamTask" Field="Team.Title" Caption="Team" CellClass="@((item)=>CellClass(item.TaskStatusNavigation.Id))" Sortable="true" Displayable="true" Editable />
+				<DataGridColumn TItem="TeamTask" Field="TaskStatusNavigation.Title" Caption="Status" CellClass="@((item)=>CellClass(item.TaskStatusNavigation.Id))" Sortable="false" Displayable="true" Editable />
+				<DataGridColumn Caption="Help" CellClass="@((item)=>CellClass(item.TaskStatusNavigation.Id))" Sortable="false" Displayable="true">
+					<DisplayTemplate>
+						@if (context.TaskStatusNavigation.Id == (int)TaskStatusEnm.NeedHelp)
+						{
+							<Button Button Margin="Margin.Is1" Color="Color.Primary" @onclick="() => OffHelp(context.Id)">Helped</Button>
+						}
+					</DisplayTemplate>
+				</DataGridColumn>
+				<DataGridColumn Caption="On Check" CellClass="@((item)=>CellClass(item.TaskStatusNavigation.Id))" Sortable="false" Displayable="true">
+					<DisplayTemplate>
+						@if (context.TaskStatusNavigation.Id == (int)TaskStatusEnm.OnCheck )
+						{
+							<Button Button Margin="Margin.Is1" Color="Color.Warning" @onclick="() => TakeForCheck(context.Id)">Take for check</Button>
+						}
+						else if (context.TaskStatusNavigation.Id == (int)TaskStatusEnm.OnChecking)
+						{
+
+							<div style="display: flex;">
+								<span style="display: inline-block;"><Button Margin="Margin.Is1" Color="Color.Success" @onclick="() => Approve(context.Id)">Approved</Button></span>
+								<span style="display: inline-block;"><Button Margin="Margin.Is1" Color="Color.Danger" @onclick="() => Reject(context.Id)">Reject</Button></span>
+							</div>
+
+						}
+					</DisplayTemplate>
+				</DataGridColumn>
 			</ChildContent>
 
 			<EmptyTemplate>
@@ -95,13 +121,16 @@ else
 	private int managerId;
 	private Event curentEvent;
 	private TeamTask selectedTeamTask;
-	private List<TeamTask> allTeamTask = new List<TeamTask> { };
+	private List<TeamTask> allTeamTasks = new List<TeamTask> { };
 	private List<TeamTask> eventTeamTasks = new List<TeamTask> { };
 	private List<TeamTask> curentTeamTasks = new List<TeamTask> { };
 	private bool loaded = false;
 
 	protected override async Task OnInitializedAsync()
 	{
+		TeamTaskController.OnDataHasChanged += OnDataUpdated;
+		TeamTaskController.OnListDataReceive += UpdateDataOnPage;
+
 		managerClaims = await _authorizationService.GetManagerClaims();
 
 		var email = managerClaims.Email;
@@ -124,10 +153,9 @@ else
 			await TeamTaskController.ConfigureHub(token);
 			await TeamTaskController.StartConnection();
 			await TeamTaskController.GetAll();
-			allTeamTask = TeamTaskController.messages.ToList();
-			eventTeamTasks = allTeamTask.Where(t => t.Team.EventId == eventId).ToList();
-			updateCurentTeamTasks();
-			Counter();
+			allTeamTasks = TeamTaskController.messages.ToList();
+			eventTeamTasks = allTeamTasks.Where(t => t.Team.EventId == eventId).ToList();
+			UpdateDataOnPage(allTeamTasks);
 		}
 
 		loaded = true;
@@ -135,36 +163,73 @@ else
 		await base.OnInitializedAsync();
 	}
 
-	private async Task updateCurentTeamTasks()
+	private void OnDataUpdated()
 	{
-		var activTaskStatuses = Entities.activTaskStatuses;
-
-		await TeamTaskController.GetAll();
-		allTeamTask = TeamTaskController.messages.ToList();
-		eventTeamTasks = allTeamTask.Where(t => t.Team.EventId == eventId).ToList();
-		curentTeamTasks = eventTeamTasks.Where(t => activTaskStatuses.Values.Contains(t.TaskStatusNavigation.Title)).ToList();
+		TeamTaskController.GetAll();
 	}
 
-	private async void Update(SavedRowItem<TeamTask, Dictionary<string, object>> rowUpdated)
+	private void UpdateDataOnPage(List<TeamTask> allTeamTasks)
 	{
-		var chengedItem = rowUpdated.Item;
-		await TeamTaskController.Update(chengedItem.Id, chengedItem);
-		StateHasChanged();
+		var activTaskStatuses = Entities.activTaskStatuses;
+		eventTeamTasks = allTeamTasks.Where(t => t.Team.EventId == eventId).ToList();
+		curentTeamTasks = eventTeamTasks.Where(t => activTaskStatuses.Values.Contains(t.TaskStatusNavigation.Title)).ToList();
+		InvokeAsync(StateHasChanged);
+	}
+
+	public async Task OffHelp(int Id)
+	{ // TeamTaskLogicController.RunWithConditions("OffHelp", Id)
+		var updatedTeamTask = allTeamTasks.FirstOrDefault(e => e.Id == Id);
+		updatedTeamTask.TaskStatus = (int)TaskStatusEnm.InProgress;
+		await TeamTaskController.Update(updatedTeamTask.Id, updatedTeamTask);
+	}
+
+	public async Task TakeForCheck(int Id)
+	{
+		var updatedTeamTask = allTeamTasks.FirstOrDefault(e => e.Id == Id);
+		updatedTeamTask.TaskStatus = (int)TaskStatusEnm.OnChecking;
+		await TeamTaskController.Update(updatedTeamTask.Id, updatedTeamTask);
+	}
+
+	public async Task Approve(int Id)
+	{
+		var updatedTeamTask = allTeamTasks.FirstOrDefault(e => e.Id == Id);
+		updatedTeamTask.TaskStatus = (int)TaskStatusEnm.Approved;
+		await TeamTaskController.Update(updatedTeamTask.Id, updatedTeamTask);
+	}
+
+	public async Task Reject(int Id)
+	{
+		var updatedTeamTask = allTeamTasks.FirstOrDefault(e => e.Id == Id);
+		updatedTeamTask.TaskStatus = (int)TaskStatusEnm.Rejected;
+		await TeamTaskController.Update(updatedTeamTask.Id, updatedTeamTask);
+	}
+
+	private string CellClass(int taskStatusId)
+	{
+		switch (taskStatusId)
+		{
+			case (int)TaskStatusEnm.InProgress:
+				return "InProgressStatus";
+			case (int)TaskStatusEnm.Discard:
+				return "DiscardStatus";
+			case (int)TaskStatusEnm.OnCheck:
+				return "OnCheckStatus";
+			case (int)TaskStatusEnm.OnChecking:
+				return "OnCheckingStatus";
+			case (int)TaskStatusEnm.Approved:
+				return "ApprovedStatus";
+			case (int)TaskStatusEnm.Rejected:
+				return "RejectedStatus";
+			case (int)TaskStatusEnm.NeedHelp:
+				return "NeedHelpStatus";
+			default:
+				return "";
+		}
 	}
 
 	public async ValueTask DisposeAsync()
 	{
 		await EventController.DisposeAsync();
 		await TeamTaskController.DisposeAsync();
-	}
-
-	private async Task Counter()
-	{
-		while (true)
-		{
-			await Task.Delay(2000);
-			updateCurentTeamTasks();
-			StateHasChanged();
-		}
 	}
 }

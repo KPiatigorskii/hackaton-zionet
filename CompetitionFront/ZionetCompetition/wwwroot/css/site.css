@@ -79,3 +79,7 @@ a, .btn-link {
 .form-bottom-border > .row {
     margin-bottom: 10px;
 }
+
+.NeedHelpStatus {
+    background-color: darkorange !important;
+}

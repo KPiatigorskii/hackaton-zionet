@@ -105,7 +105,7 @@ else
 			</ModalBody>
 			<ModalFooter>
 				<Button Color="Color.Secondary" Clicked="@HideModal">Close</Button>
-				<Button Color="Color.Primary" Disabled="(selectedManagersInPool is null)" Clicked="@AddTasksModal">Add</Button>
+				<Button Color="Color.Primary" Disabled="(selectedManagersInPool is null)" Clicked="@AddManagersModal">Add</Button>
 			</ModalFooter>
 		</ModalContent>
 	</Modal>
@@ -160,7 +160,7 @@ else
 		return modalRef.Hide();
 	}
 
-	private async Task AddTasksModal()
+	private async Task AddManagersModal()
 	{
 		var filtersEM = new Dictionary<string, object>() { { "EventId", eventId } };
 

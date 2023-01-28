@@ -132,6 +132,11 @@ else
 									{
 										<Button Color="Color.Primary" @onclick="() => GetHelp(context.TaskId)">Get Help</Button>
 									}
+									@if (ParticipantTasks.Any(e => e.ParticipantUserId == userId && e.TeamTaskId == context.Id)
+											&& context.TaskStatusNavigation.Id == 7)
+									{
+										<Button Color="Color.Secondary" @onclick="() => OffHelp(context.TaskId)">Stop Help call</Button>
+									}
 								</DisplayTemplate>
 							</DataGridColumn>
 							<DataGridColumn Caption="Join to Task" Sortable="false" Displayable="true">
@@ -211,6 +216,9 @@ else
 
 	protected override async Task OnInitializedAsync()
 	{
+		TeamTaskController.OnDataHasChanged += OnDataUpdated;
+		TeamTaskController.OnListDataReceive += UpdateDataOnPage;
+
 		participantClaims = await _authorizationService.GetParticipantClaims();
 
 		var email = participantClaims.Email;
@@ -253,9 +261,20 @@ else
 		StateHasChanged();
 	}
 
+	private void OnDataUpdated()
+	{
+		TeamTaskController.GetAllWithConditions(currentTasksFromTeamTasksFilter);
+	}
+
+	private void UpdateDataOnPage(List<TeamTask> allUpdatedTeamTasks)
+	{
+		allTeamTasks = allUpdatedTeamTasks;
+		InvokeAsync(StateHasChanged);
+	}
+
 	public async Task TakeTask(int taskId)
 	{
-		Dictionary<string, object> currentTasksFromTeamTasksFilter = new Dictionary<string, object>() { { "TeamId", participantClaims.CurrentTeamtId } };
+		//Dictionary<string, object> currentTasksFromTeamTasksFilter = new Dictionary<string, object>() { { "TeamId", participantClaims.CurrentTeamtId } };
 		await TeamTaskController.Create(new TeamTask
 			{
 				TaskId = taskId,
@@ -263,9 +282,7 @@ else
 				StartTime = DateTime.Now,
 				TaskStatus = (int)TaskStatusEnm.InProgress
 			});
-		await TeamTaskController.GetAllWithConditions(currentTasksFromTeamTasksFilter);
-		allTeamTasks = TeamTaskController.messages.ToList();
-		StateHasChanged();
+		//await TeamTaskController.GetAllWithConditions(currentTasksFromTeamTasksFilter);
 	}
 
 	public async void SendTask(int taskId)
@@ -274,10 +291,7 @@ else
 		updatedTeamTask.TaskStatus = (int)TaskStatusEnm.OnCheck;
 		updatedTeamTask.EndTime = DateTime.Now;
 		await TeamTaskController.Update(updatedTeamTask.Id, updatedTeamTask);
-		await TeamTaskController.GetAllWithConditions(currentTasksFromTeamTasksFilter);
-		allTeamTasks = TeamTaskController.messages.ToList();
-		StateHasChanged();
-
+		//await TeamTaskController.GetAllWithConditions(currentTasksFromTeamTasksFilter);
 	}
 
 	public async void JoinTask(int taskId)
@@ -294,7 +308,6 @@ else
 		await TaskParticipantController.GetAllWithConditions(currentTasksParticipantFilter);
 		ParticipantTasks = TaskParticipantController.messages.ToList();
 		StateHasChanged();
-
 	}
 
 	public async void UnJoinTask(int taskId)
@@ -321,9 +334,16 @@ else
 		var updatedTeamTask = allTeamTasks.FirstOrDefault(e => e.TaskId == taskId && e.TeamId == participantClaims.CurrentTeamtId);
 		updatedTeamTask.TaskStatus = (int)TaskStatusEnm.NeedHelp;
 		await TeamTaskController.Update(updatedTeamTask.Id, updatedTeamTask);
-		await TeamTaskController.GetAllWithConditions(currentTasksFromTeamTasksFilter);
-		allTeamTasks = TeamTaskController.messages.ToList();
-		StateHasChanged();
+		//await TeamTaskController.GetAllWithConditions(currentTasksFromTeamTasksFilter);
+	}
+
+	public async Task OffHelp(int taskId)
+	{
+		// HELP MEEEEE!!!
+		var updatedTeamTask = allTeamTasks.FirstOrDefault(e => e.TaskId == taskId && e.TeamId == participantClaims.CurrentTeamtId);
+		updatedTeamTask.TaskStatus = (int)TaskStatusEnm.InProgress;
+		await TeamTaskController.Update(updatedTeamTask.Id, updatedTeamTask);
+		//await TeamTaskController.GetAllWithConditions(currentTasksFromTeamTasksFilter);
 	}
 
 	public void OnSelectedTabChanged()
