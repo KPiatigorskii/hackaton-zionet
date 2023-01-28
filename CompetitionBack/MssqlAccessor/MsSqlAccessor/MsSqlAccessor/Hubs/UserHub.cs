@@ -151,8 +151,8 @@ namespace MsSqlAccessor.Hubs
 				Email = userEmail,
 				RoleId = (int)RoleEnm.Participant,
 				Login = Context.User.Claims.FirstOrDefault(e => e.Type == "name").Value,
-				FirstName = Context.User.Claims.FirstOrDefault(e => e.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname").Value,
-				LastName = Context.User.Claims.FirstOrDefault(e => e.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname").Value,
+				FirstName = Context.User.Claims.FirstOrDefault(e => e.Type == ClaimTypes.GivenName).Value,
+				LastName = Context.User.Claims.FirstOrDefault(e => e.Type == ClaimTypes.Surname).Value,
 			};
 
 			UserDTO dtoItemResult;
