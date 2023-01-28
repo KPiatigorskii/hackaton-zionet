@@ -137,5 +137,17 @@ bld/
 [Ll]og/
 [Ll]ogs/
 /CompetitionFront/ZionetCompetition/obj
+twitterEngine/config/ca.crt
+twitterEngine/config/ca.key
+twitterEngine/config/cert.crt
+twitterEngine/config/cert.key
+twitterEngine/security/ca.crt
+twitterEngine/security/ca.key
+twitterEngine/security/ca.pem
+twitterEngine/security/ca.srl
+twitterEngine/security/localhost.crt
+twitterEngine/security/localhost.csr
+twitterEngine/security/localhost.key
+twitterEngine/security/v3.ext
 /CompetitionBack/MssqlAccessor/MsSqlAccessor/MsSqlAccessor/appsettings.json
 /CompetitionBack/MssqlAccessor/MsSqlAccessor/MsSqlAccessor/internal_logs/*

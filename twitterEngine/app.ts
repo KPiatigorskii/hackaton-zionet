@@ -4,23 +4,24 @@ import express, { Express } from 'express';
 import  twitterRoutes from '../twitterEngine/src/routes/twitterRoutes'
 import cronRoutes from '../twitterEngine/src/routes/cronRoutes'
 import mssqlAccessorRoutes from './src/routes/mssqlAccessorRoutes';
-
-import * as dotenv from 'dotenv' // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
+import { AuthService } from "./src/services/AuthService"
+import * as dotenv from 'dotenv'
+import { InitializeController } from './src/controllers/initializeController';
 dotenv.config()
 
+// Initialize instance of express
+const app = express();
+const cron = require('node-cron');
 
-
-// Instantiate with desired auth type (here's Bearer v2 auth)
-
-const router: Express = express();
-
+// Init Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 /** Parse the request */
-router.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: false }));
 /** Takes care of JSON data */
-router.use(express.json());
-
+app.use(express.json());
 /** RULES OF OUR API */
-router.use((req, res, next) => {
+app.use((req, res, next) => {
     // set the CORS policy
     res.header('Access-Control-Allow-Origin', '*');
     // set the CORS headers
@@ -34,24 +35,34 @@ router.use((req, res, next) => {
 });
 
 // /** Routes */
-router.use('/CronSchedule', cronRoutes.router);
-router.use('/twitter', twitterRoutes.router);
-router.use('/mssqlAccessor',mssqlAccessorRoutes.router )
+app.use('/CronSchedule', cronRoutes.router);
+app.use('/twitter', twitterRoutes.router);
+app.use('/mssqlAccessor',mssqlAccessorRoutes.router )
 
 /** Error handling */
-router.use((req, res, next) => {
+app.use((req, res, next) => {
     const error = new Error('not found');
     return res.status(404).json({
         message: error.message
     });
 });
 
-   /** Server */
-const httpServer = http.createServer(router); 
-const PORT: any = process.env.PORT ?? 6978;
-httpServer.listen(
-    PORT, 
-    () => {
-        console.log(`The server is running on port ${PORT}`)
+export const PORT: number = Number(process.argv[2]) || Number(process.env.PORT) || 6978;
+InitializeController.setPort(PORT);
+
+AuthService.receiveToken();
+
+console.log("Starting server with cron job every 30 second...");
+cron.schedule('*/30 * * * * *', () => 
+    InitializeController.getAllActualRecords()
+    );
+
+cron.schedule('0 */22 * * *', () =>  // every 22 hours we refresh token
+    AuthService.receiveToken()
+    );
+
+http.createServer(app).listen(PORT, () => {
+    console.log(`HTTP server started on port ${PORT}`); 
     });
+
 
