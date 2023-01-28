@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.SignalR;
 using MsSqlAccessor.DbControllers;
 using MsSqlAccessor.Models;
+using System.Security.Claims;
 using Task = System.Threading.Tasks.Task;
 
 namespace MsSqlAccessor.Hubs
@@ -83,7 +84,7 @@ namespace MsSqlAccessor.Hubs
         //[Authorize(Policy = "api_admin")]
         public async Task Update(int id, TmodelDTO dtoItem)
         {
-            var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
+            var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == ClaimTypes.Email).Value;
 
             TmodelDTO dtoItemResult;
 
@@ -104,7 +105,7 @@ namespace MsSqlAccessor.Hubs
         //[Authorize(Policy = CreatePolicy)]
         public async Task Create(TmodelDTO dtoItem)
         {
-            var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
+            var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == ClaimTypes.Email).Value;
 
             TmodelDTO dtoItemResult;
 
@@ -125,7 +126,7 @@ namespace MsSqlAccessor.Hubs
         //[Authorize(Policy = DeletePolicy)]
         public async Task Delete(int id)
         {
-            var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
+            var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == ClaimTypes.Email).Value;
 
             TmodelDTO dtoItemResult;
 
@@ -146,7 +147,7 @@ namespace MsSqlAccessor.Hubs
         //[Authorize(Policy = ForceDeletePolicy)]
         public async Task ForceDelete(int id)
         {
-            var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
+            var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == ClaimTypes.Email).Value;
 
             TmodelDTO dtoItemResult;
 

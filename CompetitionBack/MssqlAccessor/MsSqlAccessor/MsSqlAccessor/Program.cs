@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Authorization;
 using MsSqlAccessor.Helpers;
 using NLog;
 using MsSqlAccessor.Interfaces;
+using MsSqlAccessor.Managers;
 
 namespace MsSqlAccessor
 {
@@ -124,6 +125,8 @@ namespace MsSqlAccessor
             builder.Services.AddTransient<GenDbController<TaskStatus, TaskStatusDTO>>();
 			builder.Services.AddTransient<GenDbController<TwitterRecord, TwitterRecordDTO>>();
 			builder.Services.AddTransient<AuthUserDbController>();
+            builder.Services.AddTransient<EventLogicManager>(); // TwitterHelper
+            builder.Services.AddTransient<TwitterHelper>();
 
 
 
