@@ -183,7 +183,7 @@ else
 		await SaveFile();
 		newItem.TaskBody = filePathName;
 		await TaskController.Create(newItem);
-		allTasks.RemoveAt(allTasks.Count - 1);
+		allTasks.RemoveAt(allTasks.Count - 1); //replace new item to new item with Id
 		allTasks.Add(TaskController.message);
 		StateHasChanged();
 	}
