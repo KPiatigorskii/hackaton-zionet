@@ -8,14 +8,14 @@ namespace MsSqlAccessor.Hubs
 {
     public class UserHub<Tmodel, TmodelDTO> : Hub where Tmodel : class, IdModel, new() where TmodelDTO : class, IdModel, new()
     {
-        private const string GetAllRoles = "admin,manager";
-        private const string GetOneRoles = "admin,manager";
-        private const string GetUserByEmail = "admin, manager, participant";
-        private const string UpdateRoles = "admin, manager, participant";
-        private const string CreateRoles = "admin";
-        private const string RegistrationRoles = "participant";
-        private const string DeleteRoles = "admin";
-        private const string ForceDeleteRoles = "admin";
+        private const string GetAllPolicy = "manager";
+        private const string GetOnePolicy = "manager";
+        private const string GetUserByEmail = "participant";
+        private const string UpdatePolicy = "participant";
+        private const string CreatePolicy = "admin";
+        private const string RegistrationPolicy = "participant";
+        private const string DeletePolicy = "admin";
+        private const string ForceDeletePolicy = "admin";
 
 
         private readonly GenDbController<Tmodel, TmodelDTO> _dbController;
@@ -28,7 +28,7 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("GetAll")]
-        [Authorize(Roles = GetAllRoles)]
+        [Authorize(Policy = GetAllPolicy)]
         public async Task GetAll()
         {
             var dtoItems = await _dbController.GetAll();
@@ -37,7 +37,7 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("GetAllWithConditions")]
-        [Authorize(Roles = GetAllRoles)]
+        [Authorize(Policy = GetAllPolicy)]
         public async Task GetAllWithConditions(Dictionary<string, object> filters)
         {
             var dtoItems = await _dbController.GetAllWithConditions(filters);
@@ -46,7 +46,7 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("GetOne")]
-        [Authorize(Roles = GetOneRoles)]
+        [Authorize(Policy = GetOnePolicy)]
         public async Task GetOne(int id)
         {
             TmodelDTO dtoItem;
@@ -56,21 +56,14 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.ItemNotFound)
-                {
-                    throw new HubException(Errors.ItemNotFound);
-                }
-                else
-                {
-                    throw new HubException(Errors.General);
-                }
-            }
+				throw new HubException(ex.Message);
+			}
             //await Task.Delay(1000);
             await Clients.Caller.SendAsync("ReceiveGetOne", dtoItem);
         }
 
         [HubMethodName("GetOneWithConditions")]
-        [Authorize(Roles = GetOneRoles)]
+        [Authorize(Policy = GetOnePolicy)]
         public async Task GetOneWithConditions(Dictionary<string, object> filters)
         {
             TmodelDTO dtoItem;
@@ -87,7 +80,7 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("GetOneByEmail")]
-        [Authorize(Roles = GetUserByEmail)]
+        [Authorize(Policy = GetUserByEmail)]
         public async Task GetOneByEmail(string Email)
         {
             UserDTO dtoItem;
@@ -97,14 +90,14 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                throw new HubException(Errors.General);
-            }
+				throw new HubException(ex.Message);
+			}
             //await Task.Delay(1000);
             await Clients.Caller.SendAsync("ReceiveGetOneByEmail", dtoItem);
         }
 
         [HubMethodName("Update")]
-        [Authorize(Roles = UpdateRoles)]
+        [Authorize(Policy = UpdatePolicy)]
         public async Task Update(int id, TmodelDTO dtoItem)
         {
             var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
@@ -117,29 +110,15 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.NotAuthorizedByEmail)
-                {
-                    throw new HubException(Errors.NotAuthorizedByEmail);
-                }
-                if (ex.Message == Errors.ItemNotFound)
-                {
-                    throw new HubException(Errors.ItemNotFound);
-                }
-                if (ex.Message == Errors.BadRequest)
-                {
-                    throw new HubException(Errors.BadRequest);
-                }
-                else
-                {
-                    throw new HubException(Errors.General);
-                }
-            }
+				throw new HubException(ex.Message);
+			}
 
             await Clients.Caller.SendAsync("ReceiveUpdate", dtoItemResult);
-        }
+			await Clients.All.SendAsync("DataHasChanged");
+		}
 
         [HubMethodName("Create")]
-        [Authorize(Roles = CreateRoles)]
+        [Authorize(Policy = CreatePolicy)]
         public async Task Create(TmodelDTO dtoItem)
         {
             var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
@@ -152,25 +131,15 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.NotAuthorizedByEmail)
-                {
-                    throw new HubException(Errors.NotAuthorizedByEmail);
-                }
-                if (ex.Message == Errors.ConflictData)
-                {
-                    throw new HubException(Errors.ConflictData);
-                }
-                else
-                {
-                    throw new HubException(Errors.General);
-                }
-            }
+				throw new HubException(ex.Message);
+			}
 
             await Clients.Caller.SendAsync("ReceiveCreate", dtoItemResult);
-        }
+			await Clients.All.SendAsync("DataHasChanged");
+		}
 
         [HubMethodName("Register")]
-        [Authorize(Roles = RegistrationRoles)]
+        [Authorize(Policy = RegistrationPolicy)]
         public async Task Register(UserDTO dtoItem)
         {
             var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
@@ -183,29 +152,15 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.NotAuthorizedByEmail)
-                {
-                    throw new HubException(Errors.NotAuthorizedByEmail);
-                }
-                if (ex.Message == Errors.BadRequest)
-                {
-                    throw new HubException(Errors.BadRequest);
-                }
-                if (ex.Message == Errors.ConflictData)
-                {
-                    throw new HubException(Errors.ConflictData);
-                }
-                else
-                {
-                    throw new HubException(Errors.General);
-                }
-            }
+				throw new HubException(ex.Message);
+			}
 
             await Clients.Caller.SendAsync("ReceiveRegister", dtoItemResult);
-        }
+			await Clients.All.SendAsync("DataHasChanged");
+		}
 
         [HubMethodName("Delete")]
-        [Authorize(Roles = DeleteRoles)]
+        [Authorize(Policy = DeletePolicy)]
         public async Task Delete(int id)
         {
             var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
@@ -218,25 +173,15 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.NotAuthorizedByEmail)
-                {
-                    throw new HubException(Errors.NotAuthorizedByEmail);
-                }
-                if (ex.Message == Errors.ConflictData)
-                {
-                    throw new HubException(Errors.ConflictData);
-                }
-                else
-                {
-                    throw new HubException(Errors.General);
-                }
-            }
+				throw new HubException(ex.Message);
+			}
 
             await Clients.Caller.SendAsync("ReceiveDelete", dtoItemResult);
-        }
+			await Clients.All.SendAsync("DataHasChanged");
+		}
 
         [HubMethodName("ForceDelete")]
-        [Authorize(Roles = ForceDeleteRoles)]
+        [Authorize(Policy = ForceDeletePolicy)]
         public async Task ForceDelete(int id)
         {
             var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
@@ -249,23 +194,13 @@ namespace MsSqlAccessor.Hubs
             }
             catch (Exception ex)
             {
-                if (ex.Message == Errors.NotAuthorizedByEmail)
-                {
-                    throw new HubException(Errors.NotAuthorizedByEmail);
-                }
-                if (ex.Message == Errors.ConflictData)
-                {
-                    throw new HubException(Errors.ConflictData);
-                }
-                else
-                {
-                    throw new HubException(Errors.General);
-                }
-            }
+				throw new HubException(ex.Message);
+			}
 
 
             await Clients.Caller.SendAsync("ReceiveForceDelete", new TmodelDTO());
-            return;
+			await Clients.All.SendAsync("DataHasChanged");
+			return;
         }
 
     }

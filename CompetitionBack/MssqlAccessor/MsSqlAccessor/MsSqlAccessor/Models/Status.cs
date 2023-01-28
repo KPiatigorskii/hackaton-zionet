@@ -51,6 +51,9 @@ public partial class Status : IdModel
     [JsonIgnore]
     public virtual ICollection<Team> Teams { get; } = new List<Team>();
 
-    [JsonIgnore]
+	[JsonIgnore]
+	public virtual ICollection<TwitterRecord> TwitterRecords { get; } = new List<TwitterRecord>();
+
+	[JsonIgnore]
     public virtual ICollection<User> Users { get; } = new List<User>();
 }

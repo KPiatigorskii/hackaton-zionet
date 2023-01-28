@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using MsSqlAccessor.Services;
 using MsSqlAccessor.Enums;
+using MsSqlAccessor.Interfaces;
 
 namespace MsSqlAccessor.Controllers
 {
@@ -16,17 +17,17 @@ namespace MsSqlAccessor.Controllers
     {
         private readonly EventsDbController _dbController;
 
-        public EventsController(EventsDbController dbController)
+		public EventsController(EventsDbController dbController)
         {
             _dbController = dbController;
 
-        }
+		}
 
         // GET: api/Events
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EventDTO>>> GetEvents()
         {
-            var events = await _dbController.GetEvents();
+			var events = await _dbController.GetEvents();
 
             return events;
         }

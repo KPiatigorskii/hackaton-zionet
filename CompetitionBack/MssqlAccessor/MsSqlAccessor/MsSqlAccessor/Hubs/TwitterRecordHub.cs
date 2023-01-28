@@ -6,25 +6,26 @@ using Task = System.Threading.Tasks.Task;
 
 namespace MsSqlAccessor.Hubs
 {
-    public class TaskStatusHub<Tmodel, TmodelDTO> : Hub where Tmodel : class, IdModel, new() where TmodelDTO : class, IdModel, new()
+    [Authorize(Policy = "admin")]
+    public class TwitterRecordHub<Tmodel, TmodelDTO> : Hub where Tmodel : class, IdModel, new() where TmodelDTO : class, IdModel, new()
     {
-        private const string GetAllPolicy = "participant";
-        private const string GetOnePolicy = "participant";
-        private const string UpdatePolicy = "participant";
-        private const string CreatePolicy = "participant";
-        private const string DeletePolicy = "participant";
-        private const string ForceDeletePolicy = "participant";
+        private const string GetAllPolicy = "admin";
+        private const string GetOnePolicy = "admin";
+        private const string UpdatePolicy = "admin";
+        private const string CreatePolicy = "admin";
+        private const string DeletePolicy = "admin";
+        private const string ForceDeletePolicy = "admin";
 
 
         private readonly GenDbController<Tmodel, TmodelDTO> _dbController;
 
-        public TaskStatusHub(GenDbController<Tmodel, TmodelDTO> dbController)
+        public TwitterRecordHub(GenDbController<Tmodel, TmodelDTO> dbController)
         {
             _dbController = dbController;
         }
 
         [HubMethodName("GetAll")]
-        [Authorize(Policy = GetAllPolicy)]
+        //[Authorize(Policy = GetAllPolicy)]
         public async Task GetAll()
         {
             var dtoItems = await _dbController.GetAll();
@@ -33,7 +34,8 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("GetAllWithConditions")]
-        [Authorize(Policy = GetAllPolicy)]
+        //[Authorize(Policy = GetOnePolicy)]
+        //[Authorize(Policy = "api_admin")]
         public async Task GetAllWithConditions(Dictionary<string, object> filters)
         {
             var dtoItems = await _dbController.GetAllWithConditions(filters);
@@ -42,7 +44,8 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("GetOne")]
-        [Authorize(Policy = GetOnePolicy)]
+        //[Authorize(Policy = GetOnePolicy)]
+        //[Authorize(Policy = "api_admin")]
         public async Task GetOne(int id)
         {
             TmodelDTO dtoItem;
@@ -59,7 +62,7 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("GetOneWithConditions")]
-        [Authorize(Policy = GetOnePolicy)]
+        //[Authorize(Policy = GetOnePolicy)]
         public async Task GetOneWithConditions(Dictionary<string, object> filters)
         {
             TmodelDTO dtoItem;
@@ -76,7 +79,8 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("Update")]
-        [Authorize(Policy = UpdatePolicy)]
+        //[Authorize(Policy = UpdatePolicy)]
+        //[Authorize(Policy = "api_admin")]
         public async Task Update(int id, TmodelDTO dtoItem)
         {
             var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
@@ -97,7 +101,7 @@ namespace MsSqlAccessor.Hubs
 		}
 
         [HubMethodName("Create")]
-        [Authorize(Policy = CreatePolicy)]
+        //[Authorize(Policy = CreatePolicy)]
         public async Task Create(TmodelDTO dtoItem)
         {
             var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
@@ -118,7 +122,7 @@ namespace MsSqlAccessor.Hubs
 		}
 
         [HubMethodName("Delete")]
-        [Authorize(Policy = DeletePolicy)]
+        //[Authorize(Policy = DeletePolicy)]
         public async Task Delete(int id)
         {
             var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
@@ -139,7 +143,7 @@ namespace MsSqlAccessor.Hubs
 		}
 
         [HubMethodName("ForceDelete")]
-        [Authorize(Policy = ForceDeletePolicy)]
+        //[Authorize(Policy = ForceDeletePolicy)]
         public async Task ForceDelete(int id)
         {
             var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;

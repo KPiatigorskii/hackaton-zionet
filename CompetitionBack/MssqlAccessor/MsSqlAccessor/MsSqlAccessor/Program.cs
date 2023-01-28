@@ -17,6 +17,10 @@ using System.Security.Claims;
 using Task = MsSqlAccessor.Models.Task;
 using Microsoft.Extensions.DependencyInjection;
 using TaskStatus = MsSqlAccessor.Models.TaskStatus;
+using Microsoft.AspNetCore.Authorization;
+using MsSqlAccessor.Helpers;
+using NLog;
+using MsSqlAccessor.Interfaces;
 
 namespace MsSqlAccessor
 {
@@ -26,9 +30,24 @@ namespace MsSqlAccessor
 		{
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("admin", policy => policy.Requirements.Add(new AuthorizationRequirementPolicy("admin")));
+                options.AddPolicy("manager", policy => policy.Requirements.Add(new AuthorizationRequirementPolicy("manager")));
+                options.AddPolicy("participant", policy => policy.Requirements.Add(new AuthorizationRequirementPolicy("participant")));
+});
+
+            builder.Services.AddSingleton<IAuthorizationHandler, PolicyAuthorizationHandler>();
+
             // Add services to the container.
 
-            builder.Services.AddControllers().AddJsonOptions(options => {
+			LogManager.LoadConfiguration(string.Concat(Directory.GetCurrentDirectory(), "/nlog.config"));
+			builder.Services.ConfigureLoggerService();
+
+
+			// Add services to the container.
+
+			builder.Services.AddControllers().AddJsonOptions(options => {
 				options.JsonSerializerOptions.PropertyNamingPolicy = null;
 			});
 
@@ -39,30 +58,7 @@ namespace MsSqlAccessor
                 .AddJwtBearer(options =>
                 {
                     options.Authority = domain;
-                    options.Audience = builder.Configuration["Auth0:ClientId"];
-                    // If the access token does not have a `sub` claim, `User.Identity.Name` will be `null`. Map it to a different claim by setting the NameClaimType below.
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        NameClaimType = ClaimTypes.NameIdentifier
-                    };
-/*                    options.Events = new JwtBearerEvents
-                    {
-                        OnMessageReceived = context =>
-                        {
-                            //var accessToken = context.Request.Query["access_token"];
-                            var accessToken = context.Request.Cookies["auth_token"];
-
-                            // If the request is for our hub...
-                            var path = context.HttpContext.Request.Path;
-                            *//*                        *//*                        if (!string.IsNullOrEmpty(accessToken) &&
-                                                                                (path.StartsWithSegments("/hubs/chat")))*//*
-                                                    {
-                                                        // Read the token out of the query string*//*
-                            context.Token = accessToken;
-
-                            return System.Threading.Tasks.Task.CompletedTask;
-                        }*/
-                   // };
+                    options.Audience = builder.Configuration["Auth0:Audience"];
                 });
 
 
@@ -126,7 +122,8 @@ namespace MsSqlAccessor
             builder.Services.AddTransient<GenDbController<User, UserDTO>>();
             builder.Services.AddTransient<GenDbController<EventStatus, EventStatusDTO>>();
             builder.Services.AddTransient<GenDbController<TaskStatus, TaskStatusDTO>>();
-            builder.Services.AddTransient<AuthUserDbController>();
+			builder.Services.AddTransient<GenDbController<TwitterRecord, TwitterRecordDTO>>();
+			builder.Services.AddTransient<AuthUserDbController>();
 
 
 
@@ -139,8 +136,6 @@ namespace MsSqlAccessor
 				app.UseSwagger();
 				app.UseSwaggerUI();
 			}
-
-			app.UseHttpsRedirection();
 
 
 			app.UseRouting();
@@ -174,10 +169,12 @@ namespace MsSqlAccessor
 			app.MapHub<UserHub<User, UserDTO>>("/Users");
             app.MapHub<EventStatusHub<EventStatus, EventStatusDTO>>("/EventStatuss");
             app.MapHub<TaskStatusHub<TaskStatus, TaskStatusDTO>>("/TaskStatuss");
+			app.MapHub<TwitterRecordHub<TwitterRecord, TwitterRecordDTO>>("/TwitterRecords");
 
-            app.MapControllers();
+			app.MapControllers();
 			app.Run();
 		}
+
 		public void Configuration(IAppBuilder app)
 		{
 			// Any connection or hub wire up and configuration should go here

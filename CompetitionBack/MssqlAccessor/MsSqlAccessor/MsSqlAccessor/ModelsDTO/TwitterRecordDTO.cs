@@ -1,11 +1,9 @@
-
-using ZionetCompetition.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
-namespace ZionetCompetition.Models;
+namespace MsSqlAccessor.Models;
 
-public partial class TwitterRecord
+public partial class TwitterRecordDTO : IdModel
 {
     public int Id { get; set; }
 
@@ -19,7 +17,7 @@ public partial class TwitterRecord
 
     public int EnginePort { get; set; }
 
-    public int EngineCronUuid { get; set; }
+    public string EngineCronUuid { get; set; }
 
     public bool IsSearching { get; set; }
 
