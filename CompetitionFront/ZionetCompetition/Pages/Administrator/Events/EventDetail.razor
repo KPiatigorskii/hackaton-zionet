@@ -1,0 +1,158 @@
+﻿@page "/events/{id:int}"
+
+@using System;
+@using System.Globalization;
+@using System.Reflection;
+@using Microsoft.AspNetCore.SignalR.Client
+@using ZionetCompetition.Models
+@using Blazorise.DataGrid
+
+@using ZionetCompetition.Data
+@using Blazorise
+@using System.Linq
+@using ZionetCompetition.Pages.Administrator.Events
+@using ZionetCompetition.Pages.Administrator.Managers
+@using ZionetCompetition.Pages.Administrator.Participants
+@using ZionetCompetition.Pages.Administrator.Tasks
+@using ZionetCompetition.Pages.Administrator.Teams
+
+@inject ZionetCompetition.Controllers.GenClientController<Event> EventController
+@inject ZionetCompetition.Controllers.GenClientController<EventParticipantTeam> UserEventTeamController
+@inject ZionetCompetition.Controllers.GenClientController<Team> TeamController
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@inject NavigationManager Navigation
+@inject ZionetCompetition.Services.TokenService TokenService
+@inject ZionetCompetition.Services.TwitterEngineService TwitterEngineService
+
+@implements IAsyncDisposable
+
+@if (!loaded)
+{
+    <SpinKit Type="SpinKitType.Plane" Color="SlateBlue" Centered />
+}
+else
+{
+    <div>
+        <h3>Event @selectedEvent?.Title?</h3>
+    <Button Color="Color.Primary" Clicked="@StartEvent">Start Event</Button>
+    <Button Color="Color.Primary" Clicked="@StopEvent">Stop Event</Button>
+    @*@counter*@
+
+</div>
+    <Tabs SelectedTab="@selectedTab" RenderMode="TabsRenderMode.LazyReload" SelectedTabChanged="@OnSelectedTabChanged">
+        
+        <Items>
+            <Tab Name="Info">Event Info</Tab>
+            <Tab Name="Teams">Teams</Tab>
+            <Tab Name="Participants">Participants</Tab>
+            <Tab Name="Tasks">Tasks</Tab>
+            <Tab Name="Managers">Managers</Tab>
+            <Tab Name="Participant for apply">Participant for apply</Tab>
+        </Items>
+        <Content>
+            <TabPanel Name="Info">
+                <EventInfo id="@id" />
+            </TabPanel>
+
+            <TabPanel Name="Teams">
+                <TeamsPage eventId="@id" />
+            </TabPanel>
+
+            <TabPanel Name="Participants">
+                <ParticipantsPage eventId="@id" />
+            </TabPanel> 
+            
+            <TabPanel Name="Tasks">
+                <EventTasksPage eventId="@id" />
+            </TabPanel>
+
+            <TabPanel Name="Managers">
+                <EventManagersPage eventId="@id" />
+            </TabPanel>
+
+            <TabPanel Name="Participant for apply">
+                <ParticipantForAppyPage eventId="@id" />
+            </TabPanel>
+            
+        </Content>
+    </Tabs>
+}
+
+
+@code {
+
+    [Parameter]
+    public int id { get; set; }
+    private string selectedTab = "Info";
+    private bool loaded = false;
+
+    private Event selectedEvent = new Event { };
+
+    protected override async Task OnInitializedAsync()
+    {
+        EventController.OnDataHasChanged += OnDataUpdated;
+        EventController.OnOneDataReceive += UpdateDataOnPage;
+
+        var token =await TokenService.GetToken();
+
+        await EventController.ConfigureHub(token);
+        await EventController.StartConnection();
+        await EventController.Get(id);
+        selectedEvent = EventController.message;
+
+        loaded = true;
+        //Counter();
+        StateHasChanged();
+    }
+
+    private Task OnSelectedTabChanged(string name)
+    {
+        selectedTab = name;
+        return Task.CompletedTask;
+    }
+
+    private async Task StartEvent()
+    {
+        EventController.RunWithArguments("startEvent", new Dictionary<string, object> { { "Id", id } });
+    }
+
+    private async Task StopEvent()
+    {
+        EventController.RunWithArguments("stopEvent", new Dictionary<string, object> { { "Id", id } });
+    }
+
+    private void EditEvent()
+    {
+        Navigation.NavigateTo("/Events/" + id + "/edit");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await UserEventTeamController.DisposeAsync();
+        await EventController.DisposeAsync();
+
+    }
+
+    private int counter = 0;
+    private async Task Counter()
+    {
+        while (true)
+        {
+            await Task.Delay(100);
+            counter++;
+            StateHasChanged();
+        }
+    }
+
+    private void OnDataUpdated()
+    {
+        EventController.Get(id);
+    }
+
+    private void UpdateDataOnPage(Event currentEvent)
+    {
+        selectedEvent = currentEvent;
+        OnSelectedTabChanged(selectedTab);
+    }
+
+}

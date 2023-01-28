@@ -41,6 +41,7 @@ namespace ZionetCompetition.Controllers
             {
                 options.AccessTokenProvider = () => Task.FromResult(tokenString);
             })
+            .WithAutomaticReconnect()
                 .Build();
 
             hubConnection.On<List<EventParticipantTeam>>("ReceiveGetAll", (eventParticipantTeams) =>

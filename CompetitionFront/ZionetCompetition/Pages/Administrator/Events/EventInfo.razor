@@ -1,0 +1,246 @@
+﻿@using System;
+@using System.Globalization;
+@using System.Reflection;
+@using Microsoft.AspNetCore.SignalR.Client
+@using ZionetCompetition.Models
+@using Blazorise
+@using Blazorise.DataGrid
+@using ZionetCompetition.Data
+
+@inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
+@inject ZionetCompetition.Controllers.GenClientController<Event> EventController
+@inject ZionetCompetition.Controllers.GenClientController<EventStatus> EventStatusController
+@inject NavigationManager Navigation
+@inject ZionetCompetition.Services.TokenService TokenService
+
+@implements IAsyncDisposable
+
+@if (!loaded)
+{
+	<SpinKit Type="SpinKitType.Plane" Color="SlateBlue" Centered />
+}
+else
+{
+	<br />
+	<Row>
+		<Column>
+			<Validations @ref="@ValidationsRef" Mode="ValidationMode.Manual" Model="@selectedEvent" ValidateOnLoad="false">
+				<Fields>
+					<Validation>
+						<Field ColumnSize="ColumnSize.IsHalf">
+							<FieldLabel>Event name</FieldLabel>
+							<FieldBody>
+								<TextEdit @bind-Text="@selectedEvent.Title" ReadOnly="!IsEdit">
+									<Feedback>
+										<ValidationError />
+									</Feedback>
+								</TextEdit>
+							</FieldBody>
+						</Field>
+					</Validation>
+					<Validation>
+						<Field ColumnSize="ColumnSize.IsHalf">
+							<FieldLabel>Address</FieldLabel>
+							<FieldBody>
+								<TextEdit @bind-Text="@selectedEvent.Address" ReadOnly="!IsEdit">
+									<Feedback>
+										<ValidationError />
+									</Feedback>
+								</TextEdit>
+							</FieldBody>
+						</Field>
+					</Validation>
+				</Fields>
+				<Fields>
+					<Validation>
+						<Field ColumnSize="ColumnSize.IsHalf">
+							<FieldLabel>#CodeEvent </FieldLabel>
+							<FieldBody>
+								<TextEdit @bind-Text="@selectedEvent.Hashcode" ReadOnly="!IsEdit">
+									<Feedback>
+										<ValidationError />
+									</Feedback>
+								</TextEdit>
+							</FieldBody>
+						</Field>
+					</Validation>
+				</Fields>
+				<Fields>
+					<Field ColumnSize="ColumnSize.IsQuarter">
+						<FieldLabel>Start Date</FieldLabel>
+						<FieldBody>
+							<InputDate id="MissionExecutionTime" Type="InputDateType.DateTimeLocal" @bind-Value="selectedEvent.StartTime" class="form-control" >
+							</InputDate>
+						</FieldBody>
+					</Field>
+					<Field ColumnSize="ColumnSize.IsQuarter">
+						<FieldLabel>End Date</FieldLabel>
+						<FieldBody>
+							<InputDate id="MissionExecutionTime" Type="InputDateType.DateTimeLocal" @bind-Value="selectedEvent.EndTime" class="form-control">
+							</InputDate>
+						</FieldBody>
+					</Field>
+				</Fields>
+				<Fields>
+					<Validation>
+						<Field ColumnSize="ColumnSize.IsQuarter">
+							<FieldLabel>Number participants in team</FieldLabel>
+							<FieldBody>
+								<NumericPicker @bind-Value="@selectedEvent.NumberParticipantsInTeam" ReadOnly="!IsEdit">
+									<Feedback>
+										<ValidationError />
+									</Feedback>
+								</NumericPicker>
+							</FieldBody>
+						</Field>
+					</Validation>
+					<Validation>
+						<Field ColumnSize="ColumnSize.IsQuarter">
+							<FieldLabel>Number Concurrent Tasks</FieldLabel>
+							<FieldBody>
+								<NumericPicker @bind-Value="@selectedEvent.NumberConcurrentTasks" ReadOnly="!IsEdit">
+									<Feedback>
+										<ValidationError />
+									</Feedback>
+								</NumericPicker>
+							</FieldBody>
+						</Field>
+					</Validation>
+				</Fields>
+				<Fields>
+					<Validation>
+						<Field ColumnSize="ColumnSize.IsQuarter">
+							<FieldLabel>Event status</FieldLabel>
+							<FieldBody>
+								<Select @bind-SelectedValue="@selectedEvent.EventStatusId" ReadOnly="!IsEdit">
+									<ChildContent>
+										<SelectItem TValue="int"></SelectItem>
+										@foreach (var s in allEventStatuses)
+										{
+											<SelectItem TValue="int" Value="@s.Id">@s.Title</SelectItem>
+										}
+									</ChildContent>
+									<Feedback>
+										<ValidationError />
+									</Feedback>
+								</Select>
+							</FieldBody>
+						</Field>
+					</Validation>
+					<Validation>
+						<Field ColumnSize="ColumnSize.IsQuarter">
+							<FieldLabel>Enable Event</FieldLabel>
+							<FieldBody>
+								<Switch TValue="bool" @bind-Checked="@selectedEvent.IsEnable" ReadOnly="!IsEdit">
+									<Feedback>
+										<ValidationError />
+									</Feedback>
+								</Switch>
+							</FieldBody>
+						</Field>
+					</Validation>
+				</Fields>
+			</Validations>
+			@if (IsEdit)
+			{
+				<Button Color="Color.Secondary" Clicked="@OnCancelClicked">
+					Cancel
+				</Button>
+				<Button Color="Color.Success" Clicked="@OnSaveClicked">
+					Validate and Submit changes
+				</Button>
+			}else
+			{
+				<Button Color="Color.Primary" Clicked="@Toggle">
+					Edit
+				</Button>
+			}
+		</Column>
+	</Row>
+}
+@code {
+	[Inject]
+	IMessageService MessageService { get; set; }
+
+	[Parameter]
+	public int id { get; set; }
+
+	private List<User> teamList;
+	private string? userInput;
+	private int? userId;
+	private string? messageInput;
+	private bool loaded = false;
+
+	private Event selectedEvent = new Event { };
+	private List<EventStatus> allEventStatuses = new List<EventStatus> { };
+	TimeOnly startTime { get; set; }
+	TimeOnly endTime { get; set; }
+
+	Validations ValidationsRef { get; set; }
+	Event EventModel { get; set; } = new Event();
+
+	protected override async Task OnInitializedAsync()
+	{
+
+		EventController.OnDataHasChanged += OnDataUpdated;
+		EventController.OnOneDataReceive += UpdateDataOnPage;
+
+		var token = await TokenService.GetToken();
+
+		await EventController.ConfigureHub(token);
+		await EventController.StartConnection();
+		await EventController.Get(id);
+		selectedEvent = EventController.message;
+
+		await EventStatusController.ConfigureHub(token);
+		await EventStatusController.StartConnection();
+		await EventStatusController.GetAll();
+		allEventStatuses = EventStatusController.messages.ToList();
+
+		loaded = true;
+		StateHasChanged();
+	}
+	async Task OnCancelClicked()
+	{
+		loaded = false;
+		await EventController.Get(id);
+		selectedEvent = EventController.message;
+		loaded = true;
+		StateHasChanged();
+		Toggle();
+	}
+	async Task OnSaveClicked()
+	{
+		if (await ValidationsRef.ValidateAll())
+		{
+			await EventController.Update(id, selectedEvent);
+			await MessageService.Info("The Event was changed");
+			await ValidationsRef.ClearAll();
+			Toggle();
+		}
+	}
+
+	bool IsEdit;
+	private void Toggle()
+	{
+		IsEdit = !IsEdit;
+	}
+
+
+	public async ValueTask DisposeAsync()
+	{
+		await EventController.DisposeAsync();
+		await EventStatusController.DisposeAsync();
+	}
+
+	private void OnDataUpdated()
+	{
+		EventController.Get(id);
+	}
+
+	private void UpdateDataOnPage(Event currentEvent)
+	{
+		selectedEvent = currentEvent;
+		//InvokeAsync(StateHasChanged);
+	}
+}

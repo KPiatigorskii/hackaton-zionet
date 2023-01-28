@@ -45,7 +45,7 @@ namespace MsSqlAccessor.Services
 
         public static T MakeChangesFromDto<T, TDto>(this T model, TDto modelDTO) where T : class, new() where TDto : class
         {
-            foreach (var property in typeof(TDto).GetProperties().Where(p => (p.GetValue(modelDTO) != null) && !p.GetMethod.IsVirtual))
+            foreach (var property in typeof(TDto).GetProperties().Where(p => !p.GetMethod.IsVirtual)) //.Where(p => (p.GetValue(modelDTO) != null) && !p.GetMethod.IsVirtual)
             {
                 try
                 {

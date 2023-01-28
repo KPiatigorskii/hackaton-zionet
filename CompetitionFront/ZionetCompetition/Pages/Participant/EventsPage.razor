@@ -1,0 +1,145 @@
+﻿@page "/myEvents"
+
+@using System;
+@using System.Globalization;
+@using System.Reflection;
+@using Microsoft.AspNetCore.SignalR.Client
+@using ZionetCompetition.Models
+@using Blazorise.DataGrid
+
+@inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
+@inject ZionetCompetition.Controllers.GenClientController<Event> EventController
+@inject ZionetCompetition.Controllers.GenClientController<EventParticipantTeam> EventParticipantTeamController
+@inject ZionetCompetition.Controllers.AuthClientController<User> AuthController
+@inject NavigationManager Navigation
+@inject ZionetCompetition.Services.TokenService TokenService
+
+
+@implements IAsyncDisposable
+
+@if (!loaded)
+{
+	<SpinKit Type="SpinKitType.Plane" Color="SlateBlue" Centered />
+}
+else
+{
+	<h3>My Events</h3>
+
+	<DataGrid TItem="Event"
+		  Data="@messages"
+		  Filterable="false"
+		  FilterMethod="DataGridFilterMethod.Contains"
+		  ShowPager="true"
+		  ShowPageSizes="true"
+		  Editable="false"
+		  Striped="true"
+		  Hoverable="true"
+		  SelectionMode="DataGridSelectionMode.Single"
+		  Responsive="true"
+		  @bind-SelectedRow=selectedEvent>
+		<ChildContent>
+			<DataGridCommandColumn TItem="Event"></DataGridCommandColumn>
+			<DataGridColumn TItem="Event" Field="Title" Caption="Title" Sortable="false" Displayable="true">
+				<DisplayTemplate>
+					<b>@context.Title</b>
+				</DisplayTemplate>
+			</DataGridColumn>
+			<DataGridColumn TItem="Event" Field="Address" Caption="Address" Sortable="false" Displayable="true" />
+			<DataGridDateColumn TItem="Event" Field="StartTime" Caption="StartTime" Sortable="true" Displayable="true" />
+			<DataGridDateColumn TItem="Event" Field="EndTime" Caption="EndTime" Sortable="false" Displayable="true" />
+			<DataGridColumn TItem="Event" Field="Hashcode" Caption="Hashcode" Sortable="true" Displayable="true" />
+			<DataGridColumn Caption="Send apply" Sortable="false" Displayable="true">
+				<DisplayTemplate>
+					@if (!eventParticipantTeamList.Any(e => e.EventId == context.Id && e.ParticipantId == userId))
+					{
+						<Button Color="Color.Primary" @onclick="() => EventApply(context.Id)" Displayable="() => ">Apply</Button>
+					}
+					else
+					{
+						if (eventParticipantTeamList.Any(e => e.EventId == context.Id && e.ParticipantId == userId && e.IsApplied))
+						{
+							<h3><Badge Color="Color.Success">Success</Badge></h3>
+						}
+						else
+						{
+							<p>Awaiting apply...</p>
+						}
+					}
+
+				</DisplayTemplate>
+			</DataGridColumn>
+		</ChildContent>
+		<EmptyTemplate>
+			<div class="box">
+				No records were found.
+			</div>
+		</EmptyTemplate>
+		<LoadingTemplate>
+			<a></a><div class="box">
+				<progress class="progress is-small is-primary" max="100" />
+			</div>
+		</LoadingTemplate>
+	</DataGrid>
+}
+
+@code {
+
+	public Event selectedEvent;
+	private string token;
+	private int userId;
+	public IEnumerable<EventParticipantTeam> eventParticipantTeamList = new List<EventParticipantTeam> { };
+	private IEnumerable<Event> messages = new List<Event> { };
+	public DataGrid<Event> EventDataGrid { get; set; }
+	private bool loaded = false;
+
+
+	protected override async Task OnInitializedAsync()
+	{
+		token =await  TokenService.GetToken();
+
+
+		var email = HttpContextAccessor.HttpContext.User.Claims.FirstOrDefault(e => e.Type == "http://zionet-api/user/claims/email").Value;
+		AuthController.ConfigureHub(token);
+		await AuthController.StartConnection();
+		await AuthController.Get(email);
+		userId = AuthController.message.Id;
+
+		await EventController.ConfigureHub(token);
+		await EventController.StartConnection();
+		await EventController.GetAll();
+		messages = EventController.messages.Where(e => e.StartTime >= DateTime.Today);//.Select(e => e.StartTime > DateTime.Now);
+
+		await EventParticipantTeamController.ConfigureHub(token);
+		await EventParticipantTeamController.StartConnection();
+		await EventParticipantTeamController.GetAll();
+		eventParticipantTeamList = EventParticipantTeamController.messages;
+		loaded = true;
+		StateHasChanged();
+	}
+
+	public async void EventApply(int eventId)
+	{ // показать все ивенты начинающиеся позже чем сейчас 
+
+
+
+		var eventParticipantTeam = new EventParticipantTeam
+			{
+				ParticipantId = userId,
+				EventId = eventId,
+				IsLeader = false
+	};
+		await EventParticipantTeamController.Create(eventParticipantTeam);
+		await EventParticipantTeamController.GetAll();
+		eventParticipantTeamList = EventParticipantTeamController.messages;
+		loaded = true;
+		StateHasChanged();
+					// @bind-selected-row загружаю в event-participant-team
+					// создаем строку с userId и eventId остальное пустое
+		// send apply
+	}
+
+	public async ValueTask DisposeAsync()
+	{
+		await EventController.DisposeAsync();
+	}
+}

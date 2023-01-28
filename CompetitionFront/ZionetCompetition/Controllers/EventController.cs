@@ -16,9 +16,9 @@ namespace ZionetCompetition.Controllers
     public class EventController : Controller
     {
         private readonly IJSRuntime _jsRuntime;
-        public IEnumerable<EventModel> messages;
+        public IEnumerable<Event> messages;
         private readonly NavigationManager _navigationManager;
-        public EventModel message;
+        public Event message;
         private HubConnection hubConnection;
         private bool isLoaded = false;
 
@@ -47,31 +47,31 @@ namespace ZionetCompetition.Controllers
                 })
                 .Build();
 
-            hubConnection.On<List<EventModel>>("ReceiveGetAll", async (events) =>
+            hubConnection.On<List<Event>>("ReceiveGetAll", async (events) =>
             {
                 messages = events;
                 isLoaded = true;
             });
 
-            hubConnection.On<EventModel>("ReceiveGetOne", (@event) =>
+            hubConnection.On<Event>("ReceiveGetOne", (@event) =>
             {
                 message = @event;
                 isLoaded = true;
             });
 
-            hubConnection.On<EventModel>("ReceiveUpdate", (@event) =>
+            hubConnection.On<Event>("ReceiveUpdate", (@event) =>
             {
                 message = @event;
                 isLoaded = true;
             });
 
-            hubConnection.On<EventModel>("ReceiveCreate", (@event) =>
+            hubConnection.On<Event>("ReceiveCreate", (@event) =>
             {
                 message = @event;
                 isLoaded = true;
             });
 
-            hubConnection.On<EventModel>("ReceiveDelete", (@event) =>
+            hubConnection.On<Event>("ReceiveDelete", (@event) =>
             {
                 message = @event;
                 isLoaded = true;
@@ -109,7 +109,7 @@ namespace ZionetCompetition.Controllers
             }
         }
 
-        public async Task Update(int id, EventModel @event)
+        public async Task Update(int id, Event @event)
         {
             try
             {
@@ -126,7 +126,7 @@ namespace ZionetCompetition.Controllers
             }
         }
 
-        public async Task Post(EventModel @event)
+        public async Task Post(Event @event)
         {
             try
             {

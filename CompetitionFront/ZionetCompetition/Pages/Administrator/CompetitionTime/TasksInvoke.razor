@@ -1,0 +1,235 @@
+﻿@page "/MyCurrentEvent"
+@using System;
+@using System.Globalization;
+@using System.Reflection;
+@using Microsoft.AspNetCore.SignalR.Client
+@using ZionetCompetition.Models
+@using Blazorise.DataGrid
+
+@inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
+@inject ZionetCompetition.Services.AuthorizationService _authorizationService
+@inject ZionetCompetition.Services.TokenService TokenService
+@inject ZionetCompetition.Controllers.AuthClientController<User> AuthController
+@inject ZionetCompetition.Controllers.GenClientController<Event> EventController
+@inject ZionetCompetition.Controllers.GenClientController<TeamTask> TeamTaskController
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+
+
+@implements IAsyncDisposable
+
+@if (!loaded)
+{
+	<SpinKit Type="SpinKitType.Plane" Color="SlateBlue" Centered />
+}
+else
+{
+	if (managerClaims.CurrentEventId > 0)
+	{
+		<Div Style="text-align:center"><Badge Color="Color.Primary" Style="font-size:large">@managerClaims.CurrentEventName</Badge></Div>
+		<Span Class="float-end" Margin="Margin.Is3"><Badge Color="Color.Info">@curentEvent.Status.Title</Badge></Span>
+
+		<DataGrid TItem="TeamTask"
+		  Data="@curentTeamTasks"
+		  @bind-SelectedRow=selectedTeamTask
+		  Filterable="true"
+		  FilterMethod="DataGridFilterMethod.Contains"
+		  Striped="true"
+		  Editable="false"
+		  Hoverable="true"
+		  Responsive="true"
+		  ShowPager="true"
+		  ShowPageSizes="true"
+		  SelectionMode="DataGridSelectionMode.Single"
+		  CommandMode="DataGridCommandMode.ButtonRow">
+			<ChildContent>
+				<DataGridCommandColumn NewCommandAllowed="false" EditCommandAllowed="false" DeleteCommandAllowed="false">
+					<SaveCommandTemplate>
+						<Button ElementId="btnSave" Type="ButtonType.Submit" PreventDefaultOnSubmit Color="Color.Primary" Clicked="@context.Clicked">@context.LocalizationString</Button>
+					</SaveCommandTemplate>
+					<CancelCommandTemplate>
+						<Button ElementId="btnCancel" Color="Color.Secondary" Clicked="@context.Clicked">@context.LocalizationString</Button>
+					</CancelCommandTemplate>
+				</DataGridCommandColumn>
+				<DataGridColumn TItem="TeamTask" Field="Task.Id" Caption="Id" CellClass="@((item)=>CellClass(item.TaskStatusNavigation.Id))" CellStyle="@((item)=>item.TaskStatusNavigation.Id == (int)TaskStatusEnm.NeedHelp ? "color: green;" : "color: red;")" Sortable="true" Displayable="true" Editable />
+				<DataGridColumn TItem="TeamTask" Field="Task.Title" Caption="Title" CellClass="@((item)=>CellClass(item.TaskStatusNavigation.Id))" Sortable="true" Displayable="true" Editable />
+				<DataGridColumn TItem="TeamTask" Field="Task.Category.Title" Caption="Category" CellClass="@((item)=>CellClass(item.TaskStatusNavigation.Id))" Sortable="true" Displayable="true" Editable />
+				<DataGridColumn TItem="TeamTask" Field="Task.Language" Caption="Language" CellClass="@((item)=>CellClass(item.TaskStatusNavigation.Id))" Sortable="true" Displayable="true" Editable />
+				<DataGridColumn TItem="TeamTask" Field="Task.Platform" Caption="Platform" CellClass="@((item)=>CellClass(item.TaskStatusNavigation.Id))" Sortable="true" Displayable="true" Editable />
+				<DataGridColumn TItem="TeamTask" Field="Task.Duration" Caption="Duration" CellClass="@((item)=>CellClass(item.TaskStatusNavigation.Id))" Sortable="true" Displayable="true" Editable />
+				<DataGridColumn TItem="TeamTask" Field="Task.Points" Caption="Max points" CellClass="@((item)=>CellClass(item.TaskStatusNavigation.Id))" Sortable="true" Displayable="true" Editable />
+				<DataGridColumn TItem="TeamTask" Field="Task.HasBonus" Caption="Bonus" CellClass="@((item)=>CellClass(item.TaskStatusNavigation.Id))" Sortable="false" Displayable="true" Editable />
+				<DataGridColumn TItem="TeamTask" Field="Team.Title" Caption="Team" CellClass="@((item)=>CellClass(item.TaskStatusNavigation.Id))" Sortable="true" Displayable="true" Editable />
+				<DataGridColumn TItem="TeamTask" Field="TaskStatusNavigation.Title" Caption="Status" CellClass="@((item)=>CellClass(item.TaskStatusNavigation.Id))" Sortable="false" Displayable="true" Editable />
+				<DataGridColumn Caption="Help" CellClass="@((item)=>CellClass(item.TaskStatusNavigation.Id))" Sortable="false" Displayable="true">
+					<DisplayTemplate>
+						@if (context.TaskStatusNavigation.Id == (int)TaskStatusEnm.NeedHelp)
+						{
+							<Button Button Margin="Margin.Is1" Color="Color.Primary" @onclick="() => OffHelp(context.Id)">Helped</Button>
+						}
+					</DisplayTemplate>
+				</DataGridColumn>
+				<DataGridColumn Caption="On Check" CellClass="@((item)=>CellClass(item.TaskStatusNavigation.Id))" Sortable="false" Displayable="true">
+					<DisplayTemplate>
+						@if (context.TaskStatusNavigation.Id == (int)TaskStatusEnm.OnCheck )
+						{
+							<Button Button Margin="Margin.Is1" Color="Color.Warning" @onclick="() => TakeForCheck(context.Id)">Take for check</Button>
+						}
+						else if (context.TaskStatusNavigation.Id == (int)TaskStatusEnm.OnChecking)
+						{
+
+							<div style="display: flex;">
+								<span style="display: inline-block;"><Button Margin="Margin.Is1" Color="Color.Success" @onclick="() => Approve(context.Id)">Approved</Button></span>
+								<span style="display: inline-block;"><Button Margin="Margin.Is1" Color="Color.Danger" @onclick="() => Reject(context.Id)">Reject</Button></span>
+							</div>
+
+						}
+					</DisplayTemplate>
+				</DataGridColumn>
+			</ChildContent>
+
+			<EmptyTemplate>
+				<div class="box">
+					No records were found.
+				</div>
+			</EmptyTemplate>
+
+			<LoadingTemplate>
+				<div class="box">
+					<progress class="progress is-small is-primary" max="100" />
+				</div>
+			</LoadingTemplate>
+
+			<ButtonRowTemplate>
+				<Button Color="Color.Primary" Disabled="(selectedTeamTask is null)" Clicked="context.EditCommand.Clicked">Edit</Button>
+				<Button Color="Color.Link" Clicked="context.ClearFilterCommand.Clicked">Clear Filter</Button>
+			</ButtonRowTemplate>
+		</DataGrid>
+	}
+	else
+	{
+		<h1> Event not start yet</h1>
+		<h3> &nbsp;&nbsp;&nbsp; Try ReLogin, please...</h3>
+	}
+}
+
+@code {
+	[Parameter]
+	public int eventId { get; set; }
+	private IManagerClaims managerClaims = new ManagerClaims() { };
+	private int managerId;
+	private Event curentEvent;
+	private TeamTask selectedTeamTask;
+	private List<TeamTask> allTeamTasks = new List<TeamTask> { };
+	private List<TeamTask> eventTeamTasks = new List<TeamTask> { };
+	private List<TeamTask> curentTeamTasks = new List<TeamTask> { };
+	private bool loaded = false;
+
+	protected override async Task OnInitializedAsync()
+	{
+		TeamTaskController.OnDataHasChanged += OnDataUpdated;
+		TeamTaskController.OnListDataReceive += UpdateDataOnPage;
+
+		managerClaims = await _authorizationService.GetManagerClaims();
+
+		var email = managerClaims.Email;
+		var token = await TokenService.GetToken();
+
+		eventId = managerClaims.CurrentEventId;
+
+		AuthController.ConfigureHub(token);
+		await AuthController.StartConnection();
+		await AuthController.Get(email);
+		managerId = AuthController.message.Id;
+
+		if (eventId > 0)
+		{
+			await EventController.ConfigureHub(token);
+			await EventController.StartConnection();
+			await EventController.Get(eventId);
+			curentEvent = EventController.message;
+
+			await TeamTaskController.ConfigureHub(token);
+			await TeamTaskController.StartConnection();
+			await TeamTaskController.GetAll();
+			allTeamTasks = TeamTaskController.messages.ToList();
+			eventTeamTasks = allTeamTasks.Where(t => t.Team.EventId == eventId).ToList();
+			UpdateDataOnPage(allTeamTasks);
+		}
+
+		loaded = true;
+		StateHasChanged();
+		await base.OnInitializedAsync();
+	}
+
+	private void OnDataUpdated()
+	{
+		TeamTaskController.GetAll();
+	}
+
+	private void UpdateDataOnPage(List<TeamTask> allTeamTasks)
+	{
+		var activTaskStatuses = Entities.activTaskStatuses;
+		eventTeamTasks = allTeamTasks.Where(t => t.Team.EventId == eventId).ToList();
+		curentTeamTasks = eventTeamTasks.Where(t => activTaskStatuses.Values.Contains(t.TaskStatusNavigation.Title)).ToList();
+		InvokeAsync(StateHasChanged);
+	}
+
+	public async Task OffHelp(int Id)
+	{ // TeamTaskLogicController.RunWithConditions("OffHelp", Id)
+		var updatedTeamTask = allTeamTasks.FirstOrDefault(e => e.Id == Id);
+		updatedTeamTask.TaskStatus = (int)TaskStatusEnm.InProgress;
+		await TeamTaskController.Update(updatedTeamTask.Id, updatedTeamTask);
+	}
+
+	public async Task TakeForCheck(int Id)
+	{
+		var updatedTeamTask = allTeamTasks.FirstOrDefault(e => e.Id == Id);
+		updatedTeamTask.TaskStatus = (int)TaskStatusEnm.OnChecking;
+		await TeamTaskController.Update(updatedTeamTask.Id, updatedTeamTask);
+	}
+
+	public async Task Approve(int Id)
+	{
+		var updatedTeamTask = allTeamTasks.FirstOrDefault(e => e.Id == Id);
+		updatedTeamTask.TaskStatus = (int)TaskStatusEnm.Approved;
+		await TeamTaskController.Update(updatedTeamTask.Id, updatedTeamTask);
+	}
+
+	public async Task Reject(int Id)
+	{
+		var updatedTeamTask = allTeamTasks.FirstOrDefault(e => e.Id == Id);
+		updatedTeamTask.TaskStatus = (int)TaskStatusEnm.Rejected;
+		await TeamTaskController.Update(updatedTeamTask.Id, updatedTeamTask);
+	}
+
+	private string CellClass(int taskStatusId)
+	{
+		switch (taskStatusId)
+		{
+			case (int)TaskStatusEnm.InProgress:
+				return "InProgressStatus";
+			case (int)TaskStatusEnm.Discard:
+				return "DiscardStatus";
+			case (int)TaskStatusEnm.OnCheck:
+				return "OnCheckStatus";
+			case (int)TaskStatusEnm.OnChecking:
+				return "OnCheckingStatus";
+			case (int)TaskStatusEnm.Approved:
+				return "ApprovedStatus";
+			case (int)TaskStatusEnm.Rejected:
+				return "RejectedStatus";
+			case (int)TaskStatusEnm.NeedHelp:
+				return "NeedHelpStatus";
+			default:
+				return "";
+		}
+	}
+
+	public async ValueTask DisposeAsync()
+	{
+		await EventController.DisposeAsync();
+		await TeamTaskController.DisposeAsync();
+	}
+}

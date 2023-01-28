@@ -22,6 +22,8 @@ public partial class User : IdModel
 
     public int RoleId { get; set; }
 
+    public string? TwitterUserId { get; set; }
+
     public DateTime CreateDate { get; set; }
 
     public DateTime UpdateDate { get; set; }
@@ -65,4 +67,7 @@ public partial class User : IdModel
 
     [JsonIgnore]
     public virtual ICollection<Team> TeamUpdateUsers { get; } = new List<Team>();
+
+    [JsonIgnore]
+	public virtual ICollection<TwitterRecord> TwitterRecords { get; } = new List<TwitterRecord>();
 }

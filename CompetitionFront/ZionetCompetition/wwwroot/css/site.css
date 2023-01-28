@@ -71,3 +71,15 @@ a, .btn-link {
     background-color: #0000;
     border:unset;
 }
+
+.form-bottom-border > .row > .bottom-border {
+    border-bottom: 1px solid black;
+}
+
+.form-bottom-border > .row {
+    margin-bottom: 10px;
+}
+
+.NeedHelpStatus {
+    background-color: darkorange !important;
+}

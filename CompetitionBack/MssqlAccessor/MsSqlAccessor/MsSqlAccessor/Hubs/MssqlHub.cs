@@ -22,7 +22,7 @@ namespace MsSqlAccessor.Hubs
 {
     public class MsSQLHub<Tmodel, TmodelDTO> : Hub where Tmodel : class, IdModel, new() where TmodelDTO : class, IdModel, new()
     {
-        private const string roles = "admin,user,paritcipant";
+        private const string roles = "admin,user,participant";
         private readonly CompetitionBdTestContext _context;
         //const string _header = "User";
         //const string str = typeof(Tmodel).Name;
@@ -48,7 +48,7 @@ namespace MsSqlAccessor.Hubs
         }
 
         [HubMethodName("GetOne")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Policy = "admin")]
         public async Task GetOne(int id)
         {
             var dbItem = await _context.Set<Tmodel>()
@@ -185,26 +185,26 @@ namespace MsSqlAccessor.Hubs
             return;
         }
 
-        public override async Task OnConnectedAsync()
-        {
-            var context = this.Context.GetHttpContext();
-            // получаем кук name
-            if (context.Request.Cookies.ContainsKey("name"))
-            {
-                string userName;
-                if (context.Request.Cookies.TryGetValue("name", out userName))
-                {
-                    Debug.WriteLine($"name = {userName}");
-                }
-            }
+        //public override async Task OnConnectedAsync()
+        //{
+        //    var context = this.Context.GetHttpContext();
+        //    // получаем кук name
+        //    if (context.Request.Cookies.ContainsKey("name"))
+        //    {
+        //        string userName;
+        //        if (context.Request.Cookies.TryGetValue("name", out userName))
+        //        {
+        //            Debug.WriteLine($"name = {userName}");
+        //        }
+        //    }
 
-            // получаем юзер-агент
-            Debug.WriteLine($"UserAgent = {context.Request.Headers["User-Agent"]}");
-            // получаем ip
-            Debug.WriteLine($"RemoteIpAddress = {context.Connection.RemoteIpAddress.ToString()}");
+        //    // получаем юзер-агент
+        //    Debug.WriteLine($"UserAgent = {context.Request.Headers["User-Agent"]}");
+        //    // получаем ip
+        //    Debug.WriteLine($"RemoteIpAddress = {context.Connection.RemoteIpAddress.ToString()}");
 
-            await base.OnConnectedAsync();
-        }
+        //    await base.OnConnectedAsync();
+        //}
 
         private bool isItemExists(int id)
         {

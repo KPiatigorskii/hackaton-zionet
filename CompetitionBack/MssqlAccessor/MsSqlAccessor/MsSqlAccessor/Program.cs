@@ -15,6 +15,13 @@ using System.Threading.Tasks;
 using Azure.Core;
 using System.Security.Claims;
 using Task = MsSqlAccessor.Models.Task;
+using Microsoft.Extensions.DependencyInjection;
+using TaskStatus = MsSqlAccessor.Models.TaskStatus;
+using Microsoft.AspNetCore.Authorization;
+using MsSqlAccessor.Helpers;
+using NLog;
+using MsSqlAccessor.Interfaces;
+using MsSqlAccessor.Managers;
 
 namespace MsSqlAccessor
 {
@@ -24,9 +31,24 @@ namespace MsSqlAccessor
 		{
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("admin", policy => policy.Requirements.Add(new AuthorizationRequirementPolicy("admin")));
+                options.AddPolicy("manager", policy => policy.Requirements.Add(new AuthorizationRequirementPolicy("manager")));
+                options.AddPolicy("participant", policy => policy.Requirements.Add(new AuthorizationRequirementPolicy("participant")));
+});
+
+            builder.Services.AddSingleton<IAuthorizationHandler, PolicyAuthorizationHandler>();
+
             // Add services to the container.
 
-            builder.Services.AddControllers().AddJsonOptions(options => {
+			LogManager.LoadConfiguration(string.Concat(Directory.GetCurrentDirectory(), "/nlog.config"));
+			builder.Services.ConfigureLoggerService();
+
+
+			// Add services to the container.
+
+			builder.Services.AddControllers().AddJsonOptions(options => {
 				options.JsonSerializerOptions.PropertyNamingPolicy = null;
 			});
 
@@ -37,30 +59,7 @@ namespace MsSqlAccessor
                 .AddJwtBearer(options =>
                 {
                     options.Authority = domain;
-                    options.Audience = builder.Configuration["Auth0:ClientId"];
-                    // If the access token does not have a `sub` claim, `User.Identity.Name` will be `null`. Map it to a different claim by setting the NameClaimType below.
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        NameClaimType = ClaimTypes.NameIdentifier
-                    };
-/*                    options.Events = new JwtBearerEvents
-                    {
-                        OnMessageReceived = context =>
-                        {
-                            //var accessToken = context.Request.Query["access_token"];
-                            var accessToken = context.Request.Cookies["auth_token"];
-
-                            // If the request is for our hub...
-                            var path = context.HttpContext.Request.Path;
-                            *//*                        *//*                        if (!string.IsNullOrEmpty(accessToken) &&
-                                                                                (path.StartsWithSegments("/hubs/chat")))*//*
-                                                    {
-                                                        // Read the token out of the query string*//*
-                            context.Token = accessToken;
-
-                            return System.Threading.Tasks.Task.CompletedTask;
-                        }*/
-                   // };
+                    options.Audience = builder.Configuration["Auth0:Audience"];
                 });
 
 
@@ -109,7 +108,28 @@ namespace MsSqlAccessor
             });
 
             //builder.Services.AddTransient<IUserRole, MockUserRole>();
-            builder.Services.AddTransient<EventsDbController>();
+            //builder.Services.AddTransient<EventsDbController>();
+            builder.Services.AddTransient<GenDbController<Event, EventDTO>>();
+            builder.Services.AddTransient<GenDbController<EventManager, EventManagerDTO>>();
+            builder.Services.AddTransient<GenDbController<EventParticipantTeam, EventParticipantTeamDTO>>();
+            builder.Services.AddTransient<GenDbController<EventTask, EventTaskDTO>>();
+            builder.Services.AddTransient<GenDbController<EventTaskEvaluateUser, EventTaskEvaluateUserDTO>>();
+            builder.Services.AddTransient<GenDbController<Role, RoleDTO>>();
+            builder.Services.AddTransient<GenDbController<Task, TaskDTO>>();
+            builder.Services.AddTransient<GenDbController<TaskCategory, TaskCategoryDTO>>();
+            builder.Services.AddTransient<GenDbController<TaskParticipant, TaskParticipantDTO>>();
+            builder.Services.AddTransient<GenDbController<Team, TeamDTO>>();
+            builder.Services.AddTransient<GenDbController<TeamTask, TeamTaskDTO>>();
+            builder.Services.AddTransient<GenDbController<User, UserDTO>>();
+            builder.Services.AddTransient<GenDbController<EventStatus, EventStatusDTO>>();
+            builder.Services.AddTransient<GenDbController<TaskStatus, TaskStatusDTO>>();
+			builder.Services.AddTransient<GenDbController<TwitterRecord, TwitterRecordDTO>>();
+			builder.Services.AddTransient<AuthUserDbController>();
+            builder.Services.AddTransient<EventLogicManager>(); // TwitterHelper
+            builder.Services.AddTransient<TwitterHelper>();
+
+
+
 
             var app = builder.Build();
 
@@ -119,8 +139,6 @@ namespace MsSqlAccessor
 				app.UseSwagger();
 				app.UseSwaggerUI();
 			}
-
-			app.UseHttpsRedirection();
 
 
 			app.UseRouting();
@@ -139,22 +157,27 @@ namespace MsSqlAccessor
             //app.MapHub<MssqlHubOld<User>>("/users");
             //app.MapHub<EventParticipantTeamHub>("/eventparticipantteams");
             //app.MapHub<EventHub>("/events");
-            app.MapHub<MsSQLHub<Event, EventDTO>>("/events");
-            app.MapHub<MsSQLHub<EventManager, EventManagerDTO>>("/EventManagers");
-			app.MapHub<MsSQLHub<EventParticipantTeam, EventParticipantTeamDTO>>("/eventparticipantteams");
-			app.MapHub<MsSQLHub<EventTask, EventTaskDTO>>("/EventTasks");
-			app.MapHub<MsSQLHub<EventTaskEvaluateUser, EventTaskEvaluateUserDTO>>("/EventTaskEvaluateUsers");
-			app.MapHub<MsSQLHub<Role, RoleDTO>>("/Roles");
-			app.MapHub<MsSQLHub<Task, TaskDTO>>("/Tasks");
-			app.MapHub<MsSQLHub<TaskCategory, TaskCategoryDTO>>("/TaskCategories");
-			app.MapHub<MsSQLHub<TaskParticipant, TaskParticipantDTO>>("/TaskParticipants");
-			app.MapHub<MsSQLHub<Team, TeamDTO>>("/Teams");
-			app.MapHub<MsSQLHub<TeamTask, TeamTaskDTO>>("/TeamTasks");
-			app.MapHub<MsSQLHub<User, UserDTO>>("/Users");
+            //app.MapHub<MsSQLHub<Event, EventDTO>>("/events");
+            app.MapHub<EventHub<Event, EventDTO>>("/events");
+            app.MapHub<EventManagerHub<EventManager, EventManagerDTO>>("/EventManagers");
+			app.MapHub<EventParticipantTeamHub<EventParticipantTeam, EventParticipantTeamDTO>>("/eventparticipantteams");
+			app.MapHub<EventTaskHub<EventTask, EventTaskDTO>>("/EventTasks");
+			app.MapHub<EventTaskEvaluateUserHub<EventTaskEvaluateUser, EventTaskEvaluateUserDTO>>("/EventTaskEvaluateUsers");
+			app.MapHub<RoleHub<Role, RoleDTO>>("/Roles");
+			app.MapHub<TaskHub<Task, TaskDTO>>("/TaskModels");
+			app.MapHub<TaskCategoryHub<TaskCategory, TaskCategoryDTO>>("/TaskCategorys");
+			app.MapHub<TaskParticipantHub<TaskParticipant, TaskParticipantDTO>>("/TaskParticipants");
+			app.MapHub<TeamHub<Team, TeamDTO>>("/Teams");
+			app.MapHub<TeamTaskHub<TeamTask, TeamTaskDTO>>("/TeamTasks");
+			app.MapHub<UserHub<User, UserDTO>>("/Users");
+            app.MapHub<EventStatusHub<EventStatus, EventStatusDTO>>("/EventStatuss");
+            app.MapHub<TaskStatusHub<TaskStatus, TaskStatusDTO>>("/TaskStatuss");
+			app.MapHub<TwitterRecordHub<TwitterRecord, TwitterRecordDTO>>("/TwitterRecords");
 
 			app.MapControllers();
 			app.Run();
 		}
+
 		public void Configuration(IAppBuilder app)
 		{
 			// Any connection or hub wire up and configuration should go here

@@ -1,59 +1,92 @@
 ﻿@page "/profile"
-@inject AuthenticationStateProvider AuthState
+@using CoreTweet;
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.OAuth
+@using Microsoft.AspNetCore.Components.Forms
+@using ZionetCompetition.Services
+@using System.Security.Claims
 @using ZionetCompetition.Models
-@attribute [Authorize]
-@using System.Text.Json
-@using System.Text.Json.Serialization
-@inject IHttpClientFactory ClientFactory
 
-<h1>Call web API from a Blazor Server Razor component</h1>
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+@inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+@inject IConfiguration Configuration
+@inject ZionetCompetition.Services.TwitterService TwitterService
+@inject ZionetCompetition.Services.TwitterEngineService TwitterEngineService
+@inject ZionetCompetition.Services.TokenService TokenService
+@inject ZionetCompetition.Controllers.GenClientController<ZionetCompetition.Models.User> UserController
 
-@if (getBranchesError)
+
+@if (twitterIsConnected)
 {
-    <p>Unable to get branches from GitHub. Please try again later.</p>
+    <div> Twitter Account: @twitterUserName</div>
 }
 else
 {
-    <ul>
-        @foreach (var user in users)
-        {
-            <li>@user.FirstName @user.LastName @user.Github @user.Email @user.Login</li>
-        }
-    </ul>
+    <Button Color="Color.Primary" Clicked=@BeginLogin hidden="@(!twitFormHidden)">Connect Twitter</Button>
+
+    <EditForm Model="@pinCodeModel" OnSubmit="@ConfirmPinCode" hidden="@twitFormHidden">
+        <InputText id="PINCode" @bind-Value="pinCodeModel.PINCode" />
+
+        <Button Color="Color.Primary" Type="ButtonType.Submit" >Confirm PINcode</Button>
+    </EditForm>
 }
 
-@code {
-    private IEnumerable<User> users = Array.Empty<User>();
-    private bool getBranchesError;
-    private bool shouldRender;
 
-    protected override bool ShouldRender() => shouldRender;
+@code{
+    public string redirectUrl;
+    private string strValue;
+    private bool twitFormHidden = true;
+    private CoreTweet.OAuth.OAuthSession twitterSession;
+    private CoreTweet.Tokens tokens;
+    public PinCodeModel pinCodeModel = new();
+    private bool twitterIsConnected = false;
+    private string twitterUserName;
+    private string accessToken;
+    private string accessTokenSecret;
+
+    private ZionetCompetition.Models.User message = new ZionetCompetition.Models.User { };
+    private string? userInput;
+    private int? userId;
 
     protected override async Task OnInitializedAsync()
     {
-        var request = new HttpRequestMessage(HttpMethod.Get,
-            "https://localhost:7277/api/User");
+        var token = await TokenService.GetToken();
+        await UserController.ConfigureHub(token);
+        await UserController.StartConnection();
+        await UserController.Get(9);  // TODO receive REAL id of user
 
-        var client = ClientFactory.CreateClient();
-        JsonSerializerOptions jsonOptions = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            };
+        message = UserController.message;
+        //StateHasChanged();
 
-        var response = await client.SendAsync(request);
-
-        if (response.IsSuccessStatusCode)
+        twitterUserName = await localStorage.GetItemAsync<string>("TwitterUserName");
+        accessToken = await localStorage.GetItemAsync<string>("TwitterRequestToken");
+        accessTokenSecret = await localStorage.GetItemAsync<string>("TwitterRequestTokenSecret");
+        if (!string.IsNullOrEmpty(twitterUserName) && !string.IsNullOrEmpty(accessToken) && !string.IsNullOrEmpty(accessTokenSecret))
         {
-            using var responseStream = await response.Content.ReadAsStreamAsync();
-
-            users = await JsonSerializer.DeserializeAsync
-                <IEnumerable<User>>(responseStream, jsonOptions);
+            twitterIsConnected = true;
+            tokens = TwitterService.getTokens(accessToken, accessTokenSecret);
         }
-        else
-        {
-            getBranchesError = true;
-        }
+    }
 
-        shouldRender = true;
+    private async Task BeginLogin()
+    {
+        twitterSession = TwitterService.getTwitterSession();
+        redirectUrl = twitterSession.AuthorizeUri.AbsoluteUri;
+        twitFormHidden = false;
+        StateHasChanged();
+        await JSRuntime.InvokeVoidAsync("open", redirectUrl, "_blank");
+    }
+
+    private async Task ConfirmPinCode()
+    {
+        tokens = TwitterService.getTokensByPIN(twitterSession, pinCodeModel.PINCode);
+        await TwitterService.setTokensToStorage(tokens);
+        twitterUserName = tokens.ScreenName;
+        twitterIsConnected = true;
+        StateHasChanged(); //tokens.UserId
+        await TwitterEngineService.runTweetSearchAsync(1, "teamName", 2, "eventName");
+
     }
 }

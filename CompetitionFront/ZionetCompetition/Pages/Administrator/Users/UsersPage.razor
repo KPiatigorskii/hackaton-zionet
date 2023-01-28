@@ -10,7 +10,7 @@
 @using Microsoft.AspNetCore.Http
 
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
-@inject ZionetCompetition.Controllers.UserController UserController
+@inject ZionetCompetition.Controllers.GenClientController<User> UserController
 @inject NavigationManager Navigation
 @inject ZionetCompetition.Services.TokenService TokenService
 
@@ -39,13 +39,17 @@ else
         @bind-SelectedRow=selectedUser>
     <ChildContent>
         <DataGridCommandColumn TItem="User"></DataGridCommandColumn>
-        <DataGridColumn TItem="User" Field="Id" Caption="Id" Sortable="false" Displayable="true">
+        <DataGridColumn TItem="User" Field="Id" Caption="Id" Sortable="false" Displayable="true" Width="5%">
             <DisplayTemplate>
                 <NavLink href="@($"/Users/{context.Id}")">@context.Id</NavLink>
             </DisplayTemplate>
         </DataGridColumn>
-        <DataGridColumn TItem="User" Field="FirstName" Caption="FirstName" Sortable="false" Displayable="true" />
-        <DataGridDateColumn TItem="User" Field="LastName" Caption="LastName" Sortable="false" Displayable="true" />
+        <DataGridColumn TItem="User" Field="FirstName" Caption="Name" Sortable="false" Displayable="true" >
+            <DisplayTemplate>
+                    <NavLink href="@($"/Users/{context.Id}")">@context.FirstName @context.LastName</NavLink>
+            </DisplayTemplate>
+        </DataGridColumn>
+        <DataGridColumn TItem="User" Field="Role.Title" Caption="Role" Sortable="true" Displayable="true" />
         <DataGridColumn TItem="User" Field="Email" Caption="Email" Sortable="false" Displayable="true" />
         <DataGridColumn TItem="User" Field="Github" Caption="Github" Sortable="true" Displayable="true" />
     </ChildContent>
@@ -63,14 +67,15 @@ else
 }
 
 @code {
-    private HubConnection? hubConnection;
+    //private HubConnection? hubConnection;
     private User selectedUser;
     private IEnumerable<User> messages = new List<User> { };
     private bool loaded = false;
 
     protected override async Task OnInitializedAsync()
     {
-        await UserController.ConfigureHub(TokenService.GetToken(HttpContextAccessor));
+        var token = await TokenService.GetToken();
+        await UserController.ConfigureHub(token);
         await UserController.StartConnection();
         await UserController.GetAll();
         messages = UserController.messages;
@@ -80,9 +85,6 @@ else
 
     public async ValueTask DisposeAsync()
     {
-        if (hubConnection is not null)
-        {
-            await hubConnection.DisposeAsync();
-        }
+        await UserController.DisposeAsync();
     }
 }

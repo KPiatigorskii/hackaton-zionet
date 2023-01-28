@@ -1,0 +1,238 @@
+﻿@page "/Tasks"
+
+@using System;
+@using System.Globalization;
+@using System.Reflection;
+@using Microsoft.AspNetCore.SignalR.Client
+@using ZionetCompetition.Models
+@using Blazorise.DataGrid
+@using Microsoft.AspNetCore.Components.Forms
+
+@inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
+@inject ZionetCompetition.Controllers.GenClientController<TaskModel> TaskController
+@inject ZionetCompetition.Controllers.GenClientController<TaskCategory> TaskCategoryController
+@inject NavigationManager Navigation
+@inject ZionetCompetition.Services.TokenService TokenService
+
+@inject IJSRuntime JSRuntime
+
+
+
+@implements IAsyncDisposable
+
+@if (!loaded)
+{
+	<SpinKit Type="SpinKitType.Plane" Color="SlateBlue" Centered />
+}
+else
+{
+	<DataGrid TItem="TaskModel"
+		  Data="@allTasks"
+		  @bind-SelectedRow=selectedTask
+		  RowInserted="@Create"
+		  RowUpdated="@Update"
+		  RowRemoved="@Delete"
+		  Filterable="true"
+		  FilterMethod="DataGridFilterMethod.Contains"
+		  Striped="true"
+		  Editable="true"
+		  EditMode="DataGridEditMode.Popup"
+		  Hoverable="true"
+		  Responsive="true"
+		  ShowPager="true"
+		  ShowPageSizes="true"
+		  SelectionMode="DataGridSelectionMode.Single"
+		  CommandMode="DataGridCommandMode.ButtonRow">
+		<ChildContent>
+			<DataGridCommandColumn NewCommandAllowed="false" EditCommandAllowed="false" DeleteCommandAllowed="false">
+				<SaveCommandTemplate>
+					<Button ElementId="btnSave" Type="ButtonType.Submit" PreventDefaultOnSubmit Color="Color.Primary" Clicked="@context.Clicked">@context.LocalizationString</Button>
+				</SaveCommandTemplate>
+				<CancelCommandTemplate>
+					<Button ElementId="btnCancel" Color="Color.Secondary" Clicked="@context.Clicked">@context.LocalizationString</Button>
+				</CancelCommandTemplate>
+			</DataGridCommandColumn>
+			<DataGridNumericColumn TItem="TaskModel" Field="Id" Caption="Id" Sortable="false" Displayable="true" />
+			<DataGridColumn TItem="TaskModel" Field="Title" Caption="Title" Sortable="true" Displayable="true" Editable />
+@*			<DataGridColumn TItem="TaskModel" Field="Category.Title" Caption="Category" Sortable="true" Displayable="true" Editable />*@
+			<DataGridNumericColumn TItem="TaskModel" Field="CategoryId" Caption="Category" Sortable="false" Displayable="true" Editable>
+				<DisplayTemplate>
+					@(allTaskCategoryes.Find(c => c.Id == (int)context.CategoryId)?.Title??"")
+				</DisplayTemplate>
+				<EditTemplate>
+					@*<NumericEdit TValue="int" Value="@((int)context.CellValue)" ValueChanged="@( v => context.CellValue = v)" />*@
+					<SelectList TItem="TaskCategory"
+							TValue="int"
+							Data="@allTaskCategoryes"
+							TextField="@((item)=>item.Title)"
+							ValueField="@((item)=>item.Id)"
+							SelectedValue="@((int)context.CellValue)"
+							SelectedValueChanged="@( v => context.CellValue = v)" />
+					@*@bind-SelectedValue="@context.Item.CategoryId"*@
+				</EditTemplate>
+			</DataGridNumericColumn>
+			<DataGridColumn TItem="TaskModel" Field="Language" Caption="Language" Sortable="true" Displayable="true" Editable />
+			<DataGridColumn TItem="TaskModel" Field="Platform" Caption="Platform" Sortable="true" Displayable="true" Editable />
+			<DataGridNumericColumn TItem="TaskModel" Field="Duration" Caption="Duration" Sortable="true" Displayable="true" Editable />
+			<DataGridNumericColumn TItem="TaskModel" Field="Points" Caption="Points" Sortable="true" Displayable="true" Editable />
+			<DataGridCheckColumn TItem="TaskModel" Field="HasBonus" Caption="HasBonus" Sortable="true" Displayable="true" Editable />
+			<DataGridNumericColumn TItem="TaskModel" Field="BonusExtraTime" Caption="BonusExtraTime" Sortable="true" Displayable="true" Editable >
+				<DisplayTemplate>
+					@if ((bool)context.HasBonus)
+					{
+						@context.BonusExtraTime
+					}
+				</DisplayTemplate>
+@*				<EditTemplate>
+					@if ((bool)context.Item.HasBonus)
+					{
+						<NumericEdit TValue="int" Value="@((int)context.CellValue)" ValueChanged="@( v => context.CellValue = v)" />
+					}
+				</EditTemplate>*@
+			</DataGridNumericColumn>
+			<DataGridNumericColumn TItem="TaskModel" Field="BonusPoints" Caption="BonusPoints" Sortable="true" Displayable="true" Editable >
+				<DisplayTemplate>
+					@if ((bool)context.HasBonus)
+					{
+						@context.BonusPoints
+					}
+				</DisplayTemplate>
+@*				<EditTemplate>
+					@if ((bool)context.Item.HasBonus)
+					{
+						<NumericEdit TValue="int" Value="@((int)context.CellValue)" ValueChanged="@( v => context.CellValue = v)" />
+					}
+				</EditTemplate>*@
+			</DataGridNumericColumn>
+
+			<DataGridColumn TItem="TaskModel" Field="TaskBody" Caption="Description" Sortable="true" Displayable="true" Editable>
+				<DisplayTemplate>
+					<Button Color="Color.Primary" @onclick="() => DownloadTask(context.TaskBody)">Download Task</Button>
+				</DisplayTemplate>
+				<EditTemplate>
+					<InputFile OnChange="@HandleFileChange" />
+				</EditTemplate>
+			</DataGridColumn>
+
+		</ChildContent>
+
+		<EmptyTemplate>
+			<div class="box">
+				No records were found.
+			</div>
+		</EmptyTemplate>
+
+		<LoadingTemplate>
+			<div class="box">
+				<progress class="progress is-small is-primary" max="100" />
+			</div>
+		</LoadingTemplate>
+
+		<ButtonRowTemplate>
+			<Button Color="Color.Success" Clicked="context.NewCommand.Clicked">New</Button>
+			<Button Color="Color.Primary" Disabled="(selectedTask is null)" Clicked="context.EditCommand.Clicked">Edit</Button>
+			<Button Color="Color.Danger" Disabled="(selectedTask is null)" Clicked="context.DeleteCommand.Clicked">Delete</Button>
+			<Button Color="Color.Link" Clicked="context.ClearFilterCommand.Clicked">Clear Filter</Button>
+		</ButtonRowTemplate>
+	</DataGrid>
+}
+
+@code {
+	private TaskModel selectedTask;
+	private int selectedCategoryId;
+	private List<TaskModel> allTasks = new List<TaskModel> { };
+	private List<TaskCategory> allTaskCategoryes = new List<TaskCategory> { };
+	private bool loaded = false;
+
+	private List<IBrowserFile> loadedFiles = new();
+	private long maxFileSize = 1024 * 15;
+	private int maxAllowedFiles = 3;
+	private bool isLoading;
+	private string filePathName;
+	private InputFileChangeEventArgs inputFileChangeEventArgs;
+
+
+	protected override async Task OnInitializedAsync()
+	{
+		var token = await TokenService.GetToken();
+
+		await TaskController.ConfigureHub(token);
+		await TaskController.StartConnection();
+		await TaskController.GetAll();
+		allTasks = TaskController.messages.ToList();
+
+		await TaskCategoryController.ConfigureHub(token);
+		await TaskCategoryController.StartConnection();
+		await TaskCategoryController.GetAll();
+		allTaskCategoryes = TaskCategoryController.messages.ToList();
+
+		loaded = true;
+		StateHasChanged();
+		await base.OnInitializedAsync();
+	}
+
+	private string CategoryTitleById(List<TaskCategory> allTaskCategoryes, int id)
+	{
+		string result = allTaskCategoryes.Find(c => c.Id == id)?.Title??"";
+		return result;
+	}
+
+	private async void Create(SavedRowItem<TaskModel, Dictionary<string, object>> rowInserted)
+	{
+		var newItem = rowInserted.Item;
+		await SaveFile();
+		newItem.TaskBody = filePathName;
+		await TaskController.Create(newItem);
+		allTasks.RemoveAt(allTasks.Count - 1); //replace new item to new item with Id
+		allTasks.Add(TaskController.message);
+		StateHasChanged();
+	}
+
+	private async void Update(SavedRowItem<TaskModel, Dictionary<string, object>> rowUpdated)
+	{
+		var chengedItem = rowUpdated.Item;
+		await SaveFile();
+		chengedItem.TaskBody = filePathName;
+		await TaskController.Update(chengedItem.Id, chengedItem);
+		StateHasChanged();
+	}
+
+	private async void Delete(TaskModel rowRemoved)
+	{
+		await TaskController.Delete(rowRemoved.Id);
+		StateHasChanged();
+	}
+
+	private async Task HandleFileChange(InputFileChangeEventArgs e)
+	{
+		inputFileChangeEventArgs = e;
+	}
+
+	private async Task SaveFile()
+	{
+		var file = inputFileChangeEventArgs.File;
+		if (file != null)
+		{
+			// The file path can be obtained from the file.Name property
+			Guid uuid = Guid.NewGuid();
+			var filePath = Path.Combine("wwwroot/src/tasks/", uuid + "-" + file.Name);
+			filePathName = filePath;
+
+			Stream stream = file.OpenReadStream();
+			FileStream fs = File.Create(filePath);
+			await stream.CopyToAsync(fs);
+			fs.Close();
+		}
+	}
+
+	public async Task DownloadTask(string filePath)
+	{
+		var redirectUrl = Navigation.BaseUri + filePath.Remove(0, 8);
+		await JSRuntime.InvokeVoidAsync("open", redirectUrl, "_blank");
+	}
+
+	public async ValueTask DisposeAsync()
+	{
+		await TaskController.DisposeAsync();
+	}
+}

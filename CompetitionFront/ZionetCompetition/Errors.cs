@@ -2,10 +2,14 @@
 {
     public static class Errors
     {
-        public static readonly string General = "General";
-        public static readonly string ConnectionError = "Connection Error";
-        public static readonly string BadRequest = "Bad Request";
-        public static readonly string ItemNotFound = "Item Not Found";
-        public static readonly string ConflictData = "Conflict Data collision";
+        public const string General = "General";
+        public const string ConnectionError = "Connection error";
+        public const string BadRequest = "Bad Request";
+        public const string ItemNotFound = "Item not found";
+        public const string ConflictData = "Conflict Data collision";
+        public const string NotLogin = "user is not Login";
+        public const string NotAuthorizedByEmail = "User can not be authorizen by Email";
+        public const string NotAuthorized = "user is unauthorized";
+        public const string Forbidden = "Forbidden";
     }
 }

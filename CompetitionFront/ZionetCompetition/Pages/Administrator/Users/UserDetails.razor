@@ -1,0 +1,102 @@
+@page "/users/{id:int}"
+
+@using Microsoft.AspNetCore.SignalR.Client
+@using ZionetCompetition.Models
+@using ZionetCompetition
+
+@inject NavigationManager UriHelper
+@inject IJSRuntime JSRuntime
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@inject ZionetCompetition.Controllers.GenClientController<User> UserController
+@inject NavigationManager Navigation
+@inject ZionetCompetition.Services.TokenService TokenService
+
+@implements IAsyncDisposable
+
+@if (!loaded)
+{
+	<SpinKit Type="SpinKitType.Plane" Color="SlateBlue" Centered />
+}
+else
+{
+	<Card Margin="Margin.Is4.OnY">
+		<CardImage Source="@userIcon" Alt="Placeholder image" Style="width:30%;height:30%;">
+		</CardImage>
+		<CardBody>
+			<CardTitle Size="5"> <h3>User Details</h3></CardTitle>
+			<CardText>
+				<TableBody>
+					<TableRow>
+						<TableRowHeader>FirstName:</TableRowHeader>
+						<TableRowCell style="padding-left: 20px">@message.FirstName</TableRowCell>
+					</TableRow>
+					<TableRow>
+						<TableRowHeader>LastName:</TableRowHeader>
+						<TableRowCell style="padding-left: 20px">@message.LastName</TableRowCell>
+					</TableRow>
+					<TableRow>
+						<TableRowHeader>RoleId:</TableRowHeader>
+						<TableRowCell style="padding-left: 20px">@message.Role.Title</TableRowCell>
+					</TableRow>
+					<TableRow>
+						<TableRowHeader>Email:</TableRowHeader>
+						<TableRowCell style="padding-left: 20px">@message.Email</TableRowCell>
+					</TableRow>
+					<TableRow>
+						<TableRowHeader>Github:</TableRowHeader>
+						<TableRowCell style="padding-left: 20px">@message.Github</TableRowCell>
+					</TableRow>
+				</TableBody>
+			</CardText>
+			<div style="margin-top: 20px">
+				<Button Color="Color.Primary" @onclick="Edit">Edit</Button>
+				<Button Color="Color.Primary" @onclick="Delete">Delete</Button>
+			</div>
+		</CardBody>
+	</Card>
+
+}
+
+
+@code {
+	[Parameter]
+	public int id { get; set; }
+
+	string userIcon = ImagesBase64.userImg;
+
+	private User message = new User { };
+	private string? userInput;
+	private int? userId;
+	private string? messageInput;
+	private bool loaded = false;
+
+	protected override async Task OnInitializedAsync()
+	{
+		var token = await TokenService.GetToken();
+		await UserController.ConfigureHub(token);
+		await UserController.StartConnection();
+		await UserController.Get(id);
+
+		message = UserController.message;
+		loaded = true;
+		StateHasChanged();
+	}
+
+	private void Edit()
+	{
+		Navigation.NavigateTo("/Users/" + id + "/Edit");
+		StateHasChanged();
+	}
+
+	private async Task Delete()
+	{
+		await UserController.Delete(id);
+		UriHelper.NavigateTo("/Users/");
+		StateHasChanged();
+	}
+
+	public async ValueTask DisposeAsync()
+	{
+		await UserController.DisposeAsync();
+	}
+}

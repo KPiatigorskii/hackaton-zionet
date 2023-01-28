@@ -1,140 +1,195 @@
-﻿using Azure.Core;
-//using Microsoft.AspNet.SignalR;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
-using MsSqlAccessor.Models;
-using MsSqlAccessor.Enums;
 using MsSqlAccessor.DbControllers;
-using MsSqlAccessor.Services;
-using Microsoft.Extensions.Logging;
+using MsSqlAccessor.Models;
+using MsSqlAccessor.Managers;
+using Task = System.Threading.Tasks.Task;
+using System.Security.Claims;
+using System.Reflection;
 
 namespace MsSqlAccessor.Hubs
 {
-    public class EventHub : Hub
+    public class EventHub<Tmodel, TmodelDTO> : Hub where Tmodel : class, IdModel, new() where TmodelDTO : class, IdModel, new()
     {
-        private readonly EventsDbController _dbController;
+        private const string GetAllPolicy = "participant";
+        private const string GetOnePolicy = "participant";
+        private const string RunWithArgumentsPolicy = "participant";
+        private const string UpdatePolicy = "admin";
+        private const string CreatePolicy = "admin";
+        private const string DeletePolicy = "admin";
+        private const string ForceDeletePolicy = "admin";
 
-        public EventHub(EventsDbController dbController)
+
+        private readonly GenDbController<Tmodel, TmodelDTO> _dbController;
+        private EventLogicManager _eventLogicManager;
+
+        public EventHub(GenDbController<Tmodel, TmodelDTO> dbController, EventLogicManager eventLogicManager)
         {
             _dbController = dbController;
+            _eventLogicManager = eventLogicManager;
+ 
         }
 
-        public async System.Threading.Tasks.Task GetAll()
+        [HubMethodName("GetAll")]
+        [Authorize(Policy = GetAllPolicy)]
+        public async Task GetAll()
         {
-            var dbItems = await _dbController.GetEvents();
+            var dtoItems = await _dbController.GetAll();
 
-            await Clients.All.SendAsync("ReceiveEvents", dbItems.Value);
+            await Clients.Caller.SendAsync("ReceiveGetAll", dtoItems);
         }
 
-        public async System.Threading.Tasks.Task GetOne(int id)
+		[HubMethodName("GetAllWithConditions")]
+		[Authorize(Policy = GetAllPolicy)]
+		public async Task GetAllWithConditions(Dictionary<string, object> filters)
+		{
+			var dtoItems = await _dbController.GetAllWithConditions(filters);
+
+			await Clients.Caller.SendAsync("ReceiveGetAll", dtoItems);
+		}
+
+		[HubMethodName("GetOne")]
+        [Authorize(Policy = GetOnePolicy)]
+        public async Task GetOne(int id)
+        {
+            TmodelDTO dtoItem;
+            try
+            {
+                dtoItem = await _dbController.GetOne(id);
+            }
+            catch (Exception ex)
+            {
+                throw new HubException(ex.Message);
+            }
+            //await Task.Delay(1000);
+            await Clients.Caller.SendAsync("ReceiveGetOne", dtoItem);
+        }
+
+		[HubMethodName("GetOneWithConditions")]
+		[Authorize(Policy = GetOnePolicy)]
+		public async Task GetOneWithConditions(Dictionary<string, object> filters)
+		{
+			TmodelDTO dtoItem;
+			try
+			{
+				dtoItem = await _dbController.GetOneWithConditions(filters);
+			}
+			catch (Exception ex)
+			{
+                throw new HubException(ex.Message);
+            }
+			//await Task.Delay(1000);
+			await Clients.Caller.SendAsync("ReceiveGetOne", dtoItem);
+		}
+
+        [HubMethodName("RunWithArguments")]
+        [Authorize(Policy = RunWithArgumentsPolicy)]
+        public async Task RunWithArguments(string functionName, Dictionary<string, object> arguments)
         {
             try
             {
-                var dbItem = await _dbController.GetEvent(id);
+                var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == ClaimTypes.Email).Value;
+                arguments.Add("email" , userEmail);
+                Type type = _eventLogicManager.GetType();
+                MethodInfo method = type.GetMethod(functionName);
+                Task task = (Task)method.Invoke(_eventLogicManager, new object[] { arguments});
+                await task;
 
-                await Clients.All.SendAsync("ReceiveEvent", dbItem.Value);
+                //await _eventLogicManager.startEvent(arguments, userEmail);
             }
-            catch (ServerError ex)
+            catch (Exception ex)
             {
-                switch (ex.Error)
-                {
-                    case AppError.ItemNotFound:
-                        await Clients.All.SendAsync("ReceiveEvent", "Not Found");
-                        break;
-
-                    default:
-                        await Clients.All.SendAsync("ReceiveEvent", "Bad Request");
-                        break;
-                }
+                throw new HubException(ex.Message);
             }
+
+            await Clients.All.SendAsync("DataHasChanged");  
         }
 
-        public async System.Threading.Tasks.Task UpdateOne(int id, EventDTO request, int userId)
+        [HubMethodName("Update")]
+        [Authorize(Policy = UpdatePolicy)]
+        public async Task Update(int id, TmodelDTO dtoItem)
         {
+            var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == ClaimTypes.Email).Value;
+
+            TmodelDTO dtoItemResult;
+
             try
             {
-                var dbItem = await _dbController.PutEvent(id, request, userId);
-                await Clients.All.SendAsync("UpdateEvent", dbItem.Value);
+                dtoItemResult = await _dbController.Update(id, dtoItem, userEmail);
             }
-            catch (ServerError ex)
+            catch (Exception ex)
             {
-                switch (ex.Error)
-                {
-                    case AppError.BadRequest:
-                        await Clients.All.SendAsync("ReceiveEvent", "Bad Request");
-                        break;
+                throw new HubException(ex.Message);
+            }
 
-                    case AppError.ItemNotFound:
-                        await Clients.All.SendAsync("ReceiveEvent", "Not Found");
-                        break;
+            await Clients.Caller.SendAsync("ReceiveUpdate", dtoItemResult);
+			await Clients.All.SendAsync("DataHasChanged");
+		}
 
-                    default:
-                        await Clients.All.SendAsync("ReceiveEvent", "Bad Request");
-                        break;
-                }
-            }        
-        }
-
-        public async System.Threading.Tasks.Task PostOne(EventDTO request, int userId)
+        [HubMethodName("Create")]
+        [Authorize(Policy = CreatePolicy)]
+        public async Task Create(TmodelDTO dtoItem)
         {
+            var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == ClaimTypes.Email).Value;
+
+            TmodelDTO dtoItemResult;
+
             try
             {
-                var dbItem = await _dbController.PostEvent(request, userId);
-                await Clients.All.SendAsync("PostEvent", dbItem.Value);
+                dtoItemResult = await _dbController.Create(dtoItem, userEmail);
             }
-            catch (ServerError ex)
+            catch (Exception ex)
             {
-                switch (ex.Error)
-                {
-                    default:
-                        await Clients.All.SendAsync("ReceiveEvent", "Bad Request");
-                        break;
-                }
+                throw new HubException(ex.Message);
             }
-        }
 
-        public async System.Threading.Tasks.Task DeleteOne(int id)
+            await Clients.Caller.SendAsync("ReceiveCreate", dtoItemResult);
+			await Clients.All.SendAsync("DataHasChanged");
+		}
+
+        [HubMethodName("Delete")]
+        [Authorize(Policy = DeletePolicy)]
+        public async Task Delete(int id)
         {
+            var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == ClaimTypes.Email).Value;
+
+            TmodelDTO dtoItemResult;
+
             try
             {
-                var results = await _dbController.DeleteEvent(id);
-                if (results.Value) await Clients.All.SendAsync("DeleteEvent", true);
+                dtoItemResult = await _dbController.Delete(id, userEmail);
             }
-            catch (ServerError ex)
+            catch (Exception ex)
             {
-                switch (ex.Error)
-                {
-                    case AppError.ItemNotFound:
-                        await Clients.All.SendAsync("ReceiveEvent", "Not Found");
-                        break;
-
-                    default:
-                        await Clients.All.SendAsync("ReceiveEvent", "Bad Request");
-                        break;
-                }
+                throw new HubException(ex.Message);
             }
-        }
 
-        public async System.Threading.Tasks.Task ForceDeleteOne(int id)
+            await Clients.Caller.SendAsync("ReceiveDelete", dtoItemResult);
+			await Clients.All.SendAsync("DataHasChanged");
+		}
+
+        [HubMethodName("ForceDelete")]
+        [Authorize(Policy = ForceDeletePolicy)]
+        public async Task ForceDelete(int id)
         {
+            var userEmail = Context.User.Claims.FirstOrDefault(e => e.Type == ClaimTypes.Email).Value;
+
+            TmodelDTO dtoItemResult;
+
             try
             {
-                var results = await _dbController.DeleteEventForce(id);
-                if(results.Value) await Clients.All.SendAsync("ForceDeleteEvent", true);
+                dtoItemResult = await _dbController.ForceDelete(id, userEmail);
             }
-            catch (ServerError ex)
+            catch (Exception ex)
             {
-                switch (ex.Error)
-                {
-                    case AppError.ItemNotFound:
-                        await Clients.All.SendAsync("ReceiveEvent", "Not Found");
-                        break;
-
-                    default:
-                        await Clients.All.SendAsync("ReceiveEvent", "Bad Request");
-                        break;
-                }
+                throw new HubException(ex.Message);
             }
+
+
+            await Clients.Caller.SendAsync("ReceiveForceDelete", new TmodelDTO());
+			await Clients.All.SendAsync("DataHasChanged");
+			return;
         }
+
     }
 }

@@ -13,13 +13,23 @@ public partial class EventParticipantTeam
 
     public int EventId { get; set; }
 
-    public int TeamId { get; set; }
+    public int? TeamId { get; set; }
 
     public bool IsLeader { get; set; }
 
-    public virtual EventModel Event { get; set; } = null!;
+	public bool IsTwitt { get; set; }
+
+    public int StatusId { get; set; }
+
+	public bool IsActive { get; set; }
+
+	public bool IsApplied { get; set; }
+
+	public virtual Event Event { get; set; } = null!;
 
     public virtual User Participant { get; set; } = null!;
 
-    public virtual Team Team { get; set; } = null!;
+    public virtual Status Status { get; set; } = null!;
+
+    public virtual Team? Team { get; set; }
 }

@@ -1,35 +1,22 @@
-﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Mvc;
-
-using Microsoft.AspNetCore.SignalR.Client;
-using System.Net.NetworkInformation;
-using ZionetCompetition.Models;
-using BlazorBootstrap;
-using Blazorise.DataGrid;
-using Microsoft.JSInterop;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Authorization;
-using Auth0.AspNetCore.Authentication;
-using System.Security.Claims;
-using NuGet.Common;
-using Newtonsoft.Json.Linq;
+using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.JSInterop;
+using ZionetCompetition.Models;
+using ZionetCompetition.Services;
 
 namespace ZionetCompetition.Controllers
 {
     public class UserController : Controller
     {
-        private readonly IJSRuntime _jsRuntime;
-        private readonly NavigationManager _navigationManager;
+        private HubConnection hubConnection;
+        private readonly ErrorService _errorService;
         public IEnumerable<User> messages = new List<User> { };
         public User message;
-        private HubConnection hubConnection;
         private bool isLoaded = false;
 
-
-        public UserController(IJSRuntime jsRuntime, NavigationManager navigationManager) {
-            _jsRuntime = jsRuntime;
-            _navigationManager = navigationManager;
+        public UserController(ErrorService errorService) {
+            _errorService = errorService;
         }
 
         public async Task StartConnection()
@@ -41,6 +28,14 @@ namespace ZionetCompetition.Controllers
         {
             await hubConnection.StopAsync();
         }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (hubConnection is not null)
+            {
+                await hubConnection.DisposeAsync();
+            }
+        }
         public async Task ConfigureHub(string tokenString)
         {
             hubConnection = new HubConnectionBuilder()
@@ -48,10 +43,11 @@ namespace ZionetCompetition.Controllers
                         {
                             options.AccessTokenProvider = () => Task.FromResult(tokenString);
                         })
-                .Build();
+				.WithAutomaticReconnect()
+				.Build();
 
 
-            hubConnection.On<List<User>>("ReceiveGetAll", async (users) =>
+            hubConnection.On<List<User>>("ReceiveGetAll", (users) =>
             {
                 messages = users;
                 isLoaded = true;
@@ -92,8 +88,7 @@ namespace ZionetCompetition.Controllers
             }
             catch (HubException ex)
             {
-                Console.WriteLine(ex.Message);
-                GeneralErr();
+                _errorService.Redirect(ex.Message);
             }
         }
 
@@ -107,9 +102,7 @@ namespace ZionetCompetition.Controllers
             }
             catch (HubException ex)
             {
-                Console.WriteLine(ex.Message);
-                if (ex.Message.Contains(Errors.Errors.ItemNotFound)) NotFoundPage();
-                GeneralErr();
+                _errorService.Redirect(ex.Message);
             }
         }
 
@@ -123,13 +116,23 @@ namespace ZionetCompetition.Controllers
             }
             catch (HubException ex)
             {
-                Console.WriteLine(ex.Message);
-                if (ex.Message.Contains(Errors.Errors.ItemNotFound)) NotFoundPage();
-                if (ex.Message.Contains(Errors.Errors.BadRequest)) GeneralErr();
-                GeneralErr();
+                _errorService.Redirect(ex.Message);
             }
         }
 
+        public async Task Create(User user)
+        {
+            try
+            {
+                await hubConnection.InvokeAsync("Create", user);
+                while (!isLoaded) { }
+                isLoaded = false;
+            }
+            catch (HubException ex)
+            {
+                _errorService.Redirect(ex.Message);
+            }
+        }
         public async Task Delete(int id)
         {
             try
@@ -140,20 +143,8 @@ namespace ZionetCompetition.Controllers
             }
             catch (HubException ex)
             {
-                Console.WriteLine(ex.Message);
-                if (ex.Message.Contains(Errors.Errors.ItemNotFound)) NotFoundPage();
-                GeneralErr();
+                _errorService.Redirect(ex.Message);
             }
-        }
-
-        private void NotFoundPage()
-        {
-            _navigationManager.NavigateTo("/404");
-        }
-
-        private void GeneralErr()
-        {
-            _navigationManager.NavigateTo("/500");
         }
     }
 }

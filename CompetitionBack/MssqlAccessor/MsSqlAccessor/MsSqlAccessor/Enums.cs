@@ -5,9 +5,14 @@
         Active = 1,
         NotActive = 2
     }
+	public enum RoleEnm
+	{
+		Admin = 1,
+		Manager = 2,
+		Participant = 3
+	}
 
-
-    public enum AppError
+	public enum AppError
     {
         General = 1,
         ConnectionError,
@@ -33,6 +38,25 @@
 
     }
 
+    public enum EventStatusEnm
+    {
+        Preparation = 1,
+        Disable = 2,
+        Running = 3,
+        Pause = 4,
+        Finished = 6
+    }
+
+    public enum TaskStatusEnm
+    {
+        InProgress = 1,
+        Discard,
+        OnCheck,
+        OnChecking,
+        Approved,
+        Rejected,
+        NeedHelp,
+    }
 
 }
 

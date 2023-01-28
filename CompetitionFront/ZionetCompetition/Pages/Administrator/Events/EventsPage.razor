@@ -1,0 +1,109 @@
+﻿@page "/events"
+
+@using System;
+@using System.Globalization;
+@using System.Reflection;
+@using Microsoft.AspNetCore.SignalR.Client
+@using ZionetCompetition.Models
+@using Blazorise.DataGrid
+
+@inject Microsoft​.AspNetCore​.Http.IHttpContextAccessor HttpContextAccessor
+@inject ZionetCompetition.Controllers.GenClientController<Event> EventController
+@inject NavigationManager Navigation
+@inject ZionetCompetition.Services.TokenService TokenService
+
+
+@implements IAsyncDisposable
+
+@if (!loaded)
+{
+	<SpinKit Type="SpinKitType.Plane" Color="SlateBlue" Centered />
+}
+else
+{
+	<h3>Events</h3>
+
+	<DataGrid TItem="Event"
+		  Data="@messages"
+		  Filterable="true"
+		  FilterMethod="DataGridFilterMethod.Contains"
+		  ShowPager="true"
+		  ShowPageSizes="true"
+		  Editable="false"
+		  Striped="true"
+		  Hoverable="true"
+		  SelectionMode="DataGridSelectionMode.Single"
+		  Responsive="true"
+		  @bind-SelectedRow=selectedEvent>
+		<ChildContent>
+			<DataGridCommandColumn TItem="Event"></DataGridCommandColumn>
+			<DataGridColumn TItem="Event" Field="Title" Caption="Title" Sortable="false" Displayable="true">
+				<DisplayTemplate>
+					<NavLink href="@($"/Events/{context.Id}")">@context.Title</NavLink>
+				</DisplayTemplate>
+			</DataGridColumn>
+			<DataGridColumn TItem="Event" Field="IsEnable" Caption="Enable" Sortable="true" Displayable="true" />
+			<DataGridColumn TItem="Event" Field="Address" Caption="Address" Sortable="false" Displayable="true" />
+			<DataGridDateColumn TItem="Event" Field="StartTime" Caption="StartTime" Sortable="true" Displayable="true" />
+			<DataGridDateColumn TItem="Event" Field="EndTime" Caption="EndTime" Sortable="false" Displayable="true" />
+			<DataGridColumn TItem="Event" Field="NumberParticipantsInTeam" Caption="TeamCapacity" Sortable="false" Displayable="true" />
+			<DataGridColumn TItem="Event" Field="Hashcode" Caption="Hashcode" Sortable="true" Displayable="true" />
+			<DataGridColumn TItem="Event" Field="EventStatus.Title" Caption="Status" Sortable="true" Displayable="true" />
+			<DataGridColumn TItem="Event" Field="CreateDate" Caption="CreateDate" Sortable="false" Displayable="true" />
+		</ChildContent>
+		<EmptyTemplate>
+			<div class="box">
+				No records were found.
+			</div>
+		</EmptyTemplate>
+		<LoadingTemplate>
+			<a></a><div class="box">
+				<progress class="progress is-small is-primary" max="100" />
+			</div>
+		</LoadingTemplate>
+
+		<ButtonRowTemplate>
+			<Button Color="Color.Success" @onclick="Create">New</Button>
+			<Button Color="Color.Primary" Disabled="(selectedEvent is null)">Duplicate</Button>
+			<Button Color="Color.Danger" Disabled="(selectedEvent is null)" @onclick="Delete">Delete</Button>
+		</ButtonRowTemplate>
+	</DataGrid>
+}
+
+@code {
+
+	public Event selectedEvent;
+	private IEnumerable<Event> messages = new List<Event> { };
+	public DataGrid<Event> EventDataGrid { get; set; }
+	private bool loaded = false;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var token =await  TokenService.GetToken();
+        await EventController.ConfigureHub(token);
+        await EventController.StartConnection();
+        await EventController.GetAll();
+        messages = EventController.messages;
+		loaded = true;
+        StateHasChanged();
+    }
+
+
+	private void Create()
+	{
+		Navigation.NavigateTo("/Events/Create");
+	}
+	private async Task Delete()
+	{
+		await EventController.Delete(selectedEvent.Id);
+		await EventController.GetAll();
+		messages = EventController.messages;
+		StateHasChanged();
+	}
+
+	public async ValueTask DisposeAsync()
+	{
+		await EventController.DisposeAsync();
+	}
+}

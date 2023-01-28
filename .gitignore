@@ -1,3 +1,6 @@
+# Server Data files
+wwwroot
+internal_logs
 # Logs
 logs
 *.log
@@ -146,3 +149,5 @@ twitterEngine/security/localhost.crt
 twitterEngine/security/localhost.csr
 twitterEngine/security/localhost.key
 twitterEngine/security/v3.ext
+/CompetitionBack/MssqlAccessor/MsSqlAccessor/MsSqlAccessor/appsettings.json
+/CompetitionBack/MssqlAccessor/MsSqlAccessor/MsSqlAccessor/internal_logs/*
