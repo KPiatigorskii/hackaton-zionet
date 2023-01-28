@@ -138,3 +138,4 @@ bld/
 [Ll]ogs/
 /CompetitionFront/ZionetCompetition/obj
 /CompetitionBack/MssqlAccessor/MsSqlAccessor/MsSqlAccessor/appsettings.json
+/CompetitionBack/MssqlAccessor/MsSqlAccessor/MsSqlAccessor/internal_logs/*
