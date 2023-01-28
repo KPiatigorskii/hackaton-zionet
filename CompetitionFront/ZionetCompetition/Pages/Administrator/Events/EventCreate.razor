@@ -122,7 +122,7 @@ else
 
         await EventController.ConfigureHub(token);
         await EventController.StartConnection();
-        checkedEventStatus = (int)EnentStatusEnm.Preparation;
+        checkedEventStatus = (int)EventStatusEnm.Preparation;
         newEvent.IsEnable = true;
         loaded = true;
         StateHasChanged();
@@ -137,7 +137,7 @@ else
         //newEvent.NumberParticipantsInTeam = 5;
         //newEvent.NumberConcurrentTasks = 4;
         //newEvent.Hashcode = "#32";
-        newEvent.EventStatusId = (int)EnentStatusEnm.Preparation;
+        newEvent.EventStatusId = (int)EventStatusEnm.Preparation;
         newEvent.IsEnable = false;
 
         await EventController.Create(newEvent);
