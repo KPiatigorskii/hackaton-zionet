@@ -1,0 +1,23 @@
+CI part
+1) checkout code
+2) run dotnet test
+3.1) if tests ok - push to regisltry, notify on slack, create PR to default dev branch
+3.2) if tests failed, notify on slack
+4) clear jenkins pipeline folder
+
+CD part
+1) connect to dev stand (EC2 instance)
+2) install docker, docker-compose (if it's not installed)
+1) make docker pull from registry
+2) deploy to dev stand
+3) run application
+4) run GUI autotests
+5.1) if tests ok -  steps 1-4 on production stand, notify on slack, create PR to main branch
+5.2) if tests failed, notify on slack
+
+for Jenkins :
+Use webhook on github push branch
+
+for Github actions : 
+on:
+  push:

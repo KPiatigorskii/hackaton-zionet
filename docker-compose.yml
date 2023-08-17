@@ -2,7 +2,7 @@ version: '3.4'
 
 services:
   mssqlaccessor:
-    image: ${DOCKER_REGISTRY-}mssqlaccessor
+    image: kpiatigorskii/mssqlaccessor
     build:
       context: .
       dockerfile: CompetitionBack/Dockerfile
@@ -10,7 +10,7 @@ services:
      - 7277:80
 
   competitionfront:
-    image: ${DOCKER_REGISTRY-}competitionfront
+    image: kpiatigorskii/competitionfront
     build:
       context: .
       dockerfile: CompetitionFront/Dockerfile
