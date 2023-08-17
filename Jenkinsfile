@@ -1,13 +1,4 @@
 
-
-// 1) checkout code
-// 2) run dotnet test
-// 3.1) if tests ok - push to regisltry, notify on slack, create PR to default dev branch
-// 3.2) if tests failed, notify on slack
-// 4) clear jenkins pipeline folder
-
-
-
 pipeline {
     agent any
 
@@ -16,18 +7,16 @@ pipeline {
             steps {
                 script {
                     git credentialsId: 'github-creds',
-                        url: 'https://github.com/KPiatigorskii/hackaton-zionet.git',
-                        branch: 'devops_ci'
+                    url: 'https://github.com/KPiatigorskii/hackaton-zionet.git',
+                    branch: 'devops_ci'
                 }
             }
         }
 
-        stage('test solution') {
+        stage('Test solution') {
             steps {
                 script {
                     echo "Testing solution..."
-                    sh 'pwd'
-                    sh 'ls -al'
                     def testExitCode = sh(script: 'cd MssqlAccessorTests && dotnet test', returnStatus: true)
 
                     if (testExitCode != 0) {
@@ -49,16 +38,14 @@ pipeline {
                 }
             }
         }
-
-        stage('Clean Up Workspace') {
-            steps {
-                echo "Clearing Jenkins pipeline folder"
-                sh 'rm -rf *'
-            }
-        }
     }
 
     post {
+        always{
+            echo "Clearing Jenkins pipeline folder"
+            sh 'rm -rf *'
+        }
+
         success {
             echo "Pipeline succeeded! Notifying on Slack."
             slackSend(
