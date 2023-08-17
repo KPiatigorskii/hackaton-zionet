@@ -23,13 +23,14 @@ node{
 
         if (testExitCode != 0) {
             currentBuild.result = 'FAILURE' // Mark the build as failed
-            error "Tests failed! Exiting pipeline."
+
                             slackSend(
                     color: "#00FF00",
                     channel: "jenkins-notify",
                     message: "${currentBuild.fullDisplayName} was succeeded",
                     tokenCredentialId: 'slack-token'
                 )
+                        error "Tests failed! Exiting pipeline."
         }
         else {
             echo "All tests passed! "
