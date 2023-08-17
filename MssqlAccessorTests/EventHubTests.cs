@@ -2,6 +2,7 @@
 using Xunit;
 using Moq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Assert = Xunit.Assert;
 
 namespace MsSqlAccessorTests
 {
@@ -10,13 +11,19 @@ namespace MsSqlAccessorTests
         [Fact]
         public async Task CanJoinEventHub()
         {
-                  
+            Assert.True(true);
         }
 
         [Fact]
         public async Task CanLeaveEventHub()
         {
-                    
+            Assert.True(true);
+        }
+
+        [Fact]
+        public async Task Can2LeaveEventHub()
+        {
+            Assert.True(false);
         }
 
         // Add more test methods for other hub methods
