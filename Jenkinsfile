@@ -8,57 +8,75 @@
 
 
 
-node{
-    stage('checkout') {
-            git \
-                credentialsId: 'github-creds', \
-                url: 'https://github.com/KPiatigorskii/hackaton-zionet.git', \
-                branch: 'devops_ci'
+pipeline {
+    agent any
+
+    stages {
+        stage('checkout') {
+            steps {
+                script {
+                    git credentialsId: 'github-creds',
+                        url: 'https://github.com/KPiatigorskii/hackaton-zionet.git',
+                        branch: 'devops_ci'
+                }
+            }
         }
 
-    stage('test solution') {
-        sh 'pwd'
-        sh 'ls -al'
-        def testExitCode = sh(script: 'cd MssqlAccessorTests && dotnet test', returnStatus: true)
+        stage('test solution') {
+            steps {
+                script {
+                    echo "Testing solution..."
+                    sh 'pwd'
+                    sh 'ls -al'
+                    def testExitCode = sh(script: 'cd MssqlAccessorTests && dotnet test', returnStatus: true)
 
-        if (testExitCode != 0) {
-            currentBuild.result = 'FAILURE' // Mark the build as failed
+                    if (testExitCode != 0) {
+                        error "Tests failed! Exiting pipeline."
+                    } else {
+                        echo "All tests passed!"
+                    }
+                }
+            }
+        }
+
+        stage('Push Docker images to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
+                    echo "Pushing Docker images to Docker Hub"
+                    sh "docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD"
+                    sh "docker push kpiatigorskii/competitionfront"
+                    sh "docker push kpiatigorskii/mssqlaccessor"
+                }
+            }
+        }
+
+        stage('Clean Up Workspace') {
+            steps {
+                echo "Clearing Jenkins pipeline folder"
+                sh 'rm -rf *'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Pipeline succeeded! Notifying on Slack."
+            slackSend(
+                color: "#00FF00",
+                channel: "jenkins-notify",
+                message: "${currentBuild.fullDisplayName} was succeeded",
+                tokenCredentialId: 'slack-token'
+            )
+        }
+
+        failure {
+            echo "Pipeline failed! Notifying on Slack."
             slackSend(
                 color: "#FF0000",
                 channel: "jenkins-notify",
                 message: "${currentBuild.fullDisplayName} was failed",
                 tokenCredentialId: 'slack-token'
             )
-            error "Tests failed! Exiting pipeline."
         }
-        else {
-            echo "All tests passed! "
-        }
-
-    }
-
-    stage('Push Docker images to Docker Hub'){
-        // echo "Push Docker images to Docker Hub"
-        // sh 'docker login -u kpiatigorskii -p dckr_pat_6whSoke9x4b7XCwQjpztIE3QnOg'
-        withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
-            sh "docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD"
-            sh "docker push kpiatigorskii/competitionfront"
-            sh "docker push kpiatigorskii/mssqlaccessor"
-        }
-    }
-
-    stage('Clean Up Workspace (Always)') {
-        echo "Clear Jenkins pipeline folder"
-        sh 'rm -rf *'
-    }
-
-    stage('Notify on Pipeline Success') {
-        echo "Pipeline succeeded! Notifying on Slack."
-        slackSend(
-            color: "#00FF00",
-            channel: "jenkins-notify",
-            message: "${currentBuild.fullDisplayName} was succeeded",
-            tokenCredentialId: 'slack-token'
-        )
     }
 }
