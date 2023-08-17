@@ -12,7 +12,7 @@ node{
             git \
                 credentialsId: 'github-creds', \
                 url: 'https://github.com/KPiatigorskii/hackaton-zionet.git', \
-                branch: 'main'
+                branch: 'devops_ci'
         }
 
     stage('test solution') {
