@@ -1,10 +1,10 @@
-continue my pipeline pls
 
-1) checkout code
-2) run dotnet test
-3.1) if tests ok - push to regisltry, notify on slack, create PR to default dev branch
-3.2) if tests failed, notify on slack
-4) clear jenkins pipeline folder
+
+// 1) checkout code
+// 2) run dotnet test
+// 3.1) if tests ok - push to regisltry, notify on slack, create PR to default dev branch
+// 3.2) if tests failed, notify on slack
+// 4) clear jenkins pipeline folder
 
 
 
