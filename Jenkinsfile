@@ -32,25 +32,41 @@ node{
     }
 
     stage('Push Docker images to Docker Hub'){
-        sh 'docker login -u kpiatigorskii -p dckr_pat_6whSoke9x4b7XCwQjpztIE3QnOg'
-        //sh 'docker tag ${imageId} kpiatigorskii/hangman-app:hangman'
-        sh 'docker push kpiatigorskii/competitionfront'
-        sh 'docker push kpiatigorskii/mssqlaccessor'
+        echo "Push Docker images to Docker Hub"
+        // sh 'docker login -u kpiatigorskii -p dckr_pat_6whSoke9x4b7XCwQjpztIE3QnOg'
+        // sh 'docker push kpiatigorskii/competitionfront'
+        // sh 'docker push kpiatigorskii/mssqlaccessor'
     }
-
-
-    stage('Clean up workspace') {
-        sh 'rm -rf *' // Clear Jenkins pipeline folder
-    }
-
 
     post {
+        always {
+            stage('Clean Up Workspace (Always)') {
+                echo "Clear Jenkins pipeline folder"
+                sh 'rm -rf *'
+            }
+        }
+
         failure {
             stage('Notify on Test Failure') {
                 echo "Tests failed! Notifying on Slack."
-
-                // Notify on Slack
-                // Add Slack notification logic here
+                slackSend(
+                    color: "#FF0000",
+                    channel: "jenkins-notify",
+                    message: "${currentBuild.fullDisplayName} was failed",
+                    tokenCredentialId: 'slack-token'
+                )
+            }
+        }
+        
+        success {
+            stage('Notify on Pipeline Success') {
+                echo "Pipeline succeeded! Notifying on Slack."
+                slackSend(
+                    color: "#00FF00",
+                    channel: "jenkins-notify",
+                    message: "${currentBuild.fullDisplayName} was succeeded",
+                    tokenCredentialId: 'slack-token'
+                )
             }
         }
     }
