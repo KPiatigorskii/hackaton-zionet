@@ -1,0 +1,23 @@
+version: '3.4'
+
+services:
+  mssqlaccessor:
+    image: ${DOCKER_REGISTRY-}mssqlaccessor
+    build:
+      context: .
+      dockerfile: CompetitionBack/Dockerfile
+    ports:
+     - 7277:80
+
+  competitionfront:
+    image: ${DOCKER_REGISTRY-}competitionfront
+    build:
+      context: .
+      dockerfile: CompetitionFront/Dockerfile
+    ports:
+     - 7130:80
+
+#networks:
+#  default:
+#    external:
+#      name: bridge
