@@ -8,38 +8,40 @@
 
 
 
-pipeline {
-    agent any
-
-    stages{
-        stage('checkout') {
-                git \
-                    credentialsId: 'github-creds', \
-                    url: 'https://github.com/KPiatigorskii/hackaton-zionet.git', \
-                    branch: 'devops_ci'
-            }
-
-        stage('test solution') {
-            sh 'pwd'
-            sh 'ls -al'
-            def testExitCode = sh(script: 'cd MssqlAccessorTests && dotnet test', returnStatus: true)
-
-            if (testExitCode != 0) {
-                currentBuild.result = 'FAILURE' // Mark the build as failed
-                //error "Tests failed! Exiting pipeline."
-            }
-            else {
-                echo "All tests passed! "
-            }
-
+node{
+    stage('checkout') {
+            git \
+                credentialsId: 'github-creds', \
+                url: 'https://github.com/KPiatigorskii/hackaton-zionet.git', \
+                branch: 'devops_ci'
         }
 
-        stage('Push Docker images to Docker Hub'){
-            echo "Push Docker images to Docker Hub"
-            // sh 'docker login -u kpiatigorskii -p dckr_pat_6whSoke9x4b7XCwQjpztIE3QnOg'
-            // sh 'docker push kpiatigorskii/competitionfront'
-            // sh 'docker push kpiatigorskii/mssqlaccessor'
+    stage('test solution') {
+        sh 'pwd'
+        sh 'ls -al'
+        def testExitCode = sh(script: 'cd MssqlAccessorTests && dotnet test', returnStatus: true)
+
+        if (testExitCode != 0) {
+            currentBuild.result = 'FAILURE' // Mark the build as failed
+            error "Tests failed! Exiting pipeline."
+                            slackSend(
+                    color: "#00FF00",
+                    channel: "jenkins-notify",
+                    message: "${currentBuild.fullDisplayName} was succeeded",
+                    tokenCredentialId: 'slack-token'
+                )
         }
+        else {
+            echo "All tests passed! "
+        }
+
+    }
+
+    stage('Push Docker images to Docker Hub'){
+        echo "Push Docker images to Docker Hub"
+        // sh 'docker login -u kpiatigorskii -p dckr_pat_6whSoke9x4b7XCwQjpztIE3QnOg'
+        // sh 'docker push kpiatigorskii/competitionfront'
+        // sh 'docker push kpiatigorskii/mssqlaccessor'
     }
 
     post {
