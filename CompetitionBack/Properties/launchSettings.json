@@ -20,10 +20,12 @@
     },
     "Docker": {
       "commandName": "Docker",
-      "launchBrowser": true,
+        "launchBrowser": true,
+      "httpPort": 7278,
       "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/swagger",
       "publishAllPorts": true,
-      "useSSL": true
+      "useSSL": true,
+      "sslPort": 7277
     }
   },
   "$schema": "https://json.schemastore.org/launchsettings.json",

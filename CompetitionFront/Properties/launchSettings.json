@@ -27,12 +27,12 @@
     },
     "Docker": {
         "commandName": "Docker",
+        "httpPort": 7130,
         "launchBrowser": true,
         "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
         "publishAllPorts": true,
-        "useSSL": true,
-        "httpPort": 7130,
-        "sslPort": 443
+        "sslPort": 443,
+        "useSSL": true
     }
   },
   "iisSettings": {

@@ -41,7 +41,7 @@ namespace ZionetCompetition.Controllers
         {
 
             hubConnection = new HubConnectionBuilder()
-                .WithUrl("https://mssqlaccessor:7277/events", options =>
+                .WithUrl("https://mssqlaccessor/events", options =>
                 {
                     options.AccessTokenProvider = () => Task.FromResult(tokenString);
                 })

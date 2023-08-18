@@ -6,13 +6,18 @@ namespace ZionetCompetition.Pages
 {
 	public class LoginModel : PageModel
 	{
-		public async Task OnGet(string redirectUri)
-		{
-			var authenticationProperties = new LoginAuthenticationPropertiesBuilder()
-				.WithRedirectUri(redirectUri)
-				.Build();
+        public async Task OnGet(string redirectUri)
+        {
+            //var baseUri = "http://competitionfront/"
+            var baseUri = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
+            //var completeRedirectUri = $"{baseUri}{redirectUri}";
+            var completeRedirectUri = "http://competitionfront/";
 
-			await HttpContext.ChallengeAsync(Auth0Constants.AuthenticationScheme, authenticationProperties);
-		}
-	}
+            var authenticationProperties = new LoginAuthenticationPropertiesBuilder()
+                .WithRedirectUri(completeRedirectUri)
+                .Build();
+
+            await HttpContext.ChallengeAsync(Auth0Constants.AuthenticationScheme, authenticationProperties);
+        }
+    }
 }

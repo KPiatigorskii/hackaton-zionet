@@ -37,7 +37,7 @@ namespace ZionetCompetition.Controllers
 		public async Task ConfigureHub(string tokenString)
 		{
             hubConnection = new HubConnectionBuilder()
-            .WithUrl("https://mssqlaccessor:7277/eventparticipantteams", options =>
+            .WithUrl("https://mssqlaccessor/eventparticipantteams", options =>
             {
                 options.AccessTokenProvider = () => Task.FromResult(tokenString);
             })

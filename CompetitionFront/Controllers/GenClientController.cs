@@ -8,7 +8,7 @@ namespace ZionetCompetition.Controllers
 {
     public class GenClientController<Tmodel> : Controller where Tmodel : class
     {
-        public string connectionUrl = $"https://mssqlaccessor:7277/" + typeof(Tmodel).Name + "s";
+        public string connectionUrl = $"https://mssqlaccessor/" + typeof(Tmodel).Name + "s";
         private HubConnection hubConnection;
         private readonly ErrorService _errorService;
         public IEnumerable<Tmodel> messages = new List<Tmodel> { };
