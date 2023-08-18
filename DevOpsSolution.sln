@@ -7,14 +7,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MsSqlAccessor", "Competitio
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZionetCompetition", "CompetitionFront\ZionetCompetition.csproj", "{22C5AA66-95CD-4F6D-A96B-0C5977F5A77E}"
 EndProject
-Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{165ACC74-54FE-48D4-93D3-A92FCE449657}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Элементы решения", "Элементы решения", "{46203682-99C3-4C2B-BDFD-C86A59AAFE1B}"
 	ProjectSection(SolutionItems) = preProject
 		TextFile1.txt = TextFile1.txt
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MssqlAccessorTests", "MssqlAccessorTests\MssqlAccessorTests.csproj", "{A44FFE6C-5570-47D4-A1F5-D8C363F51787}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{848C3638-D627-41D2-A745-5CBD1CC35F7D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,14 +30,14 @@ Global
 		{22C5AA66-95CD-4F6D-A96B-0C5977F5A77E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{22C5AA66-95CD-4F6D-A96B-0C5977F5A77E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{22C5AA66-95CD-4F6D-A96B-0C5977F5A77E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{165ACC74-54FE-48D4-93D3-A92FCE449657}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{165ACC74-54FE-48D4-93D3-A92FCE449657}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{165ACC74-54FE-48D4-93D3-A92FCE449657}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{165ACC74-54FE-48D4-93D3-A92FCE449657}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A44FFE6C-5570-47D4-A1F5-D8C363F51787}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A44FFE6C-5570-47D4-A1F5-D8C363F51787}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A44FFE6C-5570-47D4-A1F5-D8C363F51787}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A44FFE6C-5570-47D4-A1F5-D8C363F51787}.Release|Any CPU.Build.0 = Release|Any CPU
+		{848C3638-D627-41D2-A745-5CBD1CC35F7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{848C3638-D627-41D2-A745-5CBD1CC35F7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{848C3638-D627-41D2-A745-5CBD1CC35F7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{848C3638-D627-41D2-A745-5CBD1CC35F7D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

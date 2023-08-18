@@ -3,7 +3,7 @@
   <PropertyGroup Label="Globals">
     <ProjectVersion>2.1</ProjectVersion>
     <DockerTargetOS>Linux</DockerTargetOS>
-    <ProjectGuid>165acc74-54fe-48d4-93d3-a92fce449657</ProjectGuid>
+    <ProjectGuid>848c3638-d627-41d2-a745-5cbd1cc35f7d</ProjectGuid>
     <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
     <DockerServiceUrl>{Scheme}://localhost:{ServicePort}/swagger</DockerServiceUrl>
     <DockerServiceName>mssqlaccessor</DockerServiceName>

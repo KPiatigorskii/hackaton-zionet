@@ -8,13 +8,8 @@ namespace ZionetCompetition.Pages
 	{
         public async Task OnGet(string redirectUri)
         {
-            //var baseUri = "http://competitionfront/"
-            var baseUri = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
-            //var completeRedirectUri = $"{baseUri}{redirectUri}";
-            var completeRedirectUri = "http://competitionfront/";
-
             var authenticationProperties = new LoginAuthenticationPropertiesBuilder()
-                .WithRedirectUri(completeRedirectUri)
+                .WithRedirectUri(redirectUri)
                 .Build();
 
             await HttpContext.ChallengeAsync(Auth0Constants.AuthenticationScheme, authenticationProperties);

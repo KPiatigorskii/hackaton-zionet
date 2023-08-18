@@ -2,22 +2,19 @@ version: '3.4'
 
 services:
   mssqlaccessor:
-    image: kpiatigorskii/mssqlaccessor
+    image: ${DOCKER_REGISTRY-}mssqlaccessor
     build:
       context: .
       dockerfile: CompetitionBack/Dockerfile
     ports:
-     - 7277:80
+    - 7277:80
+    - 7278:443
 
-  competitionfront:
-    image: kpiatigorskii/competitionfront
+  zionetcompetition:
+    image: ${DOCKER_REGISTRY-}zionetcompetition
     build:
       context: .
       dockerfile: CompetitionFront/Dockerfile
     ports:
-     - 7130:80
-
-#networks:
-#  default:
-#    external:
-#      name: bridge
+    - 7130:80
+    - 7131:443

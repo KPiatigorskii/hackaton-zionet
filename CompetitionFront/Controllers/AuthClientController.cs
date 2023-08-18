@@ -8,7 +8,7 @@ namespace ZionetCompetition.Controllers
 {
     public class AuthClientController<User> : Controller
     {
-        public string connectionUrl = $"https://mssqlaccessor/Users";
+        public string connectionUrl = $"http://mssqlaccessor/Users";
         private HubConnection hubConnection;
         private readonly ErrorService _errorService;
         public User message;
