@@ -42,17 +42,19 @@ pipeline {
                         
                         def currentBranch = params.BRANCH
                         echo "currentBranch: $params.BRANCH"
+                        def trimmedBranchName = branchName.replaceAll('^competitionfront_|^mssqlaccessor_', '')
+                
 
                         if (currentBranch.contains('competitionfront')) {
-                            sh "docker build -t kpiatigorskii/competitionfront:$currentBranch ."
+                            sh "docker build -t kpiatigorskii/competitionfront:$trimmedBranchName ."
                             echo "Pushing competitionfront to Docker Hub"
-                            sh "docker push kpiatigorskii/competitionfront:$currentBranch"
+                            sh "docker push kpiatigorskii/competitionfront:$trimmedBranchName"
                         }
                         
                         if (currentBranch.contains('mssqlaccessor')) {
-                            sh "docker build -t kpiatigorskii/mssqlaccessor:$currentBranch ."
+                            sh "docker build -t kpiatigorskii/mssqlaccessor:$trimmedBranchName ."
                             echo "Pushing mssqlaccessor to Docker Hub"
-                            sh "docker push kpiatigorskii/mssqlaccessor:$currentBranch"
+                            sh "docker push kpiatigorskii/mssqlaccessor:$trimmedBranchName"
                         }
                     }
                 }
