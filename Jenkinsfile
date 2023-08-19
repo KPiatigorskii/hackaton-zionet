@@ -44,11 +44,13 @@ pipeline {
                         echo "currentBranch: $params.BRANCH"
 
                         if (currentBranch.contains('competitionfront')) {
+                            sh "docker build -t kpiatigorskii/competitionfront:$currentBranch ."
                             echo "Pushing competitionfront to Docker Hub"
                             sh "docker push kpiatigorskii/competitionfront:$currentBranch"
                         }
                         
                         if (currentBranch.contains('mssqlaccessor')) {
+                            sh "docker build -t kpiatigorskii/mssqlaccessor:$currentBranch ."
                             echo "Pushing mssqlaccessor to Docker Hub"
                             sh "docker push kpiatigorskii/mssqlaccessor:$currentBranch"
                         }
