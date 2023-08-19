@@ -42,7 +42,7 @@ pipeline {
                         
                         def currentBranch = params.BRANCH
                         echo "currentBranch: $params.BRANCH"
-                        def trimmedBranchName = branchName.replaceAll('^competitionfront_|^mssqlaccessor_', '')
+                        def trimmedBranchName = currentBranch.replaceAll('^competitionfront_|^mssqlaccessor_', '')
                 
 
                         if (currentBranch.contains('competitionfront')) {
