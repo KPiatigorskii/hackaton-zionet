@@ -38,7 +38,7 @@ pipeline {
                         sh "docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD"
                         
                         def currentBranch = env.GIT_BRANCH // Get the full branch reference
-                        echo
+                        echo "currentBranch: $env.GIT_BRANCH"
                         def branchName = currentBranch.substring(currentBranch.lastIndexOf('/') + 1) // Extract just the branch name
                         echo "current branch: $branchName"
                         if (branchName.contains('competitionfront')) {
