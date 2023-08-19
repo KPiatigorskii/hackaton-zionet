@@ -25,8 +25,13 @@ pipeline {
                         echo "All tests passed!"
                     }
                 }
-                script{
-                    echo "Check docker status"
+            }
+        }
+
+        stage('Check Docker status') {
+            steps {
+                script {
+                    echo "Checking Docker status..."
                     def dockerExitCode = sh(script: 'systemctl is-active docker', returnStatus: true).trim()
 
                     if (dockerExitCode != 'active') {
@@ -34,16 +39,10 @@ pipeline {
                     } else {
                         echo "Docker process is active"
                     }
-
-                    // def dockerExitCode = sh(script: 'systemctl show --property ActiveState docker | grep -c "active" ')
-                    // if (dockerExitCode != 1) {
-                    //     error "Docker proccess not active"
-                    // } else {
-                    //     echo "Docker proccess is active"
-                    // }     
                 }
             }
         }
+
 
         stage('Push Docker images to Docker Hub') {
             steps {
