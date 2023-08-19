@@ -40,7 +40,7 @@ pipeline {
                         echo "Pushing Docker images to Docker Hub"
                         sh "docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD"
                         
-                        def currentBranch = $params.BRANCH
+                        def currentBranch = params.BRANCH
                         echo "currentBranch: $params.BRANCH"
 
                         if (currentBranch.contains('competitionfront')) {
