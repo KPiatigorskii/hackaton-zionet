@@ -30,16 +30,25 @@ pipeline {
 
         stage('Push Docker images to Docker Hub') {
             steps {
-                script{
-                    def currentBranch = env.GIT_BRANCH // Get the full branch reference
-                    def branchName = currentBranch.substring(currentBranch.lastIndexOf('/') + 1) // Extract just the branch name
-                    echo "$branchName"
-                }
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
+            script {
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', 
+                                usernameVariable: 'DOCKERHUB_USERNAME', 
+                                passwordVariable: 'DOCKERHUB_PASSWORD')]) {
                     echo "Pushing Docker images to Docker Hub"
                     sh "docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD"
-                    sh "docker push kpiatigorskii/competitionfront"
-                    sh "docker push kpiatigorskii/mssqlaccessor"
+                    
+                    def currentBranch = env.GIT_BRANCH // Get the full branch reference
+                    def branchName = currentBranch.substring(currentBranch.lastIndexOf('/') + 1) // Extract just the branch name
+                    echo "current branch: $branchName"
+                    if (branchName.contains('competitionfront')) {
+                        echo "Pushing competitionfront to Docker Hub"
+                        sh "docker push kpiatigorskii/competitionfront:$branchName"
+                    }
+                    
+                    if (branchName.contains('mssqlaccessor')) {
+                        echo "Pushing mssqlaccessor to Docker Hub"
+                        sh "docker push kpiatigorskii/mssqlaccessor:$branchName"
+                    }
                 }
             }
         }
