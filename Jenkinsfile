@@ -8,7 +8,7 @@ pipeline {
                 script {
                     git credentialsId: 'github-creds',
                     url: 'https://github.com/KPiatigorskii/hackaton-zionet.git',
-                    branch: 'devops_ci'
+                    branch: '${params.BRANCH}'
                 }
             }
         }
