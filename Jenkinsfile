@@ -25,11 +25,19 @@ pipeline {
                         echo "All tests passed!"
                     }
                 }
+                script{
+                    echo "Check docker status"
+                    def dockerExitCode = sh(script: 'systemctl show --property ActiveState docker | grep -c "active" ', returnStatus: true)
+                    if (testExitCode != 1) {
+                        error "Docker proccess not active"
+                    }      
+                }
             }
         }
 
         stage('Push Docker images to Docker Hub') {
             steps {
+
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
                     echo "Pushing Docker images to Docker Hub"
                     sh "docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD"
