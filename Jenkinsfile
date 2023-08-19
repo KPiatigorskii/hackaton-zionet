@@ -28,7 +28,7 @@ pipeline {
                 script{
                     echo "Check docker status"
                     def dockerExitCode = sh(script: 'systemctl show --property ActiveState docker | grep -c "active" ', returnStatus: true)
-                    if (testExitCode != 1) {
+                    if (dockerExitCode != 1) {
                         error "Docker proccess not active"
                     } else {
                         echo "Docker proccess is active"
