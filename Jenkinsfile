@@ -46,13 +46,13 @@ pipeline {
                 
 
                         if (currentBranch.contains('competitionfront')) {
-                            sh "docker build -t kpiatigorskii/competitionfront:$trimmedBranchName ."
+                            sh "cd CompetitionFront && docker build -t kpiatigorskii/competitionfront:$trimmedBranchName ."
                             echo "Pushing competitionfront to Docker Hub"
                             sh "docker push kpiatigorskii/competitionfront:$trimmedBranchName"
                         }
                         
                         if (currentBranch.contains('mssqlaccessor')) {
-                            sh "docker build -t kpiatigorskii/mssqlaccessor:$trimmedBranchName ."
+                            sh "cd CompetitionBack && docker build -t kpiatigorskii/mssqlaccessor:$trimmedBranchName ."
                             echo "Pushing mssqlaccessor to Docker Hub"
                             sh "docker push kpiatigorskii/mssqlaccessor:$trimmedBranchName"
                         }
