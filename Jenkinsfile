@@ -38,7 +38,7 @@ pipeline {
                         sh "docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD"
                         
                         def currentBranch = env.GIT_BRANCH // Get the full branch reference
-                        echo "env.GIT_BRANCH: $currentBranch"
+                        echo
                         def branchName = currentBranch.substring(currentBranch.lastIndexOf('/') + 1) // Extract just the branch name
                         echo "current branch: $branchName"
                         if (branchName.contains('competitionfront')) {
@@ -54,32 +54,32 @@ pipeline {
                 }
             }
         }
+    }
 
-        post {
-            always{
-                echo "Clearing Jenkins pipeline folder"
-                sh 'rm -rf *'
-            }
+    post {
+        always{
+            echo "Clearing Jenkins pipeline folder"
+            sh 'rm -rf *'
+        }
 
-            success {
-                echo "Pipeline succeeded! Notifying on Slack."
-                slackSend(
-                    color: "#00FF00",
-                    channel: "jenkins-notify",
-                    message: "${currentBuild.fullDisplayName} was succeeded",
-                    tokenCredentialId: 'slack-token'
-                )
-            }
+        success {
+            echo "Pipeline succeeded! Notifying on Slack."
+            slackSend(
+                color: "#00FF00",
+                channel: "jenkins-notify",
+                message: "${currentBuild.fullDisplayName} was succeeded",
+                tokenCredentialId: 'slack-token'
+            )
+        }
 
-            failure {
-                echo "Pipeline failed! Notifying on Slack."
-                slackSend(
-                    color: "#FF0000",
-                    channel: "jenkins-notify",
-                    message: "${currentBuild.fullDisplayName} was failed",
-                    tokenCredentialId: 'slack-token'
-                )
-            }
+        failure {
+            echo "Pipeline failed! Notifying on Slack."
+            slackSend(
+                color: "#FF0000",
+                channel: "jenkins-notify",
+                message: "${currentBuild.fullDisplayName} was failed",
+                tokenCredentialId: 'slack-token'
+            )
         }
     }
 }
