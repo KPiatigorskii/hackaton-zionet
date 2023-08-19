@@ -61,28 +61,30 @@ pipeline {
         }
     }
 
-    post {
-        always{
+post {
+        always {
             echo "Clearing Jenkins pipeline folder"
             sh 'rm -rf *'
         }
 
         success {
             echo "Pipeline succeeded! Notifying on Slack."
+            def buildUrl = env.BUILD_URL
             slackSend(
                 color: "#00FF00",
                 channel: "jenkins-notify",
-                message: "${currentBuild.fullDisplayName} was succeeded",
+                message: "<${buildUrl}|${currentBuild.fullDisplayName}> was succeeded",
                 tokenCredentialId: 'slack-token'
             )
         }
 
         failure {
             echo "Pipeline failed! Notifying on Slack."
+            def buildUrl = env.BUILD_URL
             slackSend(
                 color: "#FF0000",
                 channel: "jenkins-notify",
-                message: "${currentBuild.fullDisplayName} was failed",
+                message: "<${buildUrl}|${currentBuild.fullDisplayName}> was failed",
                 tokenCredentialId: 'slack-token'
             )
         }
