@@ -16,7 +16,7 @@ pipeline {
             }
         }
 
-        stage('Test solution') {
+        stage('Run tests') {
             steps {
                 script {
                     echo "Testing solution..."
@@ -42,19 +42,11 @@ pipeline {
                         
                         def currentBranch = params.BRANCH
                         echo "currentBranch: $params.BRANCH"
-                        def trimmedBranchName = currentBranch.replaceAll('^competitionfront_|^mssqlaccessor_', '')
+                        def trimmedBranchName = currentBranch.replaceAll('^mssqlaccessor_', '')
 
-                        if (currentBranch.contains('competitionfront')) {
-                            sh " docker build -t kpiatigorskii/competitionfront:$trimmedBranchName . -f CompetitionFront/Dockerfile"
-                            echo "Pushing competitionfront to Docker Hub"
-                            sh "docker push kpiatigorskii/competitionfront:$trimmedBranchName"
-                        }
-                        
-                        if (currentBranch.contains('mssqlaccessor')) {
-                            sh "docker build -t kpiatigorskii/mssqlaccessor:$trimmedBranchName . -f CompetitionBack/Dockerfile"
-                            echo "Pushing mssqlaccessor to Docker Hub"
-                            sh "docker push kpiatigorskii/mssqlaccessor:$trimmedBranchName"
-                        }
+                        sh "docker build -t kpiatigorskii/mssqlaccessor:$trimmedBranchName . -f CompetitionBack/Dockerfile"
+                        echo "Pushing mssqlaccessor to Docker Hub"
+                        sh "docker push kpiatigorskii/mssqlaccessor:$trimmedBranchName"
                     }
                 }
             }

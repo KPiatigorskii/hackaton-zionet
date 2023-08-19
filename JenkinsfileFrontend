@@ -16,20 +16,20 @@ pipeline {
             }
         }
 
-        stage('Test solution') {
-            steps {
-                script {
-                    echo "Testing solution..."
-                    def testExitCode = sh(script: 'cd MssqlAccessorTests && dotnet test', returnStatus: true)
+        // stage('Test solution') { // TODO: wait frontend-tests
+        //     steps {
+        //         script {
+        //             echo "Testing solution..."
+        //             def testExitCode = sh(script: 'cd MssqlAccessorTests && dotnet test', returnStatus: true)
 
-                    if (testExitCode != 0) {
-                        error "Tests failed! Exiting pipeline."
-                    } else {
-                        echo "All tests passed!"
-                    }
-                }
-            }
-        }
+        //             if (testExitCode != 0) {
+        //                 error "Tests failed! Exiting pipeline."
+        //             } else {
+        //                 echo "All tests passed!"
+        //             }
+        //         }
+        //     }
+        // }
 
         stage('Push Docker images to Docker Hub') {
             steps {
@@ -42,19 +42,13 @@ pipeline {
                         
                         def currentBranch = params.BRANCH
                         echo "currentBranch: $params.BRANCH"
-                        def trimmedBranchName = currentBranch.replaceAll('^competitionfront_|^mssqlaccessor_', '')
+                        def trimmedBranchName = currentBranch.replaceAll('^competitionfront_', '')
 
-                        if (currentBranch.contains('competitionfront')) {
-                            sh " docker build -t kpiatigorskii/competitionfront:$trimmedBranchName . -f CompetitionFront/Dockerfile"
-                            echo "Pushing competitionfront to Docker Hub"
-                            sh "docker push kpiatigorskii/competitionfront:$trimmedBranchName"
-                        }
+                        sh " docker build -t kpiatigorskii/competitionfront:$trimmedBranchName . -f CompetitionFront/Dockerfile"
+                        echo "Pushing competitionfront to Docker Hub"
+                        sh "docker push kpiatigorskii/competitionfront:$trimmedBranchName"
+
                         
-                        if (currentBranch.contains('mssqlaccessor')) {
-                            sh "docker build -t kpiatigorskii/mssqlaccessor:$trimmedBranchName . -f CompetitionBack/Dockerfile"
-                            echo "Pushing mssqlaccessor to Docker Hub"
-                            sh "docker push kpiatigorskii/mssqlaccessor:$trimmedBranchName"
-                        }
                     }
                 }
             }
