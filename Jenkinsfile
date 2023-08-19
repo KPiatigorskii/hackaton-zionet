@@ -5,15 +5,16 @@ pipeline {
         gitParameter branchFilter: 'origin/(.*)', defaultValue: 'main', name: 'BRANCH', type: 'PT_BRANCH'
     }
     stages {
-        // stage('checkout') {
-        //     steps {
-        //         script {
-        //             git credentialsId: 'github-creds',
-        //             url: 'https://github.com/KPiatigorskii/hackaton-zionet.git',
-        //             branch: "$params.BRANCH"
-        //         }
-        //     }
-        // }
+        stage('checkout') {
+            steps {
+                script {
+                    echo "$params.BRANCH"
+                    git credentialsId: 'github-creds',
+                    url: 'https://github.com/KPiatigorskii/hackaton-zionet.git',
+                    branch: "$params.BRANCH"
+                }
+            }
+        }
 
         stage('Test solution') {
             steps {
