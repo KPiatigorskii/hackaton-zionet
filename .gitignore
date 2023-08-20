@@ -136,6 +136,8 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+/CompetitionFront/appsettings.json
+/MsSqlAccessor/appsettings.json
 /CompetitionFront/ZionetCompetition/obj
 twitterEngine/config/ca.crt
 twitterEngine/config/ca.key
