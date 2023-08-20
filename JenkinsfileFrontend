@@ -16,14 +16,25 @@ pipeline {
             }
         }
 
+        // stage('Copy Config File') {
+        //     steps {
+        //         script {
+        //             // Copy the configuration file from Jenkins managed files to workspace
+        //             configFileProvider([configFile(fileId: 'af2a352d-e58d-4f21-9807-b61a08666c8f', targetLocation: 'CompetitionFront/')])
+
+        //             // Display the copied file
+        //             sh 'ls -al CompetitionFront/'
+        //         }
+        //     }
+        // }
+
         stage('Copy Config File') {
             steps {
                 script {
-                    // Copy the configuration file from Jenkins managed files to workspace
-                    configFileProvider([configFile(fileId: 'af2a352d-e58d-4f21-9807-b61a08666c8f', targetLocation: 'CompetitionFront/')])
-
-                    // Display the copied file
-                    sh 'ls -al CompetitionFront/'
+                    configFileProvider([configFile(fileId: 'af2a352d-e58d-4f21-9807-b61a08666c8f', targetLocation: 'CompetitionFront/')]) {
+                        // Inside this block, you can perform actions with the copied config file
+                        sh 'ls -al path/to/copy/config'
+                    }
                 }
             }
         }
