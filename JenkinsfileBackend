@@ -16,6 +16,16 @@ pipeline {
             }
         }
 
+        stage('Copy Config File') {
+            steps {
+                script {
+                    configFileProvider([configFile(fileId: 'b2dbb3dd-ceb8-4bbb-a8bc-d1a1d90f76fd', targetLocation: 'CompetitionBack/')]) {
+                        sh 'ls -al CompetitionBack/'
+                    }
+                }
+            }
+        }
+
         stage('Run tests') {
             steps {
                 script {

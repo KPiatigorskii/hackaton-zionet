@@ -32,7 +32,6 @@ pipeline {
             steps {
                 script {
                     configFileProvider([configFile(fileId: 'af2a352d-e58d-4f21-9807-b61a08666c8f', targetLocation: 'CompetitionFront/')]) {
-                        // Inside this block, you can perform actions with the copied config file
                         sh 'ls -al CompetitionFront/'
                     }
                 }
