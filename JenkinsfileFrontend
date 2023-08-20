@@ -1,9 +1,9 @@
 
 pipeline {
     agent any
-    parameters {
-        gitParameter branchFilter: 'origin/(.*)', defaultValue: 'main', name: 'BRANCH', type: 'PT_BRANCH'
-    }
+    // parameters {
+    //     gitParameter branchFilter: 'origin/(.*)', defaultValue: 'main', name: 'BRANCH', type: 'PT_BRANCH'
+    // }
     stages {
         stage('checkout') {
             steps {
@@ -16,18 +16,6 @@ pipeline {
             }
         }
 
-        // stage('Copy Config File') {
-        //     steps {
-        //         script {
-        //             // Copy the configuration file from Jenkins managed files to workspace
-        //             configFileProvider([configFile(fileId: 'af2a352d-e58d-4f21-9807-b61a08666c8f', targetLocation: 'CompetitionFront/')])
-
-        //             // Display the copied file
-        //             sh 'ls -al CompetitionFront/'
-        //         }
-        //     }
-        // }
-
         stage('Copy Config File') {
             steps {
                 script {
@@ -39,20 +27,20 @@ pipeline {
         }
 
 	
-        // stage('Test solution') { // TODO: wait frontend-tests
-        //     steps {
-        //         script {
-        //             echo "Testing solution..."
-        //             def testExitCode = sh(script: 'cd MssqlAccessorTests && dotnet test', returnStatus: true)
+        stage('Test solution') { // TODO: make a frontend-tests
+            steps {
+                script {
+                    echo "Testing solution..."
+                    def testExitCode = sh(script: 'cd MssqlAccessorTests && dotnet test', returnStatus: true)
 
-        //             if (testExitCode != 0) {
-        //                 error "Tests failed! Exiting pipeline."
-        //             } else {
-        //                 echo "All tests passed!"
-        //             }
-        //         }
-        //     }
-        // }
+                    if (testExitCode != 0) {
+                        error "Tests failed! Exiting pipeline."
+                    } else {
+                        echo "All tests passed!"
+                    }
+                }
+            }
+        }
 
         stage('Push Docker images to Docker Hub') {
             steps {
